@@ -129,7 +129,7 @@ class ZohoService
         $response = Http::withHeaders([
             'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
         ])->get('https://www.zohoapis.com/billing/v1/plans');
-
+        // dd($response->json());
         // Handle the response
         if ($response->successful()) {
             return $response->json(); // Return the API data
@@ -157,7 +157,25 @@ class ZohoService
             throw new \Exception('Failed to fetch Zoho customers: ' . $response->body());
         }
     }
+    public function getCustomerDetails($customerId)
+    {
+        // Get the access token
+        $accessToken = $this->getAccessToken();
 
+        //$response = Http::withToken($accessToken)->get("https://subscriptions.zohoapis.com/api/v1/customers/{$customerId}");
+
+        $response = Http::withHeaders([
+            'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
+        ])->get('https://www.zohoapis.com/billing/v1/customers/' . $customerId);
+
+        // Handle the response
+        if ($response->successful()) {
+            return $response->json(); // Return the API data
+        } else {
+            // If the request fails (e.g., 401 Unauthorized), handle the error
+            throw new \Exception('Failed to fetch Zoho customer details: ' . $response->body());
+        }
+    }
 
     
 }

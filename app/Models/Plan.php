@@ -19,5 +19,7 @@ class Plan extends Authenticatable
     protected $fillable = [
         'plan_name',
         'plan_price',
+        'plan_code',
+        'plan_id'
     ];
 }

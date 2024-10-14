@@ -3,18 +3,18 @@
 @section("content")
     <main class="mt-5">
         <div class="container">
-            
+
             <div class="row justify-content-center">
                 <div style="display: flex; justify-content: space-around">
                     <nav class=" bg-clearlink d-flex justify-content-between">
                         <div class="container-fluid">
-                            <span class="navbar-brand p-1"><img width="150" height="37" src="/assets/images/cl_logo.svg"
+                            <span class="navbar-brand p-1"><img width="150" height="37" src="/assets/images/testlogo.png"
                                                                 alt="Clearlink Logo"></span>
                         </div>
                     </nav>
                 </div>
                 <div class="d-flex flex-column justify-content-center align-items-center pt-5">
-                    <h4 class="text-primary mt-5 mb-3">Clearlink ISP Billing Customer Portal</h4>
+                    <h4 class="text-primary mt-5 mb-3">Testlink ISP Billing Admin Portal</h4>
                 </div>
                 <div class="col-md-4">
                     @if(session()->has("success"))
@@ -28,9 +28,9 @@
                         </div>
                     @endif
                     <div class="card">
-                        <h3 class="card-header text-center">LOGIN</h3>
+                        <h3 class="card-header text-center">ADMIN LOGIN</h3>
                         <div class="card-body">
-                            <form method="POST" action="{{route("login.post")}}">
+                            <form method="POST" action="{{route("admin.post")}}">
                                 @csrf
                                 <div class="form-group mb-3">
                                     <input type="text" placeholder="email" id="email" class="form-control" name="email"
@@ -38,7 +38,7 @@
                                     @if($errors->has('email'))
                                         <span class="text-danger">
                                             {{$errors->first('email')}}
-                                        </span> 
+                                        </span>
                                     @endif
                                 </div>
                                 <div class="form-group mb-3">

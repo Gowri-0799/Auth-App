@@ -13,6 +13,7 @@
             flex-direction: column;
         }
 
+        
         .wrapper {
             display: flex;
             flex: 1;
@@ -91,6 +92,9 @@
         <a href="{{ route('plans') }}">Plans</a>
         <a href="{{ route('tokens') }}">Access token</a>
         <a href="{{ route('customers') }}">Customers</a>
+        <a href="{{ route('subdata') }}">Subscription</a>
+        <a href="{{ route('invdata') }}">Invoice</a>
+        
     </div>
 
     <!-- Main Content -->
