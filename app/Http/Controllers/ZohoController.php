@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Session;
 use App\Models\Creditnote;
 use Carbon\Carbon;
+use App\Models\Support;
 
 class ZohoController extends Controller
 {
@@ -28,6 +29,7 @@ class ZohoController extends Controller
     protected $invoice;
     protected $payment;
     protected $Creditnote;
+    protected $support;
 
     public function __construct(ZohoService $zohoService)
     {
@@ -38,6 +40,7 @@ class ZohoController extends Controller
         $this->invoice =new Invoice();
         $this->payment =new Payment();
         $this->creditnote =new Creditnote();
+        $this->support=new Support();
     }
 
     public function getAllPlans()
@@ -1151,6 +1154,101 @@ public function filtercredits(Request $request)
     // Pass filtered credit notes and customer details to the view
     return view('creditnotes', compact('creditnotes', 'customers'));
 }
+public function showCustomerSupport(Request $request)
+{
+    $customer = Customer::where('customer_email', Session::get('user_email'))->first();
+
+    if (!$customer) {
+        return back()->withErrors('Customer not found.');
+    }
+
+    // Start building the query for support tickets
+    $supports = Support::where('zoho_cust_id', $customer->zohocust_id);
+    $customers = Customer::where('zohocust_id', $supports->first()->zoho_cust_id)->first();
+    // Apply date filters if they are provided
+    if ($request->filled('startDate')) {
+        $supports->whereDate('date', '>=', $request->startDate);
+    }
+
+    if ($request->filled('endDate')) {
+        $supports->whereDate('date', '<=', $request->endDate);
+    }
+
+    // Apply search filter if a search term is provided
+    if ($request->filled('search')) {
+        $supports->where('request_type', 'like', '%' . $request->search . '%');
+    }
+
+    // Get the results, you can also paginate if needed
+    $supports = $supports->paginate($request->input('show', 10)); // Default to 10 results per page
+
+    // Pass the supports variable to the view
+    return view('support', compact('supports','customers'));
+}
+
+
+
+public function ticketstore(Request $request)
+{
+    $request->validate([
+        'message' => 'required|string|max:1000',
+    ]);
+
+    $customer = Customer::where('customer_email', Session::get('user_email'))->first();
+    if (!$customer) {
+        return back()->withErrors('Customer not found.');
+    }
+
+    $subscription = Subscription::where('zoho_cust_id', $customer->zohocust_id)->first();
+    $zohoCustId =  $customer->zohocust_id;
+    
+    $subscriptionNumber =  $subscription->subscription_number;
+
+    // Store the support ticket
+    Support::create([
+        'date' => now(),
+        'request_type' => 'Custom', // You can set this dynamically if needed
+        'subscription_number' => $subscriptionNumber,
+        'message' => $request->input('message'),
+        'status' => 'open',
+        'zoho_cust_id' => $zohoCustId,
+        'zoho_cpid' => $zohoCustId, // Adjust as needed
+     
+    ]);
+
+    // Redirect back to the support page with success message
+    return redirect()->route('show.support')->with('success', 'Support ticket created successfully.');
+}
+
+public function downgrade(Request $request)
+{
+    $customer = Customer::where('customer_email', Session::get('user_email'))->first();
+dd($customer);
+    if (!$customer) {
+        return back()->withErrors('Customer not found.');
+    }
+
+    // Fetch the first subscription for the customer
+    $subscription = Subscription::where('zoho_cust_id', $customer->zohocust_id)->first();
+
+    if (!$subscription) {
+        return back()->withErrors('No subscription found for this customer.');
+    }
+
+    // Fetch the current plan details
+    $currentPlan = Plan::where('plan_id', $subscription->plan_id)->first();
+
+    if (!$currentPlan) {
+        return back()->withErrors('Current plan not found.');
+    }
+
+    // Fetch all available plans for downgrading
+    $plans = Plan::all(); // Get all plans to show in the dropdown
+
+    // Return the view with the required data
+    return view('customerSubscriptions', compact('subscription', 'currentPlan', 'plans'));
+}
+
 
 }
 

@@ -93,6 +93,7 @@ Route::get('/thanks', [ZohoController::class, 'retrieveRetHostedPage'])->name('t
 Route::get('/customer/subscriptions', [ZohoController::class, 'showCustomerSubscriptions'])->name('customer.subscriptions');
 Route::get('/customer/invoices', [ZohoController::class, 'showCustomerInvoices'])->name('customer.invoices');
 Route::get('/customer/Credites', [ZohoController::class, 'showCustomerCredits'])->name('customer.credites');
+Route::get('/customer/supports', [ZohoController::class, 'showCustomerSupport'])->name('customer.support');
 
 
 Route::get('/customers/{zohocust_id}/edit', [ZohoController::class, 'edit'])->name('customers.edit');
@@ -110,5 +111,6 @@ Route::get('/upgrade-custsubscription', [ZohoController::class, 'custsupgrade'])
 Route::get('/invoices/filter', [ZohoController::class, 'filterInvoices'])->name('invoices.filter');
 Route::get('/creditnotes/filter', [ZohoController::class, 'filtercredits'])->name('creditnotes.filter'); // Filter credit notes
 
-
-// Route::get('/payment/update/callback/{payment_id}', [ZohoController::class, 'updatePaymentDetails'])->name('payment.update.callback');
+Route::post('/tickets/store', [ZohoController::class, 'ticketstore'])->name('tickets.store');
+Route::get('/support', [ZohoController::class, 'showCustomerSupport'])->name('show.support');
+Route::post('/downgrade-plan', [ZohoController::class, 'downgrade'])->name('downgrade_plan');

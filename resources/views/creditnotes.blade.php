@@ -15,15 +15,15 @@
                 <!-- Table Filters Section -->
                 <form class="row mb-4 align-items-end" method="GET" action="{{ route('creditnotes.filter') }}"> <!-- Route updated -->
                     <div class="col-md-2">
-                        <label for="startDate" class="form-label fw-bold" style="font-family: Arial, sans-serif; font-size: 14px;">Start Date</label>
+                        <label for="startDate" class=" fw-bold" style="font-family: Arial, sans-serif; font-size: 14px;">Start Date</label>
                         <input type="date" id="startDate" name="startDate" class="form-control" value="{{ request('startDate') }}" style="font-family: Arial, sans-serif; font-size: 14px;">
                     </div>
                     <div class="col-md-2">
-                        <label for="endDate" class="form-label fw-bold" style="font-family: Arial, sans-serif; font-size: 14px;">End Date</label>
+                        <label for="endDate" class=" fw-bold" style="font-family: Arial, sans-serif; font-size: 14px;">End Date</label>
                         <input type="date" id="endDate" name="endDate" class="form-control" value="{{ request('endDate') }}" style="font-family: Arial, sans-serif; font-size: 14px;">
                     </div>
                     <div class="col-md-2">
-                        <label for="showEntries" class="form-label fw-bold" style="font-family: Arial, sans-serif; font-size: 14px;">Show</label>
+                        <label for="showEntries" class=" fw-bold" style="font-family: Arial, sans-serif; font-size: 14px;">Show</label>
                         <select id="showEntries" name="show" class="form-select" style="font-family: Arial, sans-serif; font-size: 14px;">
                             <option value="10" {{ request('show') == 10 ? 'selected' : '' }}>10</option>
                             <option value="25" {{ request('show') == 25 ? 'selected' : '' }}>25</option>
@@ -31,15 +31,16 @@
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label for="search" class="form-label fw-bold" style="font-family: Arial, sans-serif; font-size: 14px;">Search</label>
+                        <label for="search" class=" fw-bold" style="font-family: Arial, sans-serif; font-size: 14px;">Search</label>
                         <input type="text" id="search" name="search" class="form-control" placeholder="Search here..." value="{{ request('search') }}" style="font-family: Arial, sans-serif; font-size: 14px;">
                     </div>
                     <div class="col-md-1">
-                        <button type="submit" class="btn btn-primary w-100" style="min-width: 80px; font-family: Arial, sans-serif; font-size: 14px;">Submit</button>
+                    <button class="btn button-clearlink text-primary fw-bold" type="submit">Submit</button>
+                        <!-- <button type="submit" class="btn btn-primary w-100" style="min-width: 80px; font-family: Arial, sans-serif; font-size: 14px; background-color:#DCE9FE">Submit</button> -->
                     </div>
                 </form>
 
-                <a href="" class="text-decoration-none mb-3 d-inline-block text-primary" style="margin-bottom: 20px;">Reset</a> <!-- Updated Reset route -->
+                <a href="{{ route('customer.credites') }}" class="btn text-primary text-decoration-underline fw-bold p-0 pt-2" style="margin-bottom: 20px;">Reset</a> <!-- Updated Reset route -->
 
                 <!-- Check for credit notes -->
                 @if($creditnotes->count() == 0)
@@ -47,18 +48,18 @@
                 @else
                     <!-- Styled Bootstrap Table -->
                     <div class="table-responsive">
-                        <table class="table table-hover text-center table-bordered" style="background-color: #fff; width: 100%; max-width: 100%;">
+                        <table class="table table-hover text-center table-bordered" style="background-color:#fff; width: 100%; max-width: 100%;">
                             <thead class="table-light">
                                 <tr>
-                                    <th>#</th>
-                                    <th>Credit Note Date</th>
-                                    <th>Credit Note Number</th>
-                                    <th>Company Name</th>
-                                    <th>Invoice Number</th>
-                                    <th>Credited Amount (USD)</th>
-                                    <th>Balance (USD)</th>
-                                    <th>Status</th>
-                                    <th>View</th>
+                                    <th style="background-color:#EEF3FB;">#</th>
+                                    <th style="background-color:#EEF3FB;"> Date</th>
+                                    <th style="background-color:#EEF3FB;">Credit Note #</th>
+                                    <th style="background-color:#EEF3FB;">Company Name</th>
+                                    <th style="background-color:#EEF3FB;">Invoice Number</th>
+                                    <th style="background-color:#EEF3FB;">Credited Amount (USD)</th>
+                                    <th style="background-color:#EEF3FB;">Balance (USD)</th>
+                                    <th style="background-color:#EEF3FB;">Status</th>
+                                    <th style="background-color:#EEF3FB;">View</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -71,14 +72,14 @@
                                     <td>{{ $creditnote->invoice_number }}</td>
                                     <td>{{ number_format($creditnote->credited_amount, 2) }}</td>
                                     <td>{{ number_format($creditnote->balance, 2) }}</td>
-                                    <td>
-                                        @if(strtolower($creditnote->status) == 'open')
-                                        <span class="badge bg-success">Open</span>
+                                    <td class="p-2 status">
+                                        @if(strtolower($creditnote->status) == 'credited')
+                                        <span class="badge-success">Open</span>
                                         @else
-                                        <span class="badge bg-danger">Closed</span>
+                                        <span class="badge-fail">Closed</span>
                                         @endif
                                     </td>
-                                    <td><a href="" target="_blank" class="btn btn-primary">Download PDF</a></td> <!-- Added PDF view button -->
+                                    <td><a href="" target="_blank" class="btn btn-sm btn-primary">Download PDF</a></td> <!-- Added PDF view button -->
                                 </tr>
                                 @endforeach
                             </tbody>

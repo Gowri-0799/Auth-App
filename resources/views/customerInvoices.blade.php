@@ -35,7 +35,7 @@
                        <input type="text" id="search" name="search" class="form-control" placeholder="Search here..." value="{{ request('search') }}" style="font-family: Arial, sans-serif; font-size: 14px;">
                     </div>
                     <div class="col-md-1">
-                        <button type="submit" class="btn btn-primary w-100" style="min-width: 80px; font-family: Arial, sans-serif; font-size: 14px;">Submit</button>
+                        <button class="btn button-clearlink text-primary fw-bold" type="submit">Submit</button>
                     </div>
                 </form>
 
@@ -84,9 +84,9 @@
                                     <td>{{ number_format($invoice->payment_made, 2) }}</td>
                                     <td>
                                         @if(strtolower($invoice->status) == 'paid')
-                                        <span class="badge bg-success">Paid</span>
+                                        <span class="badge-success">Paid</span>
                                         @else
-                                        <span class="badge bg-danger">Pending</span>
+                                        <span class="badge-fail">Pending</span>
                                         @endif
                                     </td>
                                 </tr>
