@@ -681,7 +681,9 @@ public function showCustomerSubscriptions()
     $subscriptions = Subscription::where('zoho_cust_id', $customer->zohocust_id)->first();
     
     $plans=Plan::where('plan_id',$subscriptions->plan_id)->first();
-    return view('customerSubscriptions', compact('subscriptions', 'plans'));
+    $downgradePlans = Plan::where('plan_price', '<', $plans->plan_price)->get();
+  
+    return view('customerSubscriptions', compact('subscriptions', 'plans','downgradePlans'));
 }
 
 public function showCustomerInvoices()
@@ -1222,31 +1224,43 @@ public function ticketstore(Request $request)
 
 public function downgrade(Request $request)
 {
+    // Validate the request to ensure a plan is selected
+    $request->validate([
+        'plan_id' => 'required|exists:plans,plan_id',
+    ]);
+   
+    // Get the logged-in customer
     $customer = Customer::where('customer_email', Session::get('user_email'))->first();
-dd($customer);
+
     if (!$customer) {
         return back()->withErrors('Customer not found.');
     }
 
-    // Fetch the first subscription for the customer
+    // Fetch the customer's subscription
     $subscription = Subscription::where('zoho_cust_id', $customer->zohocust_id)->first();
-
+  
     if (!$subscription) {
-        return back()->withErrors('No subscription found for this customer.');
+        return back()->withErrors('Subscription not found.');
     }
 
-    // Fetch the current plan details
-    $currentPlan = Plan::where('plan_id', $subscription->plan_id)->first();
-
-    if (!$currentPlan) {
-        return back()->withErrors('Current plan not found.');
+    $selectedPlan = Plan::where('plan_id', $request->plan_id)->first();
+  
+    if (!$selectedPlan) {
+        return back()->withErrors('Plan not found.');
     }
 
-    // Fetch all available plans for downgrading
-    $plans = Plan::all(); // Get all plans to show in the dropdown
+    // Create the downgrade support ticket
+    Support::create([
+        'date' => now(),
+        'request_type' => 'Downgrade', // Set the request type to Downgrade
+        'subscription_number' => $subscription->subscription_number,
+        'message' => 'I would like to downgrade my subscription to the ' . $selectedPlan->plan_name . '. Please contact me with steps to downgrade.',        'status' => 'open',
+        'zoho_cust_id' => $customer->zohocust_id,
+        'zoho_cpid' => $customer->zohocust_id, // Adjust as needed
+    ]);
 
-    // Return the view with the required data
-    return view('customerSubscriptions', compact('subscription', 'currentPlan', 'plans'));
+    // Redirect back with a success message
+    return redirect()->route('customer.subscriptions')->with('success', 'Downgrade request submitted successfully.');
 }
 
 

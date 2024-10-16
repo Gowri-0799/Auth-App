@@ -144,15 +144,10 @@
                         <label for="downgradeSelect" class="form-label">Select a plan to downgrade to:</label>
                         <select class="form-select" id="downgradeSelect" name="plan_id" required>
     <option selected disabled value="">Choose a plan...</option>
-    @if($plans->isNotEmpty())
-        @foreach($plans as $plan)
-            <option value="{{ $plan->plan_id }}">{{ $plan->plan_name }} - ${{ $plan->plan_price }}</option>
-        @endforeach
-    @else
-        <option disabled>No available plans</option>
-    @endif
-</select>
-                    </div>
+    @foreach( $downgradePlans as $plan)
+        <option value="{{ $plan->plan_id }}">{{ $plan->plan_name }} </option>
+    @endforeach
+</select>         </div>
                     <div class="modal-footer">
                         <button type="submit" class="btn btn-primary">Submit</button>
                     </div>

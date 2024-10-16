@@ -96,5 +96,8 @@ class AuthController extends Controller
     {
         return view("adminwelcome");
     }
+    function showLinkRequestForm(){
+        return view("auth.reset");
+    }
 
 }

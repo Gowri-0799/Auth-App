@@ -114,3 +114,4 @@ Route::get('/creditnotes/filter', [ZohoController::class, 'filtercredits'])->nam
 Route::post('/tickets/store', [ZohoController::class, 'ticketstore'])->name('tickets.store');
 Route::get('/support', [ZohoController::class, 'showCustomerSupport'])->name('show.support');
 Route::post('/downgrade-plan', [ZohoController::class, 'downgrade'])->name('downgrade_plan');
+Route::get('password/reset', [AuthController::class, 'showLinkRequestForm'])->name('password.request');
