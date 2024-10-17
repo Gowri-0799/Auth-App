@@ -2,6 +2,8 @@
 @section('title', "All Invoices")
 
 @section('content')
+<div id="content" class="p-3" style="background-color: #f8f9fc; margin-left: 240px; width: calc(100% - 220px);">
+
 <div class="container mt-5">
     <h2>All Invoices</h2>
 
@@ -37,5 +39,6 @@
             @endforeach
         </tbody>
     </table>
+</div>
 </div>
 @endsection

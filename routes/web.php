@@ -53,6 +53,8 @@ Route:: get("/in", [AuthController::class, "index"])
 
 Route::get('/plans', [ZohoController::class, "getAllPlans"])
     ->name('plans');
+Route:: get("/SupportTicket", [ZohoController::class, "supportticket"])
+    ->name("Support.Ticket");
 
  Route::get('/customer/details', [ZohoController::class, 'showCustomerDetails'])
      ->name('customer.details');

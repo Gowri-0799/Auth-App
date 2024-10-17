@@ -1,6 +1,8 @@
 @extends("layouts.default")
 @section('title', "Plans")
 @section('content')
+<div id="content" class="p-3" style="background-color: #f8f9fc; margin-left: 240px; width: calc(100% - 220px);">
+
     <div class="container mt-5">
         <h2 class="text-center mb-4">Available Plans</h2>
         <table class="table table-bordered table-striped">
@@ -22,4 +24,5 @@
             </tbody>
         </table>
     </div>
+</div>
 @endsection

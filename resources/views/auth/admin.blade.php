@@ -9,7 +9,7 @@
    <div class="scrollable">
       <nav class=" bg-clearlink d-flex justify-content-between">
          <div class="container-fluid">
-            <span class="navbar-brand p-1"><img width="180" height="100" src="/assets/images/testlogo.png" alt="Testlink Logo"></span>
+            <span class="navbar-brand p-1"><img width="180" height="100" src="/assets/images/logo.png" alt="Testlink Logo"></span>
          </div>
       </nav>
       <div class="main mb-5">

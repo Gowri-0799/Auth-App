@@ -141,7 +141,7 @@
         <div class="wrapper">
             <aside id="sidebar" class="expand">
                 <div class="sidebar-logo text-center py-3">
-                    <img src="{{ asset('assets/images/testlogo.png') }}" alt="Testlink Logo" class="img-fluid" style="width: 60%; height: auto;">
+                <img src="{{ asset('assets/images/logo.png') }}" alt="Testlink Logo" class="img-fluid" style="width: 50%; height: 80%;">
                 </div>
                 <ul class="sidebar-nav">
                     <li class="sidebar-item">

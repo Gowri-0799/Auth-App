@@ -1263,7 +1263,34 @@ public function downgrade(Request $request)
     return redirect()->route('customer.subscriptions')->with('success', 'Downgrade request submitted successfully.');
 }
 
+public function supportticket(){
 
+    $customer = Customer::where('customer_email', Session::get('user_email'))->first();
+    if (!$customer) {
+        return back()->withErrors('Customer not found.');
+    }
+
+    $subscription = Subscription::where('zoho_cust_id', $customer->zohocust_id)->first();
+    $zohoCustId =  $customer->zohocust_id;
+    
+    $subscriptionNumber =  $subscription->subscription_number;
+
+    // Store the support ticket
+    Support::create([
+        'date' => now(),
+        'request_type' => 'Custom', // You can set this dynamically if needed
+        'subscription_number' => $subscriptionNumber,
+        'message' => $request->input('message'),
+        'status' => 'open',
+        'zoho_cust_id' => $zohoCustId,
+        'zoho_cpid' => $zohoCustId, // Adjust as needed
+     
+    ]);
+
+    // Redirect back to the support page with success message
+    return redirect()->route('show.support')->with('success', 'Support ticket created successfully.');
+    
+}
 }
 
 

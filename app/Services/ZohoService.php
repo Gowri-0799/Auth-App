@@ -25,15 +25,14 @@ class ZohoService
     }
 
     public function getAccessToken()
-    {
-        // run thr below code for first acces token 
-    //    return $this->refreshAccessToken($this->refreshToken);
+    {       
         // Get the token from the database
         $token = OauthToken::first();
-
+        
         if (!$token) {
             // No token found, you need to start the OAuth flow (for first-time login)
-            return $this->initiateOAuth();
+            $this->initiateOAuth();
+            return $this->refreshAccessToken($this->refreshToken);
         }
 
         // Check if the token is expired
@@ -129,7 +128,7 @@ class ZohoService
         $response = Http::withHeaders([
             'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
         ])->get('https://www.zohoapis.com/billing/v1/plans');
-        // dd($response->json());
+        
         // Handle the response
         if ($response->successful()) {
             return $response->json(); // Return the API data
@@ -179,4 +178,3 @@ class ZohoService
 
     
 }
-
