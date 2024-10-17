@@ -47,7 +47,7 @@ class ZohoController extends Controller
     {
         
             $plans = $this->zohoService->getZohoPlans();
-        
+    
             // Check if 'plans' is nested inside another key (adjust based on API response structure)
             if (isset($plans['plans'])) {
 
@@ -69,7 +69,101 @@ class ZohoController extends Controller
             }
        // }
 
-        return redirect(route("plan"));
+        return redirect(route("plantest"));
+    }
+    function plantest()
+    {
+        $response['plans'] = $this->plan->all();
+      
+        return view("plan")->with($response);
+    }
+    public function plandb()
+    {
+        // Fetch all plans from the 'plans' table
+        $plans = Plan::all();
+    
+        // Pass the plans to the view
+        return view('plan', compact('plans'));
+    }
+    public function create()
+    {
+        // Return the view where the form is located
+        return view('plans.create');
+    }
+
+    public function storeplan(Request $request)
+    {
+        // Validate the request
+        $validated = $request->validate([
+            'plan_name' => 'required|string|max:255',
+            'plan_price' => 'required|numeric',
+            'plan_code' => 'required|string|max:255',
+        ]);
+
+        $existingPlan= Plan::where('plan_name',  $validated['plan_name'])
+        ->where('plan_code',  $validated['plan_code'])
+        ->first();
+        
+        if (!$existingPlan) {
+            
+            $plan = Plan::create([
+                
+                'plan_name' => $validated['plan_name'],
+                'plan_price' => $validated['plan_price'],
+                'plan_code' => $validated['plan_name'],
+            ]);
+
+        $zohoPlanId = $this->createPlanInZoho($plan);
+      
+        $plan->plan_id = $zohoPlanId;
+     
+         $plan->save();
+        }
+        else{
+            foreach ($validated as $key => $value) {
+                if (!is_null($value)) {
+                    $existingPlan->$key = $value;
+                }
+            }
+        }
+        return redirect(route("plantest"));
+       
+            // Handle errors
+        
+    }
+
+    private function createPlanInZoho($plan)
+    {
+        // Get the Zoho access token
+        $accessToken = $this->zohoService->getAccessToken();
+
+        // Define the plan_code (Zoho requires this to be a unique identifier)
+      // You can generate this dynamically or have custom logic
+
+        // Make a POST request to Zoho API to create the plan
+        $response = Http::withHeaders([
+            'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
+            'Content-Type'  => 'application/json',
+            'organization_id' => config('services.zoho.zoho_org_id'),
+        ])->post('https://www.zohoapis.com/billing/v1/plans', [
+            'plan_code' => $plan->plan_code,
+            'name' => $plan->plan_name,
+            'recurring_price' => (float) $plan->plan_price, // Ensure price is in correct format (float)
+            'product_id' => '5437538000000088227', // Check if this product_id is correct
+            'interval_unit' => 'months', // Confirm this is the right value
+            'interval' => 1, // Confirm the correct interval
+        ]);
+        
+        // Debugging: Show response details
+       
+
+        // Check if the response is successful
+        if ($response->successful()) {
+            $responseData = $response->json();
+            return $responseData['plan']['plan_id']; // Return Zoho's plan ID
+        } else {
+            throw new \Exception('Zoho API error: ' . $response->body());
+        }
     }
     public function getAllCustomers()
     {
@@ -143,11 +237,7 @@ class ZohoController extends Controller
         return view("cust")->with($response);
     }
 
-    function plan()
-    {
-        $response['plans'] = $this->plan->all();
-        return view("plan")->with($response);
-    }
+    
 
     function showplan()
     {

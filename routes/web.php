@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ZohoController;
+use App\Http\Controllers\PlanController;
 use Illuminate\Support\Facades\Route;
 
 // Route::view(uri: "/", view: "auth.login")->name("login");
@@ -14,7 +15,7 @@ Route::middleware(['auth:web'])->group(function () {
 });
 
 Route::middleware(['auth:admin'])->group(function () {
-    Route::get('/admin/dashboard', [ZohoController::class, 'plan'])->name('admin.dashboard');
+    Route::get('/admin/dashboard', [ZohoController::class, 'plandb'])->name('admin.dashboard');
 });
 
 // Auth::routes();
@@ -42,9 +43,15 @@ Route::post("/register", [AuthController::class, "registerPost"])
 Route::get("/logout", [AuthController::class, "logout"])
     ->name("logout");
 
-Route:: get("/plan", [ZohoController::class, "plan"])
-    ->name("plan");
-
+Route:: get("/plantest", [ZohoController::class, "plantest"])
+    ->name("plantest");
+    
+    Route:: get("/plan", [ZohoController::class, "plandb"])
+    ->name("plandb");
+    Route::get('plans/create', [ZohoController::class, 'create'])
+    ->name('plans.create');
+    Route::post('plans', [ZohoController::class, 'storeplan'])
+    ->name('plans.store');
 Route:: get("/cust", [ZohoController::class, "cust"])
     ->name("cust");
 

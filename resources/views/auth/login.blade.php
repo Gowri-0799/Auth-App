@@ -7,7 +7,7 @@
       <nav class=" bg-clearlink d-flex justify-content-between">
       <div class="container-fluid">
     <span class="navbar-brand p-1">
-    <span class="navbar-brand p-1"><img width="180" height="100" src="/assets/images/logo.png" alt="Testlink Logo"></span>
+    <span class="navbar-brand p-1"><img width="150" height="75" src="/assets/images/Ln_logo.png" alt="Testlink Logo"></span>
     </span>
 </div>
 

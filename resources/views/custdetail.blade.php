@@ -1,6 +1,8 @@
 @extends("layouts.default")
 @section('title', "Customer Detail")
 @section('content')
+<div id="content" class="d-flex justify-content-center align-items-center" style="min-height: 100vh; background-color: #f8f9fc; margin-left: 280px; width: calc(100% - 240px);">
+
     <div class="container mt-5">
         <h2 class="text-center mb-4">Add New Customer</h2>
 
@@ -132,4 +134,5 @@
             <button type="submit" class="btn btn-primary mt-4">Add Customer</button>
         </form>
     </div>
+</div>
 @endsection

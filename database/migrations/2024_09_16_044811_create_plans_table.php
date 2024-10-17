@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('plan_name');
             $table->decimal('plan_price', 8, 2);
             $table->string('plan_code');
-            $table->string('plan_id');
+            $table->string('plan_id')->nullable();
             $table->timestamps();
         });
     }
