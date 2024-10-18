@@ -11,26 +11,26 @@
             </div>
 
             <div class="card-body p-3">
-                <form class="row mb-4 align-items-end" method="GET" action="{{ route('show.support') }}">
+                <form class="row mb-4 align-items-end" method="GET" action="{{ route('support.adfilter') }}">
                     <div class="col-md-2">
-                        <label for="startDate" class="fw-bold" style="font-family: Arial, sans-serif; font-size: 14px;">Start Date</label>
-                        <input type="date" id="startDate" name="startDate" class="form-control" value="{{ request('startDate') }}" style="font-family: Arial, sans-serif; font-size: 14px;">
+                        <label for="startDate" class="fw-bold">Start Date</label>
+                        <input type="date" id="startDate" name="startDate" class="form-control" value="{{ request('startDate') }}">
                     </div>
                     <div class="col-md-2">
-                        <label for="endDate" class="fw-bold" style="font-family: Arial, sans-serif; font-size: 14px;">End Date</label>
-                        <input type="date" id="endDate" name="endDate" class="form-control" value="{{ request('endDate') }}" style="font-family: Arial, sans-serif; font-size: 14px;">
+                        <label for="endDate" class="fw-bold">End Date</label>
+                        <input type="date" id="endDate" name="endDate" class="form-control" value="{{ request('endDate') }}">
                     </div>
                     <div class="col-md-2">
-                        <label for="showEntries" class="fw-bold" style="font-family: Arial, sans-serif; font-size: 14px;">Show</label>
-                        <select id="showEntries" name="show" class="form-select" style="font-family: Arial, sans-serif; font-size: 14px;">
+                        <label for="showEntries" class="fw-bold">Show</label>
+                        <select id="showEntries" name="show" class="form-select">
                             <option value="10" {{ request('show') == 10 ? 'selected' : '' }}>10</option>
                             <option value="25" {{ request('show') == 25 ? 'selected' : '' }}>25</option>
                             <option value="50" {{ request('show') == 50 ? 'selected' : '' }}>50</option>
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label for="search" class="fw-bold" style="font-family: Arial, sans-serif; font-size: 14px;">Search</label>
-                        <input type="text" id="search" name="search" class="form-control" placeholder="Search here..." value="{{ request('search') }}" style="font-family: Arial, sans-serif; font-size: 14px;">
+                        <label for="search" class="fw-bold">Search</label>
+                        <input type="text" id="search" name="search" class="form-control" placeholder="Search here..." value="{{ request('search') }}">
                     </div>
                     <div class="col-md-1">
                         <button class="btn button-clearlink text-primary fw-bold" type="submit">Submit</button>
@@ -43,36 +43,36 @@
                     <p class="text-center">No support tickets found.</p>
                 @else
                     <div class="table-responsive">
-                        <table class="table table-hover text-center table-bordered" style="background-color:#fff; width: 100%; max-width: 100%;">
+                        <table class="table table-hover text-center table-bordered">
                             <thead class="table-light">
                                 <tr>
-                                    <th style="background-color:#EEF3FB;">#</th>
-                                    <th style="background-color:#EEF3FB;">Date</th>
-                                    <th style="background-color:#EEF3FB;">Request Type</th>
-                                    <th style="background-color:#EEF3FB;">Subscription Number</th>
-                                    <th style="background-color:#EEF3FB;">Company Name</th>
-                                    <th style="background-color:#EEF3FB;">Message</th>
-                                    <th style="background-color:#EEF3FB;">Status</th>
+                                    <th>#</th>
+                                    <th>Date</th>
+                                    <th>Request Type</th>
+                                    <th>Subscription Number</th>
+                                    <th>Company Name</th>
+                                    <th>Message</th>
+                                    <th>Status</th>
                                 </tr>
                             </thead>
                             <tbody>
-                            @foreach($supports as $index => $ticket)
-    <tr>
-        <td>{{ $index + 1 }}</td>
-        <td>{{ \Carbon\Carbon::parse($ticket->date)->format('d-M-Y') }}</td>
-        <td>{{ $ticket->request_type }}</td>
-        <td>{{ $ticket->subscription_number }}</td>
-        <td>{{ $customers->company_name }}</td>
-        <td>{{ $ticket->message }}</td>
-        <td class="p-2 status">
-            @if(strtolower($ticket->status) == 'open')
-                <span class="badge-success">Open</span>
-            @else
-                <span class="badge-fail">Closed</span>
-            @endif
-        </td>
-    </tr>
-@endforeach
+                                @foreach($supports as $index => $ticket)
+                                    <tr>
+                                        <td>{{ $index + 1 }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($ticket->date)->format('d-M-Y') }}</td>
+                                        <td>{{ $ticket->request_type }}</td>
+                                        <td>{{ $ticket->subscription_number }}</td>
+                                        <td>{{ $customer->company_name }}</td>
+                                        <td>{{ $ticket->message }}</td>
+                                        <td>
+                                            @if(strtolower($ticket->status) == 'open')
+                                                <span class="badge-success">Open</span>
+                                            @else
+                                                <span class="badge-fail">Closed</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
                             </tbody>
                         </table>
                     </div>
@@ -107,19 +107,25 @@
     </div>
 </div>
 
+<!-- Ensure jQuery is included -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 <script>
     $(document).ready(function() {
+        // Click event to show the create ticket form
         $('#createTicketBtn').click(function(e) {
             e.preventDefault();
-            $('#overlay').show();
-            $('#createTicketForm').fadeIn();
+            console.log('Create Ticket button clicked'); // Debugging log to ensure the button is working
+            $('#overlay').show();  // Show the overlay
+            $('#createTicketForm').show();  // Show the modal form
         });
 
+        // Click event to close the create ticket form
         $('#closeFormBtn, #overlay').click(function(e) {
             e.preventDefault();
-            $('#overlay').hide();
-            $('#createTicketForm').fadeOut();
+            console.log('Close button clicked'); // Debugging log to ensure close button works
+            $('#overlay').hide();  // Hide the overlay
+            $('#createTicketForm').hide();  // Hide the modal form
         });
     });
 </script>
@@ -145,6 +151,26 @@
         padding: 1rem;
         border-radius: 8px;
         box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+    }
+
+    .badge-success {
+        color: white;
+        background-color: #28a745;
+        padding: 5px 10px;
+        border-radius: 5px;
+    }
+
+    .badge-fail {
+        color: white;
+        background-color: #dc3545;
+        padding: 5px 10px;
+        border-radius: 5px;
     }
 </style>
 @endsection

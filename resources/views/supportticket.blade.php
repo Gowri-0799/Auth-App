@@ -5,9 +5,12 @@
 <div id="content" class="p-3" style="background-color: #f8f9fc; margin-left: 240px; width: calc(100% - 220px);">
     <div class="container-fluid mt-3">
         <div class="card shadow-sm border-0 rounded-lg">
-            
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h2 class="mb-0" style="font-size: 30px;">Support Tickets</h2>
+            </div>
             <div class="card-body p-3">
-                <form class="row mb-4 align-items-end" method="GET" action="{{ route('show.support') }}">
+                <!-- Filter Form -->
+                <form class="row mb-4 align-items-end" method="GET" action="{{ route('support.adfilter') }}">
                     <div class="col-md-2">
                         <label for="startDate" class="fw-bold" style="font-family: Arial, sans-serif; font-size: 14px;">Start Date</label>
                         <input type="date" id="startDate" name="startDate" class="form-control" value="{{ request('startDate') }}" style="font-family: Arial, sans-serif; font-size: 14px;">
@@ -33,8 +36,9 @@
                     </div>
                 </form>
 
-                <a href="{{ route('show.support') }}" class="btn text-primary text-decoration-underline fw-bold p-0 mb-3">Reset</a>
+                <a href="{{ route('Support.Ticket') }}" class="btn text-primary text-decoration-underline fw-bold p-0 mb-3">Reset</a>
 
+                <!-- Display the table or message if no tickets are found -->
                 @if($supports->count() == 0)
                     <p class="text-center">No support tickets found.</p>
                 @else
@@ -48,41 +52,40 @@
                                     <th style="background-color:#EEF3FB;">Subscription Number</th>
                                     <th style="background-color:#EEF3FB;">Company Name</th>
                                     <th style="background-color:#EEF3FB;">Message</th>
+                                    <th style="background-color:#EEF3FB;">Comments</th> <!-- New Comments Column -->
                                     <th style="background-color:#EEF3FB;">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
-                            @foreach($supports as $index => $ticket)
-    <tr>
-        <td>{{ $index + 1 }}</td>
-        <td>{{ \Carbon\Carbon::parse($ticket->date)->format('d-M-Y') }}</td>
-        <td>{{ $ticket->request_type }}</td>
-        <td>{{ $ticket->subscription_number }}</td>
-        <td>{{ $customers->company_name }}</td>
-        <td>{{ $ticket->message }}</td>
-        <td class="p-2 status">
-            @if(strtolower($ticket->status) == 'open')
-                <span class="badge-success">Open</span>
-            @else
-                <span class="badge-fail">Closed</span>
-            @endif
-        </td>
-    </tr>
-@endforeach
+                                @foreach($supports as $index => $ticket)
+                                    <tr>
+                                        <td>{{ $index + 1 }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($ticket->date)->format('d-M-Y') }}</td>
+                                        <td>{{ $ticket->request_type }}</td>
+                                        <td>{{ $ticket->subscription_number }}</td>
+                                        <td>{{ $ticket->company_name }}</td>
+                                        <td>{{ $ticket->message }}</td>
+                                        <td>
+                                            <!-- Revoke button with placeholder for future comment functionality -->
+                                            <a href="#" class="btn btn-sm btn-warning">Revoke</a>
+                                        </td>
+                                        <td class="p-2 status">
+                                            @if(strtolower($ticket->status) == 'open')
+                                                <span class="badge-success">Open</span>
+                                            @else
+                                                <span class="badge-fail">Closed</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
                             </tbody>
                         </table>
-                    </div>
-
-                    <div class="mt-4">
-                        {{ $supports->appends(request()->query())->links() }}
                     </div>
                 @endif
             </div>
         </div>
     </div>
 </div>
-
-
 
 <style>
     .overlay {

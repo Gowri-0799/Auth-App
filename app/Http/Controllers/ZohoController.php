@@ -1360,35 +1360,38 @@ public function filtercredits(Request $request)
 }
 public function showCustomerSupport(Request $request)
 {
+    // Get the logged-in customer's email from the session
     $customer = Customer::where('customer_email', Session::get('user_email'))->first();
 
+    // Check if the customer exists
     if (!$customer) {
         return back()->withErrors('Customer not found.');
     }
 
     // Start building the query for support tickets
-    $supports = Support::where('zoho_cust_id', $customer->zohocust_id);
-    $customers = Customer::where('zohocust_id', $supports->first()->zoho_cust_id)->first();
-    // Apply date filters if they are provided
+    $supportsQuery = Support::where('zoho_cust_id', $customer->zohocust_id);
+
+    // Apply date filters if provided
     if ($request->filled('startDate')) {
-        $supports->whereDate('date', '>=', $request->startDate);
+        $supportsQuery->whereDate('date', '>=', $request->startDate);
     }
 
     if ($request->filled('endDate')) {
-        $supports->whereDate('date', '<=', $request->endDate);
+        $supportsQuery->whereDate('date', '<=', $request->endDate);
     }
 
-    // Apply search filter if a search term is provided
+    // Apply search filter for request_type if provided
     if ($request->filled('search')) {
-        $supports->where('request_type', 'like', '%' . $request->search . '%');
+        $supportsQuery->where('request_type', 'like', '%' . $request->search . '%');
     }
 
-    // Get the results, you can also paginate if needed
-    $supports = $supports->paginate($request->input('show', 10)); // Default to 10 results per page
+    // Paginate results based on user input, default is 10
+    $supports = $supportsQuery->paginate($request->input('show', 10));
 
-    // Pass the supports variable to the view
-    return view('support', compact('supports','customers'));
+    // Pass the customer and supports data to the view
+    return view('support', compact('supports', 'customer'));
 }
+
 
 
 
@@ -1465,34 +1468,61 @@ public function downgrade(Request $request)
     return redirect()->route('customer.subscriptions')->with('success', 'Downgrade request submitted successfully.');
 }
 
-public function supportticket(){
+public function supportticket()
+{
+    // Join the supports table with the customers table to get company name
+    $supports = DB::table('supports')
+        ->join('customers', 'supports.zoho_cust_id', '=', 'customers.zohocust_id')
+        ->select(
+            'supports.*', // All columns from the supports table
+            'customers.company_name' // Company name from the customers table
+        )
+        ->get(); // Retrieve the data
 
-    $customer = Customer::where('customer_email', Session::get('user_email'))->first();
-    if (!$customer) {
-        return back()->withErrors('Customer not found.');
+    // Pass the data to the view
+    return view('supportticket', compact('supports'));
+}
+
+public function supportticketfilter(Request $request)
+{
+    // Get the filter values from the request
+    $startDate = $request->input('startDate');
+    $endDate = $request->input('endDate');
+    $search = $request->input('search');
+    $show = $request->input('show', 10); // Default to showing 10 entries if not provided
+
+    // Base query for joining the supports and customers tables
+    $query = DB::table('supports')
+        ->join('customers', 'supports.zoho_cust_id', '=', 'customers.zohocust_id')
+        ->select(
+            'supports.*', // All columns from the supports table
+            'customers.company_name' // Company name from the customers table
+        );
+
+    // Apply filters if they are provided
+    if ($startDate) {
+        $query->whereDate('supports.date', '>=', $startDate);
+    }
+    if ($endDate) {
+        $query->whereDate('supports.date', '<=', $endDate);
     }
 
-    $subscription = Subscription::where('zoho_cust_id', $customer->zohocust_id)->first();
-    $zohoCustId =  $customer->zohocust_id;
-    
-    $subscriptionNumber =  $subscription->subscription_number;
+    if ($search) {
+        $query->where(function ($q) use ($search) {
+            $q->where('supports.subscription_number', 'LIKE', "%{$search}%")
+              ->orWhere('customers.company_name', 'LIKE', "%{$search}%");
+             
+        });
+    }
 
-    // Store the support ticket
-    Support::create([
-        'date' => now(),
-        'request_type' => 'Custom', // You can set this dynamically if needed
-        'subscription_number' => $subscriptionNumber,
-        'message' => $request->input('message'),
-        'status' => 'open',
-        'zoho_cust_id' => $zohoCustId,
-        'zoho_cpid' => $zohoCustId, // Adjust as needed
-     
-    ]);
+    // Get the results with pagination based on the 'show' value (for how many entries to display per page)
+    $supports = $query->paginate($show);
 
-    // Redirect back to the support page with success message
-    return redirect()->route('show.support')->with('success', 'Support ticket created successfully.');
-    
+    // Pass the filtered data to the view
+    return view('supportticket', compact('supports'));
 }
+
+
 }
 
 

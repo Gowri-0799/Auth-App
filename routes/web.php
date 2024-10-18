@@ -126,4 +126,5 @@ Route::post('/downgrade-plan', [ZohoController::class, 'downgrade'])->name('down
 Route::get('password/reset', [AuthController::class, 'showLinkRequestForm'])->name('password.request');
 Route ::get('/subscriptions/filter', [ZohoController::class, 'filterSubscriptions'])->name('subscriptions.filter');
 Route ::get('/Invoice/filter', [ZohoController::class, 'filteradInvoices'])->name('invoices.adfilter');
+Route ::get('/Support/Ticket/filter', [ZohoController::class, 'supportticketfilter'])->name('support.adfilter');
 
