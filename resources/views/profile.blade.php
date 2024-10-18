@@ -1,6 +1,8 @@
 @extends('layouts.admin')
 @section('title', 'Dashboard')
 @section('content')
+<div id="content" class="d-flex justify-content-center align-items-center" style="min-height: 100vh; background-color: #f8f9fc; margin-left: 280px; width: calc(100% - 240px);">
+
 <div class="container mt-5">
     <div class="row">
         <!-- Profile Section -->
@@ -132,4 +134,6 @@
         </div>
     </div>
 </div>
+</div>
 @endsection
+

@@ -46,13 +46,13 @@
                         <table class="table table-hover text-center table-bordered">
                             <thead class="table-light">
                                 <tr>
-                                    <th>#</th>
-                                    <th>Date</th>
-                                    <th>Request Type</th>
-                                    <th>Subscription Number</th>
-                                    <th>Company Name</th>
-                                    <th>Message</th>
-                                    <th>Status</th>
+                                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">#</th>
+                                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Date</th>
+                                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Request Type</th>
+                                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Subscription Number</th>
+                                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Company Name</th>
+                                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Message</th>
+                                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Status</th>
                                 </tr>
                             </thead>
                             <tbody>

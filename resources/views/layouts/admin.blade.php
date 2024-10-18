@@ -160,7 +160,7 @@
                         </a>
                     </li>
                     <li class="sidebar-item">
-                        <a href="#" class="sidebar-link">
+                        <a href=" {{ route('customer.details') }}" class="sidebar-link">
                             <span>Profile</span>
                         </a>
                     </li>
@@ -206,11 +206,7 @@
 </li>
 
 
-                    <li class="sidebar-item">
-                        <a href="https://socxly.co/clearlink-isp-partner-portal" id="sidebarMenu-appguide" class="sidebar-link" target="_blank">
-                            <span>Portal Walkthrough</span>
-                        </a>
-                    </li>
+                  
                 </ul>
                 <div class="bottom-footer">
                     <hr class="line mt-0">

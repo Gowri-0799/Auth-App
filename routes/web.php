@@ -66,7 +66,7 @@ Route:: get("/SupportTicket", [ZohoController::class, "supportticket"])
  Route::get('/customer/details', [ZohoController::class, 'showCustomerDetails'])
      ->name('customer.details');
 
-     Route::put('/customers/{zohocust_id}/update-address', [ZohoController::class, 'addupdate'])->name('customers.addupdate');
+Route::put('/customers/{zohocust_id}/update-address', [ZohoController::class, 'addupdate'])->name('customers.addupdate');
 
 
 Route::get('/customers',[ZohoController::class, "getAllCustomers"])

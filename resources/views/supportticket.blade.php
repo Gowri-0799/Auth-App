@@ -10,7 +10,7 @@
             </div>
             <div class="card-body p-3">
                 <!-- Filter Form -->
-                <form class="row mb-4 align-items-end" method="GET" action="{{ route('support.adfilter') }}">
+                <form class="row mb-4 align-items-end" method="GET" action="{{ route('support.adfilter') }}" style="margin-top: 20px;"> <!-- Added margin-top here -->
                     <div class="col-md-2">
                         <label for="startDate" class="fw-bold" style="font-family: Arial, sans-serif; font-size: 14px;">Start Date</label>
                         <input type="date" id="startDate" name="startDate" class="form-control" value="{{ request('startDate') }}" style="font-family: Arial, sans-serif; font-size: 14px;">
@@ -46,14 +46,14 @@
                         <table class="table table-hover text-center table-bordered" style="background-color:#fff; width: 100%; max-width: 100%;">
                             <thead class="table-light">
                                 <tr>
-                                    <th style="background-color:#EEF3FB;">#</th>
-                                    <th style="background-color:#EEF3FB;">Date</th>
-                                    <th style="background-color:#EEF3FB;">Request Type</th>
-                                    <th style="background-color:#EEF3FB;">Subscription Number</th>
-                                    <th style="background-color:#EEF3FB;">Company Name</th>
-                                    <th style="background-color:#EEF3FB;">Message</th>
-                                    <th style="background-color:#EEF3FB;">Comments</th> <!-- New Comments Column -->
-                                    <th style="background-color:#EEF3FB;">Status</th>
+                                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">#</th>
+                                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Date</th>
+                                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Request Type</th>
+                                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Subscription Number</th>
+                                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Company Name</th>
+                                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Message</th>
+                                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Comments</th> <!-- New Comments Column -->
+                                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -67,7 +67,7 @@
                                         <td>{{ $ticket->message }}</td>
                                         <td>
                                             <!-- Revoke button with placeholder for future comment functionality -->
-                                            <a href="#" class="btn btn-sm btn btn-primary">Revoke</a>
+                                            <a href="#" class="btn btn-sm btn-primary">Revoke</a>
                                         </td>
                                         <td class="p-2 status">
                                             @if(strtolower($ticket->status) == 'open')

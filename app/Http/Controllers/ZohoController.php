@@ -401,25 +401,23 @@ class ZohoController extends Controller
             'last_name' => 'nullable',
             'customer_email' => 'required|email',
             'company_name'=>'required',
-            // Billing Address Validation
-            'billing_attention' => 'nullable|string',
+            
             'billing_street' => 'nullable|string',
             'billing_city' => 'nullable|string',
             'billing_state' => 'nullable|string',
             'billing_country' => 'nullable|string',
             'billing_zip' => 'nullable|string',
-            'billing_fax' => 'nullable|string',
-    
-            // Shipping Address Validation
-            'shipping_attention' => 'nullable|string',
-            'shipping_street' => 'nullable|string',
-            'shipping_city' => 'nullable|string',
-            'shipping_state' => 'nullable|string',
-            'shipping_country' => 'nullable|string',
-            'shipping_zip' => 'nullable|string',
-            'shipping_fax' => 'nullable|string',
+  
+            // // Shipping Address Validation
+            // 'shipping_attention' => 'nullable|string',
+            // 'shipping_street' => 'nullable|string',
+            // 'shipping_city' => 'nullable|string',
+            // 'shipping_state' => 'nullable|string',
+            // 'shipping_country' => 'nullable|string',
+            // 'shipping_zip' => 'nullable|string',
+            // 'shipping_fax' => 'nullable|string',
         ]);
-    
+      
         // Check if a customer with the same name and email exists
         $existingCustomer = Customer::where('customer_name', $validatedData['customer_name'])
             ->where('customer_email', $validatedData['customer_email'])
@@ -437,21 +435,20 @@ class ZohoController extends Controller
                 'company_name' => $validatedData['company_name'],
                 'password' => $defaultPassword,
                 // Billing Address
-                'billing_attention' => $validatedData['billing_attention'],
+                'billing_attention' => $validatedData['customer_name'],
                 'billing_street' => $validatedData['billing_street'],
                 'billing_city' => $validatedData['billing_city'],
                 'billing_state' => $validatedData['billing_state'],
                 'billing_country' => $validatedData['billing_country'],
                 'billing_zip' => $validatedData['billing_zip'],
-                'billing_fax' => $validatedData['billing_fax'],
+               
                 // Shipping Address
-                'shipping_attention' => $validatedData['shipping_attention'],
-                'shipping_street' => $validatedData['shipping_street'],
-                'shipping_city' => $validatedData['shipping_city'],
-                'shipping_state' => $validatedData['shipping_state'],
-                'shipping_country' => $validatedData['shipping_country'],
-                'shipping_zip' => $validatedData['shipping_zip'],
-                'shipping_fax' => $validatedData['shipping_fax'],
+                'shipping_attention' => $validatedData['customer_name'],
+                'shipping_street' => $validatedData['billing_street'],
+                'shipping_city' => $validatedData['billing_city'],
+                'shipping_state' => $validatedData['billing_state'],
+                'shipping_country' => $validatedData['billing_country'],
+                'shipping_zip' => $validatedData['billing_zip'],
             ]);
     
             // Send the new customer to Zoho
@@ -779,20 +776,12 @@ if (!$existingInvoice) {
             'first_name' => 'nullable',
             'last_name' => 'nullable',
             'company_name'=>'required',
-            'shipping_attention' => 'nullable|string',
-            'shipping_street' => 'nullable|string',
-            'shipping_city' => 'nullable|string',
-            'shipping_state' => 'nullable|string',
-            'shipping_country' => 'nullable|string',
-            'shipping_zip' => 'nullable|string',
-            'shipping_fax' => 'nullable|string',
             'billing_attention' => 'nullable|string',
             'billing_street' => 'nullable|string',
             'billing_city' => 'nullable|string',
             'billing_state' => 'nullable|string',
             'billing_country' => 'nullable|string',
             'billing_zip' => 'nullable|string',
-            'billing_fax' => 'nullable|string',
         ]);
     
         // Update only the fields that are provided, keeping the existing data for other fields
@@ -801,20 +790,18 @@ if (!$existingInvoice) {
             'first_name' => $validatedData['first_name'] ?? $customer->first_name,
             'last_name' => $validatedData['last_name'] ?? $customer->last_name,
             'company_name' => $validatedData['company_name'] ?? $customer->company_name,
-            'shipping_attention' => $validatedData['shipping_attention'] ?? $customer->shipping_attention,
-            'shipping_street' => $validatedData['shipping_street'] ?? $customer->shipping_street,
-            'shipping_city' => $validatedData['shipping_city'] ?? $customer->shipping_city,
-            'shipping_state' => $validatedData['shipping_state'] ?? $customer->shipping_state,
-            'shipping_country' => $validatedData['shipping_country'] ?? $customer->shipping_country,
-            'shipping_zip' => $validatedData['shipping_zip'] ?? $customer->shipping_zip,
-            'shipping_fax' => $validatedData['shipping_fax'] ?? $customer->shipping_fax,
+            'shipping_attention' => $validatedData['customer_name'] ?? $customer->customer_name,
+            'shipping_street' => $validatedData['billing_street'] ?? $customer->billing_street,
+            'shipping_city' => $validatedData['billing_city'] ?? $customer->billing_city,
+            'shipping_state' => $validatedData['billing_state'] ?? $customer->billing_state,
+            'shipping_country' => $validatedData['billing_country'] ?? $customer->billing_country,
+            'shipping_zip' => $validatedData['billing_zip'] ?? $customer->billing_zip,
             'billing_attention' => $validatedData['billing_attention'] ?? $customer->billing_attention,
             'billing_street' => $validatedData['billing_street'] ?? $customer->billing_street,
             'billing_city' => $validatedData['billing_city'] ?? $customer->billing_city,
             'billing_state' => $validatedData['billing_state'] ?? $customer->billing_state,
             'billing_country' => $validatedData['billing_country'] ?? $customer->billing_country,
             'billing_zip' => $validatedData['billing_zip'] ?? $customer->billing_zip,
-            'billing_fax' => $validatedData['billing_fax'] ?? $customer->billing_fax,
         ]);
     
         $zohoResponse = $this->updateCustomerInZoho($customer); 
