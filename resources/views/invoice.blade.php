@@ -3,42 +3,91 @@
 
 @section('content')
 <div id="content" class="p-3" style="background-color: #f8f9fc; margin-left: 240px; width: calc(100% - 220px);">
+    <div class="container-fluid mt-3">
+        <div class="card shadow-sm border-0 rounded-lg">
+            <div class="card-header">
+                <h2 class="mb-5" style="font-size: 30px;">All Invoices</h2>
+            </div>
+            
+            <div class="card-body p-3"> 
+                <form class="row mb-4 align-items-end" method="GET" action="{{ route('invoices.adfilter') }}">
+                    <div class="col-md-2">
+                        <label for="startDate" class="form-label fw-bold">Start Date</label>
+                        <input type="date" id="startDate" name="startDate" class="form-control" value="{{ request('startDate') }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="endDate" class="form-label fw-bold">End Date</label>
+                        <input type="date" id="endDate" name="endDate" class="form-control" value="{{ request('endDate') }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="showEntries" class="form-label fw-bold">Show</label>
+                        <select id="showEntries" name="show" class="form-select">
+                            <option value="10" {{ request('show') == 10 ? 'selected' : '' }}>10</option>
+                            <option value="25" {{ request('show') == 25 ? 'selected' : '' }}>25</option>
+                            <option value="50" {{ request('show') == 50 ? 'selected' : '' }}>50</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                       <label for="search" class="form-label fw-bold">Search</label>
+                       <input type="text" id="search" name="search" class="form-control" placeholder="Search here..." value="{{ request('search') }}">
+                    </div>
+                    <div class="col-md-1">
+                        <button class="btn button-clearlink text-primary fw-bold" type="submit">Submit</button>
+                    </div>
+                </form>
 
-<div class="container mt-5">
-    <h2>All Invoices</h2>
+                <a href="{{ route('invdata') }}" class="text-decoration-none mb-3 d-inline-block text-primary">Reset</a>
 
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Invoice ID</th>
-                <th>Invoice Date</th>
-                <th>Invoice Number</th>
-                <th>Subscription ID</th>
-                <th>Credits Applied</th>
-                <th>Discount</th>
-                <th>Payment Made</th>
-                <th>Payment Method</th>
-                <th>Invoice Link</th>
-                <th>Zoho Customer ID</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($invoices as $invoice)
-            <tr>
-                <td>{{ $invoice->invoice_id }}</td>
-                <td>{{ $invoice->invoice_date->format('Y-m-d H:i:s') }}</td> <!-- Format date as needed -->
-                <td>{{ $invoice->invoice_number }}</td>
-                <td>{{ $invoice->subscription_id }}</td>
-                <td>{{ number_format($invoice->credits_applied, 2) }}</td>
-                <td>{{ number_format($invoice->discount, 2) }}</td>
-                <td>{{ number_format($invoice->payment_made, 2) }}</td>
-                <td>{{ $invoice->payment_method }}</td>
-                <td><a href="{{ $invoice->invoice_link }}" target="_blank">View Invoice</a></td>
-                <td>{{ $invoice->zoho_cust_id }}</td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
-</div>
+                @if($invoices->count() == 0)
+    <p class="text-center">No invoices found.</p>
+@else
+    <div class="table-responsive">
+        <table class="table table-hover text-center table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">#</th>
+                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Invoice Date</th>
+                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Invoice Number</th>
+                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Payment Mode</th>
+                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Company Name</th>
+                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Plan Name</th>
+                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Plan Price (USD)</th>
+                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Invoice Price (USD)</th>
+                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Credits Applied (USD)</th>
+                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Payment Received (USD)</th>
+                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($invoices as $index => $invoice)
+                    <tr>
+                        <td>{{ (int)$index + 1 }}</td>
+                        <td>{{ \Carbon\Carbon::parse($invoice->invoice_date)->format('d-M-Y') }}</td>
+                        <td>{{ $invoice->invoice_number }}</td>
+
+                        <td>{{ $invoice->payment_mode ?? 'N/A' }}</td>
+                        <td>{{ $invoice->company_name ?? 'N/A' }}</td> <!-- Display company name -->
+                        <td>{{ $invoice->plan_name ?? 'N/A' }}</td> <!-- Display plan name -->
+                        <td>{{ number_format($invoice->plan_price, 2) }}</td>
+                        <td>{{ number_format($invoiceItems[0]['price'] ?? 0, 2) }}</td>
+                        <td>{{ number_format($invoice->credits_applied, 2) }}</td>
+                        <td>{{ number_format($invoice->payment_made, 2) }}</td>
+                        <td>
+                            @if(strtolower($invoice->status) == 'paid')
+                                <span class="badge-success">Paid</span>
+                            @else
+                                <span class="badge-fail">Pending</span>
+                            @endif
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+@endif
+
+            </div>
+        </div>
+    </div>
 </div>
 @endsection

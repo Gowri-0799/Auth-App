@@ -124,3 +124,6 @@ Route::post('/tickets/store', [ZohoController::class, 'ticketstore'])->name('tic
 Route::get('/support', [ZohoController::class, 'showCustomerSupport'])->name('show.support');
 Route::post('/downgrade-plan', [ZohoController::class, 'downgrade'])->name('downgrade_plan');
 Route::get('password/reset', [AuthController::class, 'showLinkRequestForm'])->name('password.request');
+Route ::get('/subscriptions/filter', [ZohoController::class, 'filterSubscriptions'])->name('subscriptions.filter');
+Route ::get('/Invoice/filter', [ZohoController::class, 'filteradInvoices'])->name('invoices.adfilter');
+

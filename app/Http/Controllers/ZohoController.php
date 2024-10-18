@@ -259,15 +259,127 @@ class ZohoController extends Controller
     }
     function showsubscription()
     {
-        $subscriptionData ['subscriptions'] = $this->subscription->all();
-        return view("subscription")->with($subscriptionData);
-    }
-    function showinvoice()
-    {
-        $invoiceData ['invoices'] = $this->invoice->all();
-        return view("invoice")->with($invoiceData);
-    }
+        $subscriptions = DB::table('subscriptions')
+        ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
+        ->join('customers', 'subscriptions.zoho_cust_id', '=', 'customers.zohocust_id')
+        ->select(
+            'subscriptions.subscription_id',
+            'subscriptions.subscription_number',
+            'customers.company_name',
+            'plans.plan_name',
+            'plans.plan_price',
+            'subscriptions.start_date',
+            'subscriptions.next_billing_at',
+            'subscriptions.status'
+        )
+        ->get();
 
+       
+    return view('subscription', compact('subscriptions'));
+    }
+    public function filterSubscriptions(Request $request)
+    {
+        // Get the search term and dates
+        $search = $request->input('search');
+        $startDate = $request->input('startDate');
+        $endDate = $request->input('endDate');
+        $perPage = $request->input('show', 10); // Number of entries to show
+    
+        // Start the query for filtering subscriptions
+        $query = DB::table('subscriptions')
+            ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
+            ->join('customers', 'subscriptions.zoho_cust_id', '=', 'customers.zohocust_id')
+            ->select(
+                'subscriptions.subscription_id',
+                'subscriptions.subscription_number',
+                'customers.company_name',
+                'plans.plan_name',
+                'plans.plan_price',
+                'subscriptions.start_date',
+                'subscriptions.next_billing_at',
+                'subscriptions.status'
+            );
+    
+        // Apply the date filters if they exist
+        if ($startDate) {
+            $query->whereDate('subscriptions.start_date', '>=', $startDate);
+        }
+        if ($endDate) {
+            $query->whereDate('subscriptions.start_date', '<=', $endDate);
+        }
+    
+        // Apply the search filter on the plan name
+        if ($search) {
+            $query->where('plans.plan_name', 'LIKE', "%{$search}%");
+        }
+    
+        // Paginate the results
+        $subscriptions = $query->paginate($perPage);
+    
+        // Pass the data back to the view
+        return view('subscription', compact('subscriptions', 'search', 'startDate', 'endDate'));
+    }
+    
+    public function showinvoice()
+    {
+        // Execute the query to fetch invoices along with related plan and customer data
+        $invoices = DB::table('invoices')
+            ->join('customers', 'invoices.zoho_cust_id', '=', 'customers.zohocust_id')
+            ->select(
+                'invoices.*',
+                'customers.company_name',
+                DB::raw("JSON_UNQUOTE(JSON_EXTRACT(invoice_items, '$[0].code')) AS plan_name"), // Extracting plan name from JSON
+                DB::raw("JSON_UNQUOTE(JSON_EXTRACT(invoice_items, '$[0].price')) AS plan_price"),
+                DB::raw("JSON_UNQUOTE(JSON_EXTRACT(payment_details, '$[0].payment_mode')) AS payment_mode")
+            )
+            ->get(); // Retrieve the data
+    
+        // Pass the retrieved invoices to the view
+        return view('invoice', compact('invoices'));
+    }
+    
+    public function filteradInvoices(Request $request)
+    {
+        // Get the search term and date range from the request
+        $search = $request->input('search');
+        $startDate = $request->input('startDate');
+        $endDate = $request->input('endDate');
+        $perPage = $request->input('show', 10); // Default entries to show
+    
+        // Start the query for filtering invoices
+        $query = DB::table('invoices')
+            ->join('customers', 'invoices.zoho_cust_id', '=', 'customers.zohocust_id')
+            ->select(
+                'invoices.*',
+                'customers.company_name',
+                DB::raw("JSON_UNQUOTE(JSON_EXTRACT(invoice_items, '$[0].code')) AS plan_name"), // Extracting plan name from JSON
+                DB::raw("JSON_UNQUOTE(JSON_EXTRACT(invoice_items, '$[0].price')) AS plan_price"),
+                DB::raw("JSON_UNQUOTE(JSON_EXTRACT(payment_details, '$[0].payment_mode')) AS payment_mode")
+            );
+    
+        // Apply date filters if they exist
+        if ($startDate) {
+            $query->whereDate('invoice_date', '>=', $startDate);
+        }
+        if ($endDate) {
+            $query->whereDate('invoice_date', '<=', $endDate);
+        }
+    
+        // Apply search filter on the company name or invoice number
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('invoices.invoice_number', 'LIKE', "%{$search}%")
+                  ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(invoice_items, '$[0].code')) LIKE ?", ["%{$search}%"]); // Searching plan_name from JSON
+            });
+        }
+    
+        // Paginate the results
+        $invoices = $query->paginate($perPage);
+    
+        // Pass the filtered data back to the view
+        return view('invoice', compact('invoices', 'search', 'startDate', 'endDate'));
+    }
+    
 
 
     public function generateAccessTokenAndStore(){
