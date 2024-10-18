@@ -67,7 +67,7 @@
                                         <td>{{ $ticket->message }}</td>
                                         <td>
                                             <!-- Revoke button with placeholder for future comment functionality -->
-                                            <a href="#" class="btn btn-sm btn-warning">Revoke</a>
+                                            <a href="#" class="btn btn-sm btn btn-primary">Revoke</a>
                                         </td>
                                         <td class="p-2 status">
                                             @if(strtolower($ticket->status) == 'open')
