@@ -4,7 +4,7 @@
 <div id="content" class="d-flex justify-content-center align-items-center" style="min-height: 100vh; background-color: #f8f9fc; margin-left: 280px; width: calc(100% - 240px);">
 
     <div class="container mt-5">
-        <h2 class="text-center mb-4">Edit Customer</h2>
+        <h2 class="text-center mb-4">Edit Partner</h2>
 
         @if(session('success'))
             <div class="alert alert-success">
@@ -18,12 +18,9 @@
             @method('PUT')
 
             <!-- Customer Basic Info Section -->
-            <h4>Customer Information</h4>
+            <h4>Partner Information</h4>
             <div class="row">
-                <div class="col-md-4 mb-3">
-                    <label for="display_name" class="form-label">Display Name</label>
-                    <input type="text" class="form-control form-control-sm" id="display_name" name="customer_name" value="{{ $customer->customer_name }}" required>
-                </div>
+               
 
                 <div class="col-md-4 mb-3">
                     <label for="first_name" class="form-label">First Name</label>
@@ -83,7 +80,7 @@
             </div>
 
             <!-- Submit Button -->
-            <button type="submit" class="btn btn-primary mt-4">Update Customer</button>
+            <button type="submit" class="btn btn-primary mt-4">Update Partner</button>
         </form>
     </div>
 </div>

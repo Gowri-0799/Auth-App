@@ -28,7 +28,7 @@ class ZohoService
     {       
         // Get the token from the database
         $token = OauthToken::first();
-        
+       
         if (!$token) {
             // No token found, you need to start the OAuth flow (for first-time login)
             $this->initiateOAuth();

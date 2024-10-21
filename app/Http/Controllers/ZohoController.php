@@ -394,87 +394,57 @@ class ZohoController extends Controller
     }
 
     public function store(Request $request)
-    {
-        // Validate the request data
-        $validatedData = $request->validate([
-            'customer_name' => 'required',
-            'first_name' => 'nullable',
-            'last_name' => 'nullable',
-            'customer_email' => 'required|email',
-            'company_name'=>'required',
-            
-            'billing_street' => 'nullable|string',
-            'billing_city' => 'nullable|string',
-            'billing_state' => 'nullable|string',
-            'billing_country' => 'nullable|string',
-            'billing_zip' => 'nullable|string',
-  
-            // // Shipping Address Validation
-            // 'shipping_attention' => 'nullable|string',
-            // 'shipping_street' => 'nullable|string',
-            // 'shipping_city' => 'nullable|string',
-            // 'shipping_state' => 'nullable|string',
-            // 'shipping_country' => 'nullable|string',
-            // 'shipping_zip' => 'nullable|string',
-            // 'shipping_fax' => 'nullable|string',
-        ]);
-      
-        // Check if a customer with the same name and email exists
-        $existingCustomer = Customer::where('customer_name', $validatedData['customer_name'])
-            ->where('customer_email', $validatedData['customer_email'])
-            ->first();
-    
-        if (!$existingCustomer) {
-            // If no existing customer, create a new one
-            $defaultPassword = Hash::make('soxco123');
-    
-            $customer = Customer::create([
-                'customer_name' => $validatedData['customer_name'],
-                'first_name' => $validatedData['first_name'],
-                'last_name' => $validatedData['last_name'],
-                'customer_email' => $validatedData['customer_email'],
-                'company_name' => $validatedData['company_name'],
-                'password' => $defaultPassword,
-                // Billing Address
-                'billing_attention' => $validatedData['customer_name'],
-                'billing_street' => $validatedData['billing_street'],
-                'billing_city' => $validatedData['billing_city'],
-                'billing_state' => $validatedData['billing_state'],
-                'billing_country' => $validatedData['billing_country'],
-                'billing_zip' => $validatedData['billing_zip'],
-               
-                // Shipping Address
-                'shipping_attention' => $validatedData['customer_name'],
-                'shipping_street' => $validatedData['billing_street'],
-                'shipping_city' => $validatedData['billing_city'],
-                'shipping_state' => $validatedData['billing_state'],
-                'shipping_country' => $validatedData['billing_country'],
-                'shipping_zip' => $validatedData['billing_zip'],
-            ]);
-    
-            // Send the new customer to Zoho
-            $zohoResponse = $this->createCustomerInZoho($customer);
-            $customer->zohocust_id = $zohoResponse;
-            $customer->save();
-    
-        } else {
-            // If the customer exists, update only the fields that have new values
-            foreach ($validatedData as $key => $value) {
-                if (!is_null($value)) {
-                    $existingCustomer->$key = $value;
-                }
-            }
-    
-            // Save the updated customer
-            $existingCustomer->save();
-    
-            // Optionally, you might want to update the customer data in Zoho as well
-            // $this->updateCustomerInZoho($existingCustomer);
-        }
-    
-        return redirect(route('cust'))->with('success', 'Customer processed successfully!');
-    }
-    
+{
+    // Validate the request data, including checking for unique email
+    $validatedData = $request->validate([
+        'first_name' => 'nullable',
+        'last_name' => 'nullable',
+        'customer_email' => 'required|email|unique:customers,customer_email', // Added unique rule
+        'company_name' => 'required',
+        'billing_street' => 'nullable|string',
+        'billing_city' => 'nullable|string',
+        'billing_state' => 'nullable|string',
+        'billing_country' => 'nullable|string',
+        'billing_zip' => 'nullable|string',
+    ], [
+        // Custom error message for existing email
+        'customer_email.unique' => 'The email ID already exists.',
+    ]);
+    $fullName = trim($validatedData['first_name'] . ' ' . $validatedData['last_name']);
+    // No need to check for existing customer, validation handles that
+    $defaultPassword = Hash::make('soxco123');
+
+    $customer = Customer::create([
+        'customer_name' =>  $fullName,
+        'first_name' => $validatedData['first_name'],
+        'last_name' => $validatedData['last_name'],
+        'customer_email' => $validatedData['customer_email'],
+        'company_name' => $validatedData['company_name'],
+        'password' => $defaultPassword,
+        // Billing Address
+        'billing_attention' => $fullName,
+        'billing_street' => $validatedData['billing_street'],
+        'billing_city' => $validatedData['billing_city'],
+        'billing_state' => $validatedData['billing_state'],
+        'billing_country' => $validatedData['billing_country'],
+        'billing_zip' => $validatedData['billing_zip'],
+        // Shipping Address
+        'shipping_attention' =>$fullName,
+        'shipping_street' => $validatedData['billing_street'],
+        'shipping_city' => $validatedData['billing_city'],
+        'shipping_state' => $validatedData['billing_state'],
+        'shipping_country' => $validatedData['billing_country'],
+        'shipping_zip' => $validatedData['billing_zip'],
+    ]);
+
+    // Send the new customer to Zoho
+    $zohoResponse = $this->createCustomerInZoho($customer);
+    $customer->zohocust_id = $zohoResponse;
+    $customer->save();
+
+    return redirect(route('cust'))->with('success', 'Customer added successfully!');
+}
+
   
 
     private function createCustomerInZoho($customer)
@@ -613,7 +583,7 @@ class ZohoController extends Controller
        
         if ($response->successful()) {
             $hostedPageData = $response->json();
-          dd($hostedPageData);
+         
                 $this->upgradeSubscriptionData($hostedPageData); // Pass the JSON data to store it
                 return view('thanks');
         } else {
@@ -773,7 +743,7 @@ if (!$existingInvoice) {
     
         // Validate the request data
         $validatedData = $request->validate([
-            'customer_name' => 'required',
+            
             'first_name' => 'nullable',
             'last_name' => 'nullable',
             'company_name'=>'required',
@@ -784,20 +754,20 @@ if (!$existingInvoice) {
             'billing_country' => 'nullable|string',
             'billing_zip' => 'nullable|string',
         ]);
-    
+        $fullName = trim($validatedData['first_name'] . ' ' . $validatedData['last_name']);
         // Update only the fields that are provided, keeping the existing data for other fields
         $customer->update([
-            'customer_name' => $validatedData['customer_name'],
+            'customer_name' =>  $fullName ,
             'first_name' => $validatedData['first_name'] ?? $customer->first_name,
             'last_name' => $validatedData['last_name'] ?? $customer->last_name,
             'company_name' => $validatedData['company_name'] ?? $customer->company_name,
-            'shipping_attention' => $validatedData['customer_name'] ?? $customer->customer_name,
+            'shipping_attention' =>  $fullName ?? $customer->customer_name,
             'shipping_street' => $validatedData['billing_street'] ?? $customer->billing_street,
             'shipping_city' => $validatedData['billing_city'] ?? $customer->billing_city,
             'shipping_state' => $validatedData['billing_state'] ?? $customer->billing_state,
             'shipping_country' => $validatedData['billing_country'] ?? $customer->billing_country,
             'shipping_zip' => $validatedData['billing_zip'] ?? $customer->billing_zip,
-            'billing_attention' => $validatedData['billing_attention'] ?? $customer->billing_attention,
+            'billing_attention' => $fullName  ?? $customer->billing_attention,
             'billing_street' => $validatedData['billing_street'] ?? $customer->billing_street,
             'billing_city' => $validatedData['billing_city'] ?? $customer->billing_city,
             'billing_state' => $validatedData['billing_state'] ?? $customer->billing_state,

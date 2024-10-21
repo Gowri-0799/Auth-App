@@ -158,7 +158,7 @@
                     </li> -->
                     <li class="sidebar-item">
                         <a href="{{ route('customers') }}" class="sidebar-link">
-                            <span>Customers</span>
+                            <span>Partner</span>
                         </a>
                     </li>
                     <li class="sidebar-item">
