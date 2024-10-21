@@ -80,7 +80,7 @@
                                         @endif
                                     </td>
                                     <td>
-                                       <a href="{{ route('pdf.download', $creditnote->creditnote_id) }}" target="_blank" class="btn btn-sm btn-primary">
+                                       <a href="{{ route('pdf.download', $creditnote->creditnote_id) }}"  class="btn btn-sm btn-primary">
                                           Download PDF
                                          </a>
                                     </td>
