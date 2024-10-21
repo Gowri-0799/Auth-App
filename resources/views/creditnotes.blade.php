@@ -79,7 +79,11 @@
                                         <span class="badge-fail">Closed</span>
                                         @endif
                                     </td>
-                                    <td><a href="" target="_blank" class="btn btn-sm btn-primary">Download PDF</a></td> <!-- Added PDF view button -->
+                                    <td>
+                                       <a href="{{ route('pdf.download', $creditnote->creditnote_id) }}" target="_blank" class="btn btn-sm btn-primary">
+                                          Download PDF
+                                         </a>
+                                    </td>
                                 </tr>
                                 @endforeach
                             </tbody>

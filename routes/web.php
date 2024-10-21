@@ -128,3 +128,6 @@ Route ::get('/subscriptions/filter', [ZohoController::class, 'filterSubscription
 Route ::get('/Invoice/filter', [ZohoController::class, 'filteradInvoices'])->name('invoices.adfilter');
 Route ::get('/Support/Ticket/filter', [ZohoController::class, 'supportticketfilter'])->name('support.adfilter');
 
+
+
+Route ::get('/pdt/{creditnote_id}', [ZohoController::class, 'pdfdownload'])->name('pdf.download');

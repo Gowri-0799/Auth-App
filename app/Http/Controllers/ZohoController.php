@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Session;
 use App\Models\Creditnote;
 use Carbon\Carbon;
 use App\Models\Support;
+use Illuminate\Support\Facades\Storage;
 
 class ZohoController extends Controller
 {
@@ -1321,6 +1322,29 @@ public function showCustomerCredits()
     }
 
     return view('creditnotes', compact('creditnotes', 'customers'));
+}
+
+function pdfdownload($creditnote_id)
+{
+   
+     $accessToken = $this->zohoService->getAccessToken();
+
+        $response = Http::withHeaders([
+            'Authorization' => 'Zoho-oauthtoken ' . $accessToken
+        ])->get("https://www.zohoapis.com/billing/v1/creditnotes/{$creditnote_id}?accept=pdf");
+        
+       
+        if ($response->successful()) {
+           
+            $pdfPath = 'credit_note.pdf'; 
+            Storage::disk('local')->put($pdfPath, $response->body());
+        
+            
+            return response()->download(storage_path("app/{$pdfPath}"));
+        } else {
+          
+            return response()->json(['error' => 'Unable to download PDF'], $response->status());
+        }
 }
 
 public function filtercredits(Request $request)
