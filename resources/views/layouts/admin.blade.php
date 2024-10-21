@@ -65,72 +65,50 @@
 
         .badge-success {
             badge-success {
-    background-color: #E1FFDC;
-    color: #159300;
-    padding: 1px 13px 1px 13px;
-    padding-top: 1px;
-    padding-right: 13px;
-    padding-bottom: 1px;
-    padding-left: 13px;
-    border-radius: 6px;
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
-    border-bottom-right-radius: 6px;
-    border-bottom-left-radius: 6px;
-    font-weight: 700;
-}
+                background-color: #E1FFDC;
+                color: #159300;
+                padding: 1px 13px;
+                border-radius: 6px;
+                font-weight: 700;
+            }
         }
 
         .badge-fail {
-    background-color: #FFE7EC;
-    color: #D52B4D;
-    padding: 1px 13px 1px 13px;
-    padding-top: 1px;
-    padding-right: 13px;
-    padding-bottom: 1px;
-    padding-left: 13px;
-    border-radius: 6px;
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
-    border-bottom-right-radius: 6px;
-    border-bottom-left-radius: 6px;
-    font-weight: 700;
-}
-
-
+            background-color: #FFE7EC;
+            color: #D52B4D;
+            padding: 1px 13px;
+            border-radius: 6px;
+            font-weight: 700;
+        }
 
         .card-header {
             background-color: #f8f9fa;
             border-bottom: 2px solid #dee2e6;
         }
-        .text-primary {
-    --bs-text-opacity: 1;
-    color: rgba(var(--bs-primary-rgb), var(--bs-text-opacity)) !important;
-}
-.fw-bold {
-    font-weight: 700 !important;
-}
 
-.text-decoration-underline {
-    text-decoration: underline !important;
-    text-decoration-line: underline !important;
-    text-decoration-thickness: initial !important;
-    text-decoration-style: initial !important;
-    text-decoration-color: initial !important;
-}
-.btn-group-sm>.btn, .btn-sm {
-    --bs-btn-padding-y: 0.25rem;
-    --bs-btn-padding-x: 0.5rem;
-    --bs-btn-font-size: 0.875rem;
-    --bs-btn-border-radius: var(--bs-border-radius-sm);
-}
-.p-2 {
-    padding: .5rem !important;
-    padding-top: 0.5rem !important;
-    padding-right: 0.5rem !important;
-    padding-bottom: 0.5rem !important;
-    padding-left: 0.5rem !important;
-}
+        .text-primary {
+            --bs-text-opacity: 1;
+            color: rgba(var(--bs-primary-rgb), var(--bs-text-opacity)) !important;
+        }
+
+        .fw-bold {
+            font-weight: 700 !important;
+        }
+
+        .text-decoration-underline {
+            text-decoration: underline !important;
+        }
+
+        .btn-group-sm>.btn, .btn-sm {
+            --bs-btn-padding-y: 0.25rem;
+            --bs-btn-padding-x: 0.5rem;
+            --bs-btn-font-size: 0.875rem;
+            --bs-btn-border-radius: var(--bs-border-radius-sm);
+        }
+
+        .p-2 {
+            padding: .5rem !important;
+        }
     </style>
 
 </head>
@@ -141,12 +119,12 @@
         <div class="wrapper">
             <aside id="sidebar" class="expand">
                 <div class="sidebar-logo text-center py-3">
-                <img src="{{ asset('assets/images/Ln_logo.png') }}" alt="Testlink Logo" class="img-fluid" style="width: 50%; height: 80%;">
+                    <img src="{{ asset('assets/images/Ln_logo.png') }}" alt="Testlink Logo" class="img-fluid" style="width: 50%; height: 80%;">
                 </div>
                 <ul class="sidebar-nav">
                     <li class="sidebar-item">
                         <a href="#" class="sidebar-link">
-                            <span>Provider Data </span>
+                            <span>Provider Data</span>
                         </a>
                     </li>
                     <li class="sidebar-item">
@@ -160,54 +138,51 @@
                         </a>
                     </li>
                     <li class="sidebar-item">
-                        <a href=" {{ route('customer.details') }}" class="sidebar-link">
+                        <a href="{{ route('customer.details') }}" class="sidebar-link">
                             <span>Profile</span>
                         </a>
                     </li>
 
                     <li class="sidebar-item">
-    <!-- Plan Management Link -->
-    <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse" data-bs-target="#planManagement" aria-expanded="false" aria-controls="planManagement">
-        <span>Plan Management</span>
-        <span class="ms-1">
-            <i class="fa-solid fa-angle-down"></i>
-        </span>
-    </a>
+                        <!-- Plan Management Link -->
+                        <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse" data-bs-target="#planManagement" aria-expanded="true" aria-controls="planManagement">
+                            <span>Plan Management</span>
+                            <span class="ms-1">
+                                <i class="fa-solid fa-angle-down"></i>
+                            </span>
+                        </a>
 
-    <!-- Submenu for Plan Management -->
-    <ul id="planManagement" class="ms-5 sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-        <!-- Each item has your custom routes -->
-        <li class="sidebar-item">
-            <a href="{{ route('showplan') }}" class="sidebar-link">
-                - Plan Options
-            </a>
-        </li>
-        <li class="sidebar-item">
-            <a href="{{ route('customer.subscriptions') }}" class="sidebar-link">
-                - Plan Subscriptions
-            </a>
-        </li>
-        <li class="sidebar-item">
-            <a href="{{ route('customer.invoices') }}" class="sidebar-link">
-                - Invoices
-            </a>
-        </li>
-        <li class="sidebar-item">
-            <a href="{{ route('customer.credites') }}" class="sidebar-link">
-                - Credit Notes
-            </a>
-        </li>
-        <li class="sidebar-item">
-            <a href="{{route('customer.support')}}" class="sidebar-link">
-                - Support Ticket
-            </a>
-        </li>
-    </ul>
-</li>
-
-
-                  
+                        <!-- Submenu for Plan Management (show by default) -->
+                        <ul id="planManagement" class="ms-5 sidebar-dropdown list-unstyled collapse show" data-bs-parent="#sidebar">
+                            <li class="sidebar-item">
+                                <a href="{{ route('showplan') }}" class="sidebar-link">
+                                    - Plan Options
+                                </a>
+                            </li>
+                            <li class="sidebar-item">
+                                <a href="{{ route('customer.subscriptions') }}" class="sidebar-link">
+                                    - Plan Subscriptions
+                                </a>
+                            </li>
+                            <li class="sidebar-item">
+                                <a href="{{ route('customer.invoices') }}" class="sidebar-link">
+                                    - Invoices
+                                </a>
+                            </li>
+                            <li class="sidebar-item">
+                                <a href="{{ route('customer.credites') }}" class="sidebar-link">
+                                    - Credit Notes
+                                </a>
+                            </li>
+                            <li class="sidebar-item">
+                                <a href="{{ route('customer.support') }}" class="sidebar-link">
+                                    - Support Ticket
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
                 </ul>
+
                 <div class="bottom-footer">
                     <hr class="line mt-0">
                     <div>
@@ -218,7 +193,7 @@
                             <span class="text-dark">{{ session('user_email') }}</span>
                         </a>
                         <a href="/logout" class="sidebar-footer text-center p-0 m-0 mb-4 ms-4 logout">
-                            <span class="btn fw-bold text-primary ">Logout</span>
+                            <span class="btn fw-bold text-primary">Logout</span>
                         </a>
                     </div>
 
@@ -244,39 +219,18 @@
 
     <!-- JavaScript to handle submenu -->
     <script>
-       document.addEventListener('DOMContentLoaded', function() {
-    // Handle the collapse for the "Plan Management" toggle
-    var planManagementToggle = document.querySelector('[data-bs-target="#planManagement"]');
-    
-    planManagementToggle.addEventListener('click', function(e) {
-        var submenu = document.querySelector('#planManagement');
-        if (submenu.classList.contains('show')) {
-            submenu.classList.remove('show');
-        } else {
-            submenu.classList.add('show');
-        }
-        e.preventDefault();
-    });
-});
-            // Ensure submenu items don't close the submenu when clicked
-            const submenuLinks = document.querySelectorAll('#plan-management-submenu .sidebar-link');
-            submenuLinks.forEach(function (link) {
-                link.addEventListener('click', function (e) {
-                    e.stopPropagation(); // Prevent submenu from closing
-                });
-            });
-
+        document.addEventListener('DOMContentLoaded', function() {
             // Highlight active sidebar links
             const sidebarLinks = document.querySelectorAll('.sidebar-link');
 
             function removeActiveClass() {
-                sidebarLinks.forEach(function (link) {
+                sidebarLinks.forEach(function(link) {
                     link.classList.remove('active');
                 });
             }
 
-            sidebarLinks.forEach(function (link) {
-                link.addEventListener('click', function (e) {
+            sidebarLinks.forEach(function(link) {
+                link.addEventListener('click', function(e) {
                     removeActiveClass();
                     this.classList.add('active');
                 });

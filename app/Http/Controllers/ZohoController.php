@@ -612,7 +612,7 @@ class ZohoController extends Controller
        
         if ($response->successful()) {
             $hostedPageData = $response->json();
-           
+          dd($hostedPageData);
                 $this->upgradeSubscriptionData($hostedPageData); // Pass the JSON data to store it
                 return view('thanks');
         } else {
@@ -869,15 +869,22 @@ public function showCustomerSubscriptions()
     // Fetch subscriptions for the customer
     $subscriptions = Subscription::where('zoho_cust_id', $customer->zohocust_id)->first();
     
-    $plans=Plan::where('plan_id',$subscriptions->plan_id)->first();
-    $downgradePlans = Plan::where('plan_price', '<', $plans->plan_price)->get();
-  
-    return view('customerSubscriptions', compact('subscriptions', 'plans','downgradePlans'));
+    // Check if subscriptions exist and fetch corresponding plan details
+    $plans = null;
+    if ($subscriptions) {
+        $plans = Plan::where('plan_id', $subscriptions->plan_id)->first();
+    }
+
+    // Get downgrade plans if subscription exists
+    $downgradePlans = $plans ? Plan::where('plan_price', '<', $plans->plan_price)->get() : [];
+
+    return view('customerSubscriptions', compact('subscriptions', 'plans', 'downgradePlans'));
 }
+
 
 public function showCustomerInvoices()
 {
-    // Assuming you have a session or auth method to get the logged-in customer's email
+    // Get the logged-in customer's email from the session
     $customer = Customer::where('customer_email', Session::get('user_email'))->first();
 
     if (!$customer) {
@@ -886,11 +893,21 @@ public function showCustomerInvoices()
 
     // Fetch invoices for the customer
     $invoices = Invoice::where('zoho_cust_id', $customer->zohocust_id)->get();
-    $subscriptions = Subscription::where('zoho_cust_id', $customer->zohocust_id)->first();
-    $plans=Plan::where('plan_id',$subscriptions->plan_id)->first();
 
-    return view('customerInvoices', compact('invoices','subscriptions', 'plans'));
+    // Fetch the customer's subscription if it exists
+    $subscriptions = Subscription::where('zoho_cust_id', $customer->zohocust_id)->first();
+
+    // Initialize $plans to null in case there is no subscription
+    $plans = null;
+    
+    // Only fetch the plan if a subscription exists
+    if ($subscriptions) {
+        $plans = Plan::where('plan_id', $subscriptions->plan_id)->first();
+    }
+
+    return view('customerInvoices', compact('invoices', 'subscriptions', 'plans'));
 }
+
 
 public function addupdate(Request $request, $id)
     {
@@ -1041,7 +1058,7 @@ public function addupdate(Request $request, $id)
         }
     
         $subscription = Subscription::where('zoho_cust_id', $customer->zohocust_id)->first();
-    // dd($subscription);
+  
         if (!$subscription) {
             return back()->withErrors('Subscription not found.');
         }
@@ -1059,7 +1076,6 @@ public function addupdate(Request $request, $id)
             ],
             'redirect_url' => url('thanks')
         ]);
-    
         if ($response->successful()) {
             $hostedPageData = $response->json();
             $hostedPageUrl = $hostedPageData['hostedpage']['url'];
@@ -1078,7 +1094,7 @@ public function addupdate(Request $request, $id)
     {
         $accessToken = $this->zohoService->getAccessToken();
         $hostedPageId = Session::get('hostedpage_id');
-    
+    // dd($hostedPageId)
         if (!$hostedPageId) {
             return back()->withErrors('Hosted page ID is missing.');
         }
@@ -1091,7 +1107,7 @@ public function addupdate(Request $request, $id)
     
         if ($response->successful()) {
             $hostedPageData = $response->json();
-        //    dd( $hostedPageData);
+           
             // Store the subscription, invoice, and payment details
             $this->upgradeSubscriptionData($hostedPageData);
             //return view('customerSubscriptions');
@@ -1114,17 +1130,7 @@ public function addupdate(Request $request, $id)
         // Fetch the existing subscription by Zoho subscription ID
         $existingSubscription = Subscription::where('subscription_id', $subscriptionData['subscription_id'])->first();
         
-        // Update subscription details
-        /*$existingSubscription->subscription_id = $subscriptionData['subscription_id'];
-        $existingSubscription->subscription_number = $subscriptionData['subscription_number'];
-        $existingSubscription->plan_id = $subscriptionData['plan']['plan_id'];
-        $existingSubscription->invoice_id = $invoiceData['invoice_id'];
-        $existingSubscription->payment_method_id = $paymentMethodId;  // Only update in subscriptions table
-        $existingSubscription->next_billing_at = $subscriptionData['next_billing_at'];
-        $existingSubscription->start_date = $subscriptionData['start_date'];
-        $existingSubscription->zoho_cust_id = $subscriptionData['customer_id'];
-        $existingSubscription->status = $data['status'];
-        $existingSubscription->save();*/
+      
 
         if (!$existingSubscription) {
             $subscription = Subscription::create([
@@ -1293,22 +1299,30 @@ if (!$existingInvoice) {
     return view('customerinvoices', compact('invoices', 'search', 'startDate', 'endDate'));
 }
 
-function showCustomerCredits(){
+public function showCustomerCredits()
+{
+    // Get the logged-in customer's email from the session
     $customer = Customer::where('customer_email', Session::get('user_email'))->first();
 
     if (!$customer) {
         return back()->withErrors('Customer not found.');
     }
 
-    // Fetch invoices for the customer
+    // Fetch credit notes for the customer
     $creditnotes = Creditnote::where('zoho_cust_id', $customer->zohocust_id)->get();
-  
-        // Assuming that all credit notes have the same zoho_cust_id, get the first one
+    
+    // Check if there are any credit notes
+    if ($creditnotes->isEmpty()) {
+        // No credit notes found
+        $customers = null;
+    } else {
+        // Fetch customer details based on the first credit note
         $customers = Customer::where('zohocust_id', $creditnotes->first()->zoho_cust_id)->first();
-   
+    }
 
-    return view('creditnotes',compact('creditnotes','customers'));
+    return view('creditnotes', compact('creditnotes', 'customers'));
 }
+
 public function filtercredits(Request $request)
 {
     // Get the logged-in customer based on their email
@@ -1452,7 +1466,7 @@ public function downgrade(Request $request)
     ]);
 
     // Redirect back with a success message
-    return redirect()->route('customer.subscriptions')->with('success', 'Downgrade request submitted successfully.');
+    return redirect()->route('show.support')->with('success', 'Downgrade request submitted successfully.');
 }
 
 public function supportticket()

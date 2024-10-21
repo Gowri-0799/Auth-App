@@ -82,7 +82,7 @@ Route::post('/generate-access-token', [ZohoController::class, 'generateAccessTok
 // Route::get('/zoho/callback', [ZohoController::class, 'handleZohoCallback'])->name('zoho.callback');
 
 Route::get('/custdetail', [AuthController::class, 'customerdetail'])
-->name('custdetail');
+->name('custdetail'); 
 
 Route::post('/customerdetail', [ZohoController::class, 'store'])->name('customers.store');
 
