@@ -437,7 +437,7 @@ body {
   }
 
   .credit-card {
-    background-image: url('../../img/card01.png');
+    background-image: url('../images/card.jpeg');
     background-repeat: no-repeat;
     background-size: cover;
     width: 320px;

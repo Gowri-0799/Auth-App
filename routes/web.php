@@ -4,6 +4,8 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ZohoController;
 use App\Http\Controllers\PlanController;
+use App\Http\Controllers\ProviderController;
+use App\Http\Controllers\CompanyinfoController;
 use Illuminate\Support\Facades\Route;
 
 // Route::view(uri: "/", view: "auth.login")->name("login");
@@ -66,6 +68,12 @@ Route:: get("admin/Support-Ticket", [ZohoController::class, "supportticket"])
  Route::get('/customer/Profile', [ZohoController::class, 'showCustomerDetails'])
      ->name('customer.details');
 
+
+     Route::get('/customer/ProviderData', [ProviderController::class, 'ProviderData'])
+     ->name('customer.provider');     
+
+     Route::get('/customer/CompanyInfo', [ CompanyinfoController::class, 'companyinfo'])
+     ->name('customer.companyinfo');  
 Route::put('/customers/{zohocust_id}/update-address', [ZohoController::class, 'addupdate'])->name('customers.addupdate');
 
 

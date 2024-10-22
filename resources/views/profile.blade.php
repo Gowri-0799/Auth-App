@@ -12,7 +12,7 @@
         <div class="card w-100 border-0 bg-clearlink rounded mb-3">
           <div class="card-body">
             <h4 class="right-margin">Account Details</h4>
-            <p class="m-0 ">
+            <p class="m-0">
               <i class="fa fa-building right-margin text-primary" aria-hidden="true"></i>
               <strong></strong>
             </p>
@@ -48,7 +48,7 @@
           <div class="card-body right-margin">
             <div class="d-flex flex-row mb-5 justify-content-between">
               <h4 class="ms-3">Users</h4>
-              <a data-bs-toggle="modal" data-bs-target="#addUserModal" class=" btn btn-primary btn-sm me-3">Invite User</a>
+              <a data-bs-toggle="modal" data-bs-target="#addUserModal" class="btn btn-primary btn-sm me-3">Invite User</a>
             </div>
             <div class="d-flex justify-content-center align-items-center"> No secondary users found </div>
           </div>
@@ -58,36 +58,35 @@
     
     <!-- Invite User Modal -->
     <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;"> <!-- Modal width adjusted -->
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="addUserModalLabel">Invite User</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <form action="" method="POST"> 
+            <!-- Form with action, hidden token, and updated fields -->
+            <form action="/invite-user" method="POST">
               @csrf
-              <div class="row">
-                <!-- Smaller input fields -->
-                <div class="col-md-6 mb-3">
-                  <label for="first_name" class="form-label">First Name*</label>
-                  <input type="text" class="form-control form-control-sm" id="first_name" name="first_name" required>
+              <input type="hidden" name="zoho_cust_id" value="4631236000001671132">
+              <div class="mb-3 row">
+                <div class="col-lg">
+                  <input name="first_name" class="ms-2 form-control" placeholder="First Name*" required>
                 </div>
-                <div class="col-md-6 mb-3">
-                  <label for="last_name" class="form-label">Last Name*</label>
-                  <input type="text" class="form-control form-control-sm" id="last_name" name="last_name" required>
+                <div class="col-lg">
+                  <input name="last_name" class="ms-2 form-control" placeholder="Last Name*" required>
                 </div>
               </div>
-              <div class="mb-3">
-                <label for="email" class="form-label">Email*</label>
-                <input type="email" class="form-control form-control-sm" id="email" name="email" required>
-              </div>
-              <div class="mb-3">
-                <label for="phone" class="form-label">Phone Number*</label>
-                <input type="text" class="form-control form-control-sm" id="phone" name="phone" required>
+              <div class="mb-3 row">
+                <div class="col-lg">
+                  <input name="email" class="ms-2 form-control" placeholder="Email*" required>
+                </div>
+                <div class="col-lg">
+                  <input name="phone_number" class="ms-2 form-control" placeholder="Phone Number*" required>
+                </div>
               </div>
               <div class="modal-footer">
-                <button type="submit" class="btn btn-primary">Invite User</button>
+                <input type="submit" class="btn btn-primary text-white w-100 px-3 py-2 rounded" value="Save Changes"> <!-- Full width button -->
               </div>
             </form>
           </div>
@@ -100,7 +99,8 @@
       <div class="col-lg-6">
         <div class="card w-100 border-0 bg-clearlink ">
           <div class="card-body table-responsive right-margin">
-            <h4 class="mb-3">Payment method</h4> @if($payments && $payments->isNotEmpty()) 
+            <h4 class="mb-3">Payment method</h4> 
+            @if($payments && $payments->isNotEmpty()) 
             <table class="table">
               <tbody>
                 <tr>
@@ -128,7 +128,7 @@
                       <span class="badge-success">Active</span>
                    @else
                        <span class="badge-fail">Pending</span>
-                   @endif   
+                  @endif   
                   </td>
                   <td class="pt-4">
                     <div class="col-lg mb-2">
