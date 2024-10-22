@@ -109,6 +109,23 @@
         .p-2 {
             padding: .5rem !important;
         }
+        .modal-content {
+    padding: 20px;
+}
+
+.modal-body {
+    text-align: center;
+}
+
+.form-control-sm {
+    width: 100%;
+    padding: 10px;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: center;
+}
     </style>
 
 </head>

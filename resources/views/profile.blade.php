@@ -1,6 +1,7 @@
 @extends('layouts.admin') 
 @section('title', 'Dashboard') 
 @section('content') 
+
 <div id="content" style="box-sizing: border-box; margin-left: 300px; width: auto; max-width: 1200px;" class="p-3">
   <div class="inner">
     <div class="mb-4 w-100">
@@ -40,6 +41,7 @@
           </div>
         </div>
       </div>
+      
       <!-- Users Section -->
       <div class="col-lg-6">
         <div class="card w-100 border-0 bg-clearlink rounded mb-3">
@@ -53,48 +55,53 @@
         </div>
       </div>
     </div>
-    <!-- Address Update Modal -->
-    <div class="modal fade" id="updateAddressModal" tabindex="-1" aria-labelledby="updateAddressModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
+    
+    <!-- Invite User Modal -->
+    <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="updateAddressModalLabel">Update Address</h5>
+            <h5 class="modal-title" id="addUserModalLabel">Invite User</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <form action="{{ route('customers.addupdate', $customer->zohocust_id) }}" method="POST"> @csrf @method('PUT') <div class="mb-3">
-                <label for="billing_street" class="form-label">Address*</label>
-                <input type="text" class="form-control" id="billing_street" name="billing_street" value="{{ $customer->billing_street }}" required>
+            <form action="" method="POST"> 
+              @csrf
+              <div class="row">
+                <!-- Smaller input fields -->
+                <div class="col-md-6 mb-3">
+                  <label for="first_name" class="form-label">First Name*</label>
+                  <input type="text" class="form-control form-control-sm" id="first_name" name="first_name" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="last_name" class="form-label">Last Name*</label>
+                  <input type="text" class="form-control form-control-sm" id="last_name" name="last_name" required>
+                </div>
               </div>
               <div class="mb-3">
-                <label for="billing_zip" class="form-label">Zip Code*</label>
-                <input type="text" class="form-control" id="billing_zip" name="billing_zip" value="{{ $customer->billing_zip }}" required>
+                <label for="email" class="form-label">Email*</label>
+                <input type="email" class="form-control form-control-sm" id="email" name="email" required>
               </div>
               <div class="mb-3">
-                <label for="billing_city" class="form-label">City*</label>
-                <input type="text" class="form-control" id="billing_city" name="billing_city" value="{{ $customer->billing_city }}" required>
-              </div>
-              <div class="mb-3">
-                <label for="billing_state" class="form-label">State*</label>
-                <input type="text" class="form-control" id="billing_state" name="billing_state" value="{{ $customer->billing_state }}" required>
-              </div>
-              <div class="mb-3">
-                <label for="billing_country" class="form-label">Country*</label>
-                <input type="text" class="form-control" id="billing_country" name="billing_country" value="{{ $customer->billing_country }}" required>
+                <label for="phone" class="form-label">Phone Number*</label>
+                <input type="text" class="form-control form-control-sm" id="phone" name="phone" required>
               </div>
               <div class="modal-footer">
-                <button type="submit" class="btn btn-primary">Update Address</button>
+                <button type="submit" class="btn btn-primary">Invite User</button>
               </div>
             </form>
           </div>
         </div>
       </div>
     </div>
+    
+    <!-- Payment Method Section -->
     <div class="row mb-5">
       <div class="col-lg-6">
         <div class="card w-100 border-0 bg-clearlink ">
           <div class="card-body table-responsive right-margin">
-            <h4 class="mb-3">Payment method</h4> @if($payments && $payments->isNotEmpty()) <table class="table">
+            <h4 class="mb-3">Payment method</h4> @if($payments && $payments->isNotEmpty()) 
+            <table class="table">
               <tbody>
                 <tr>
                   <td colspan="2" style="padding-bottom:20px;">Type</td>
@@ -102,7 +109,9 @@
                   <td>Expiry Date</td>
                   <td>Status</td>
                   <td>Action</td>
-                </tr> @foreach($payments as $payment) <tr>
+                </tr> 
+                @foreach($payments as $payment) 
+                <tr>
                   <td class="pt-4">
                     <i class="fa fa-credit-card"></i>
                   </td>
@@ -115,18 +124,24 @@
                     {{ $payment->expiry_month }}/{{ $payment->expiry_year }}
                   </td>
                   <td class="status pt-4">
-                    <span class="badge {{ $payment->status == 'Active' ? 'bg-success' : 'bg-secondary' }}">
-                      {{ $payment->status }}
-                    </span>
+                  @if(strtolower($payment->status) == 'paid')
+                      <span class="badge-success">Active</span>
+                   @else
+                       <span class="badge-fail">Pending</span>
+                   @endif   
                   </td>
                   <td class="pt-4">
                     <div class="col-lg mb-2">
                       <a href="/payments/{{$payment->zoho_cust_id}}" class="btn btn-primary btn-sm ">Update</a>
                     </div>
                   </td>
-                </tr> @endforeach
+                </tr> 
+                @endforeach
               </tbody>
-            </table> @else <p>No payment methods found for this customer.</p> @endif
+            </table> 
+            @else 
+            <p>No payment methods found for this customer.</p> 
+            @endif
           </div>
         </div>
       </div>
