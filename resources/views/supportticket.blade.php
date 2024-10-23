@@ -69,20 +69,33 @@
                                         <td>{{ $ticket->message }}</td>
                                         
                                         <td class="p-2 status">
-                                            @if(strtolower($ticket->status) == 'open')
-                                                <span class="badge-success">Open</span>
-                                            @else
+                                           @if(strtolower($ticket->status) == 'open')
+                                               <span class="badge-success">Open</span>
+                                           @else
                                                 <span class="badge-fail">Closed</span>
-                                            @endif
+                                           @endif
                                         </td>
                                         <td>
-                                            <!-- Revoke button with placeholder for future comment functionality -->
-                                            <a href="#" class="btn btn-sm btn-primary">Revoke</a>
-                                        </td>
-                                        <td>
-                                            <!-- Revoke button with placeholder for future comment functionality -->
-                                            <a href="#" class="btn button-clearlink text-primary fw-bold" type="submit">Close</a>
-                                        </td>
+                              <!-- Revoke button, disable if status is closed -->
+                              @if(strtolower($ticket->status) == 'completed')
+    <span class="text-muted">Unable to Revoke</span>
+@else
+    <a href="#" class="btn btn-sm btn-primary">Revoke</a>
+@endif
+    </td>
+    <td>
+        <!-- Close button, disable if status is closed -->
+        @if(strtolower($ticket->status) == 'completed')
+        <span class="text-muted">Closed</span>
+           
+        @else
+            <form action="{{ route('downgrade.subscription') }}" method="POST" style="display: inline;">
+                @csrf
+                <input type="hidden" name="plan_code" value="{{ $ticket->plan_code }}">
+                <button type="submit" class="btn btn-primary">Close</button>
+            </form>
+        @endif
+    </td>
                                     </tr>
                                 @endforeach
                             </tbody>

@@ -105,7 +105,7 @@ Route::get('/admin/invoices',[Zohocontroller::class,'showinvoice'])->name('invda
 
 Route::get('/thankyou', [ZohoController::class, 'retrieveHostedPage'])->name('thankyou');
 Route::get('/thanks', [ZohoController::class, 'retrieveRetHostedPage'])->name('thanks');
-
+Route::get('/subdown', [ZohoController::class, 'retrievedowntHostedPage'])->name('subdown');
 
 Route::get('/customer/subscriptions', [ZohoController::class, 'showCustomerSubscriptions'])->name('customer.subscriptions');
 Route::get('/customer/invoices', [ZohoController::class, 'showCustomerInvoices'])->name('customer.invoices');
@@ -122,6 +122,8 @@ Route::get('/zoho/payment/callback', [ZohoController::class, 'handleZohoCallback
 Route::get('/zoho/payment', [ZohoController::class, 'callback'])->name('zoho.call');
 
 Route::post('/upgrade-subscription', [ZohoController::class, 'upgrade'])->name('upgrade.subscription');
+
+Route::post('/downgrade-subscription', [ZohoController::class, 'downgradesub'])->name('downgrade.subscription');
 
 Route::get('/upgrade-custsubscription', [ZohoController::class, 'custsupgrade'])->name('custsupgrade');
 

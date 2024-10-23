@@ -1407,19 +1407,19 @@ public function ticketstore(Request $request)
     
     $subscriptionNumber =  $subscription->subscription_number;
 
-    // Store the support ticket
+ 
     Support::create([
         'date' => now(),
-        'request_type' => 'Custom', // You can set this dynamically if needed
+        'request_type' => 'Custom', 
         'subscription_number' => $subscriptionNumber,
         'message' => $request->input('message'),
         'status' => 'open',
         'zoho_cust_id' => $zohoCustId,
-        'zoho_cpid' => $zohoCustId, // Adjust as needed
+        'zoho_cpid' => $zohoCustId, 
      
     ]);
 
-    // Redirect back to the support page with success message
+  
     return redirect()->route('show.support')->with('success', 'Support ticket created successfully.');
 }
 
@@ -1457,7 +1457,7 @@ public function downgrade(Request $request)
         'subscription_number' => $subscription->subscription_number,
         'message' => 'I would like to downgrade my subscription to the ' . $selectedPlan->plan_name . '. Please contact me with steps to downgrade.',        'status' => 'open',
         'zoho_cust_id' => $customer->zohocust_id,
-        'zoho_cpid' => $customer->zohocust_id, // Adjust as needed
+        'zoho_cpid' =>  $selectedPlan ->plan_id, // Adjust as needed
     ]);
 
     // Redirect back with a success message
@@ -1468,34 +1468,35 @@ public function supportticket()
 {
     // Join the supports table with the customers table to get company name
     $supports = DB::table('supports')
-        ->join('customers', 'supports.zoho_cust_id', '=', 'customers.zohocust_id')
-        ->select(
-            'supports.*', // All columns from the supports table
-            'customers.company_name' // Company name from the customers table
-        )
-        ->get(); // Retrieve the data
+    ->join('customers', 'supports.zoho_cust_id', '=', 'customers.zohocust_id')
+    ->join('plans', 'supports.zoho_cpid', '=', 'plans.plan_id')
+    ->select(
+        'supports.*', 
+        'customers.company_name', 
+         'plans.plan_code'
+    )
+    ->get(); // Retrieve the data
 
-    // Pass the data to the view
-    return view('supportticket', compact('supports'));
-}
 
+return view('supportticket', compact('supports'));
+    }
 public function supportticketfilter(Request $request)
 {
-    // Get the filter values from the request
+   
     $startDate = $request->input('startDate');
     $endDate = $request->input('endDate');
     $search = $request->input('search');
-    $show = $request->input('show', 10); // Default to showing 10 entries if not provided
+    $show = $request->input('show', 10); 
 
-    // Base query for joining the supports and customers tables
+  
     $query = DB::table('supports')
         ->join('customers', 'supports.zoho_cust_id', '=', 'customers.zohocust_id')
         ->select(
-            'supports.*', // All columns from the supports table
-            'customers.company_name' // Company name from the customers table
+            'supports.*', 
+            'customers.company_name' 
         );
 
-    // Apply filters if they are provided
+   
     if ($startDate) {
         $query->whereDate('supports.date', '>=', $startDate);
     }
@@ -1511,12 +1512,232 @@ public function supportticketfilter(Request $request)
         });
     }
 
-    // Get the results with pagination based on the 'show' value (for how many entries to display per page)
+   
     $supports = $query->paginate($show);
 
-    // Pass the filtered data to the view
+    
     return view('supportticket', compact('supports'));
 }
+
+public function downgradesub(Request $request)
+{
+    $accessToken = $this->zohoService->getAccessToken();
+    $customer = Customer::where('customer_email', Session::get('user_email'))->first();
+
+    if (!$customer) {
+        return back()->withErrors('Customer not found.');
+    }
+
+    $subscription = Subscription::where('zoho_cust_id', $customer->zohocust_id)->first();
+
+    if (!$subscription) {
+        return back()->withErrors('Subscription not found.');
+    }
+
+    $planId = $request->input('plan_code');
+
+    $response = Http::withHeaders([
+        'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
+        'Content-Type' => 'application/json'
+    ])->post('https://www.zohoapis.com/billing/v1/hostedpages/updatesubscription', [
+        'organization_id' => config('services.zoho.zoho_org_id'),
+        'subscription_id' => $subscription->subscription_id,
+        'plan' => [
+            'plan_code' => $planId
+        ],
+        'redirect_url' => url('subdown')
+    ]);
+    if ($response->successful()) {
+        $hostedPageData = $response->json();
+        $hostedPageUrl = $hostedPageData['hostedpage']['url'];
+        $hostedPageId = $hostedPageData['hostedpage']['hostedpage_id'];
+
+        // Store the hostedpage_id in the session for retrieval
+        Session::put('hostedpage_id', $hostedPageId);
+        DB::table('supports')
+        ->where('zoho_cust_id', $customer->zohocust_id)
+        ->update([
+            'status' => 'Completed' 
+
+        ]);
+
+        return redirect()->to($hostedPageUrl);
+    } else {
+        return redirect()->back()->withErrors('Failed to upgrade subscription: ' . $response->body());
+    }
+}
+
+public function retrievedowntHostedPage()
+    {
+        $accessToken = $this->zohoService->getAccessToken();
+        $hostedPageId = Session::get('hostedpage_id'); // Retrieve the hostedpage_id from the session
+
+        if (!$hostedPageId) {
+            return back()->withErrors('Hosted page ID is missing.');
+        }
+
+       
+        $response = Http::withHeaders([
+            'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
+            'Content-Type'  => 'application/json'
+        ])->get("https://www.zohoapis.com/billing/v1/hostedpages/{$hostedPageId}");
+       
+        if ($response->successful()) {
+            $hostedPageData = $response->json();
+         
+                $this->downgradeSubscriptionData($hostedPageData); // Pass the JSON data to store it
+                return redirect()->route('Support.Ticket');
+        } else {
+            return back()->withErrors('Error retrieving hosted page data: ' . $response->body());
+        }
+    }
+    public function downgradeSubscriptionData($data)
+    {
+        $subscriptionData = $data['data']['subscription'];
+        $invoiceData = $data['data']['invoice'];
+        $paymentMethodData = $invoiceData['payments'] ?? [];
+        $cardData = $subscriptionData['card'];
+        $paymentMethodId = $cardData['card_id'] ?? ($paymentMethodData['payment_method_id'] ?? null);
+    
+        // Fetch the existing subscription by Zoho subscription ID
+        $existingSubscription = Subscription::where('subscription_id', $subscriptionData['subscription_id'])->first();
+        
+      
+
+        if (!$existingSubscription) {
+            $subscription = Subscription::create([
+           'subscription_id' => $subscriptionData['subscription_id'],
+           'subscription_number' => $subscriptionData['subscription_number'],
+           'plan_id' => $subscriptionData['plan']['plan_id'],
+           'invoice_id' => $invoiceData['invoice_id'],
+           'payment_method_id' => $paymentMethodId,
+           'next_billing_at' => $subscriptionData['next_billing_at'],
+           'start_date' => $subscriptionData['start_date'],
+           'zoho_cust_id' => $subscriptionData['customer_id'],
+           'status' => $data['status'],
+       ]);
+   } else {
+       $existingSubscription->update([
+           'subscription_number' => $subscriptionData['subscription_number'],
+           'plan_id' => $subscriptionData['plan']['plan_id'],
+           'invoice_id' => $invoiceData['invoice_id'],
+           'payment_method_id' => $paymentMethodId,
+           'next_billing_at' => $subscriptionData['next_billing_at'],
+           'start_date' => $subscriptionData['start_date'],
+           'zoho_cust_id' => $subscriptionData['customer_id'],
+           'status' => $data['status'],
+       ]);
+   }
+// Check if an invoice record with the same invoice_id already exists
+$existingInvoice = Invoice::where('invoice_id', $invoiceData['invoice_id'])->first();
+$invoiceItems = json_encode($invoiceData['invoice_items'] ?? []);
+$paymentItems = json_encode($invoiceData['payments'] ?? []);
+if (!$existingInvoice) {
+    // Create a new invoice record if it doesn't already exist
+    Invoice::create([
+        'invoice_id' => $invoiceData['invoice_id'],
+        'invoice_date' => $invoiceData['date'],
+        'invoice_number' => $invoiceData['invoice_number'],
+        'subscription_id' => $subscriptionData['subscription_id'], // Link to subscription
+        'credits_applied' => $invoiceData['credits_applied'],
+        'discount' => $subscription->discount ?? null,
+        'payment_made' => $invoiceData['payment_made'],
+        'payment_method' => $paymentMethodId,
+        'invoice_link' => $invoiceData['invoice_url'],
+        'zoho_cust_id' => $subscriptionData['customer_id'],
+        'invoice_items' => $invoiceItems,
+        'payment_details' => $paymentItems,
+        'status' => $invoiceData['status'],
+    ]);
+} else {
+    // Optionally, update the existing record if needed
+    $existingInvoice->updateOrInsert([
+        'invoice_date' => $invoiceData['date'],
+        'invoice_number' => $invoiceData['invoice_number'],
+        'subscription_id' => $subscriptionData['subscription_id'],
+        'credits_applied' => $invoiceData['credits_applied'],
+        'discount' => $subscription->discount ?? null,
+        'payment_made' => $invoiceData['payment_made'],
+        'payment_method_id' => $paymentMethodId,
+        'invoice_link' => $invoiceData['invoice_url'],
+        'zoho_cust_id' => $subscriptionData['customer_id'],
+        'invoice_items' => $invoiceItems,
+        'status' => $invoiceData['status'],
+    ]);
+}
+
+  // Step 3: Store the credits from the invoice into the 'creditnotes' table
+  $credits = $invoiceData['credits'] ?? [];
+  if (!empty($credits)) {
+      foreach ($credits as $credit) {
+          CreditNote::updateOrCreate(
+              ['creditnote_id' => $credit['creditnote_id']],
+              [
+                  'creditnote_number' => $credit['creditnotes_number'] ?? null,
+                  'credited_date' => $credit['credited_date'] ?? null,
+                  'invoice_number' => $credit['invoice_id'] ?? null,
+                  'zoho_cust_id' => $subscriptionData['customer_id'],
+                  'status' => 'credited', // Assuming this is a credited status
+                  'credited_amount' => $credit['credited_amount'],
+                  'balance' => 0, // Set the balance, or you can modify as per your requirements
+              ]
+          );
+      }
+  }
+        // Step 4: Store payment method data in the 'payments' table (only if payment method exists)
+        if (!empty($paymentMethodData) && isset($subscriptionData['card'])) {
+            $cardData = $subscriptionData['card'];
+            
+            // Check if 'payments' exists in the 'invoice' section and is not empty
+            $invoicePayments = $invoiceData['payments'] ?? [];
+         
+            if (!empty($invoicePayments)) {
+                // Extract payment mode and amount from the first payment record (assuming single payment)
+                $paymentDetails = $invoicePayments[0]; 
+        
+                // Check if a payment record with the same payment_method_id already exists
+                $existingPayment = Payment::where('payment_method_id', $cardData['card_id'])->first();
+        
+                if (!$existingPayment) {
+                    // Create a new payment record if it doesn't already exist
+                    Payment::create([
+                        'payment_method_id' => $cardData['card_id'] ?? null,// Use null if card_id not present
+                        'type' => $cardData['card_type'] ?? null, // Correct field name
+                        'zoho_cust_id' => $subscriptionData['customer_id'],
+                        'last_four_digits' => $cardData['last_four_digits'] ?? null,
+                        'expiry_year' => $cardData['expiry_year'] ?? null,
+                        'expiry_month' => $cardData['expiry_month'] ?? null,
+                        'payment_gateway' => $cardData['payment_gateway'] ?? null,
+                        'status' => $invoiceData['status'],
+                        'payment_mode' => $paymentDetails['payment_mode'] ?? null,  // Extract payment mode from payments array
+                        'amount' => $paymentDetails['amount'] ?? null,              // Extract amount from payments array
+                        'invoice_id' => $invoiceData['invoice_id'],  
+                        'payment_id' =>$paymentDetails['payment_id'],
+ 
+                    ]);
+                } else {
+                    // Optionally, update the existing record if needed
+                    $existingPayment->updateOrInsert([
+                        'payment_method_id' => $paymentDetails['payment_id'] ?? null,
+                        'type' => $cardData['card_type'] ?? null,
+                        'zoho_cust_id' => $subscriptionData['customer_id'],
+                        'last_four_digits' => $cardData['last_four_digits'] ?? null,
+                        'expiry_year' => $cardData['expiry_year'] ?? null,
+                        'expiry_month' => $cardData['expiry_month'] ?? null,
+                        'payment_gateway' => $cardData['payment_gateway'] ?? null,
+                        'status' => $invoiceData['status'],
+                        'payment_mode' => $paymentDetails['payment_mode'] ?? null,  // Extract payment mode from payments array
+                        'amount' => $paymentDetails['amount'] ?? null,              // Extract amount from payments array
+                        'invoice_id' => $invoiceData['invoice_id'],    
+                         'payment_id' =>$paymentDetails['payment_id']
+                    ]);
+                }
+            }
+        }
+
+        // Return success message or redirect as needed
+        return redirect()->route('Support.Ticket')->with('success', 'Subscription successfully completed!');
+    }
 
 
 }
