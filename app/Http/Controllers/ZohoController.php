@@ -166,6 +166,13 @@ class ZohoController extends Controller
             throw new \Exception('Zoho API error: ' . $response->body());
         }
     }
+
+    public function customerdb()
+    {
+        $response['customers'] = $this->customer->all();
+      
+        return view("cust")->with($response);
+    }
     public function getAllCustomers()
     {
         $customers = $this->zohoService->getZohoCustomers();
@@ -397,8 +404,8 @@ class ZohoController extends Controller
     {
         // Validate the request data
         $validatedData = $request->validate([
-            'first_name' => 'nullable|string|unique:customers,first_name',
-            'last_name' => 'nullable|string|unique:customers,Last_name',
+            'first_name' => 'nullable|string',
+            'last_name' => 'nullable|string',
             'customer_email' => 'required|email|unique:customers,customer_email', 
             'company_name' => 'required|string',
             'billing_street' => 'nullable|string',
@@ -408,12 +415,18 @@ class ZohoController extends Controller
             'billing_zip' => 'nullable|string',
         ], [
             'customer_email.unique' => 'The email ID already exists.',
-            'first_name.unique'=>'The Partner Name already exists',
-            'last_name.unique'=>'The Partner Name already exists',
+            
         ]);
     
         $fullName = trim($validatedData['first_name'] . ' ' . $validatedData['last_name']);
-    
+
+        $exists = Customer::where('customer_name', $fullName)->exists();
+
+    if ($exists) {
+        return redirect()->back()->withErrors([
+            'name_combination' => 'The combination of first name and last name already exists.',
+        ])->withInput();
+    }
         $defaultPassword = Hash::make('soxco123');
     
         $customer = Customer::create([
@@ -1449,15 +1462,24 @@ public function downgrade(Request $request)
     if (!$selectedPlan) {
         return back()->withErrors('Plan not found.');
     }
+    $openTicket = Support::where('zoho_cust_id', $customer->zohocust_id)
+        ->where('request_type', 'Downgrade')
+        ->where('status', 'open')
+        ->first();
 
-    // Create the downgrade support ticket
+    if ($openTicket) {
+        // If an open downgrade ticket exists, show an alert message
+        return back()->withErrors('An open downgrade request already exists. Please wait for it to be resolved before submitting another.');
+    }
+
+
     Support::create([
         'date' => now(),
-        'request_type' => 'Downgrade', // Set the request type to Downgrade
+        'request_type' => 'Downgrade', 
         'subscription_number' => $subscription->subscription_number,
         'message' => 'I would like to downgrade my subscription to the ' . $selectedPlan->plan_name . '. Please contact me with steps to downgrade.',        'status' => 'open',
         'zoho_cust_id' => $customer->zohocust_id,
-        'zoho_cpid' =>  $selectedPlan ->plan_id, // Adjust as needed
+        'zoho_cpid' =>  $customer->zohocust_id, 
     ]);
 
     // Redirect back with a success message
@@ -1468,18 +1490,16 @@ public function supportticket()
 {
     // Join the supports table with the customers table to get company name
     $supports = DB::table('supports')
-    ->join('customers', 'supports.zoho_cust_id', '=', 'customers.zohocust_id')
-    ->join('plans', 'supports.zoho_cpid', '=', 'plans.plan_id')
-    ->select(
-        'supports.*', 
-        'customers.company_name', 
-         'plans.plan_code'
-    )
-    ->get(); // Retrieve the data
+        ->join('customers', 'supports.zoho_cust_id', '=', 'customers.zohocust_id')
+        ->select(
+            'supports.*', // All columns from the supports table
+            'customers.company_name' // Company name from the customers table
+        )
+        ->get(); // Retrieve the data
 
-
-return view('supportticket', compact('supports'));
-    }
+    // Pass the data to the view
+    return view('supportticket', compact('supports'));
+}
 public function supportticketfilter(Request $request)
 {
    

@@ -54,7 +54,7 @@ Route:: get("/plantest", [ZohoController::class, "plantest"])
     ->name('plans.create');
     Route::post('plans', [ZohoController::class, 'storeplan'])
     ->name('plans.store');
-Route:: get("admin/customer", [ZohoController::class, "cust"])
+Route:: get("admin/partner", [ZohoController::class, "cust"])
     ->name("cust");
 
 Route:: get("/in", [AuthController::class, "index"])
@@ -76,6 +76,11 @@ Route:: get("admin/support-ticket", [ZohoController::class, "supportticket"])
      ->name('customer.companyinfo');  
 Route::put('/customers/{zohocust_id}/update-address', [ZohoController::class, 'addupdate'])->name('customers.addupdate');
 
+
+
+
+    Route:: get("customers/allcustomer", [ZohoController::class, "customerdb"])
+    ->name("customerdb");
 
 Route::get('customers/allcustomers',[ZohoController::class, "getAllCustomers"])
     ->name("customers");

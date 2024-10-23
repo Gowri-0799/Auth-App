@@ -153,25 +153,35 @@
                 <h5 class="modal-title" id="downgradeModalLabel">Downgrade Plans</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
+
             <div class="modal-body">
-                <form id="downgradeForm" action="{{ route('downgrade_plan') }}" method="POST">
-                    @csrf
-                    <div class="mb-3">
-                        <label for="downgradeSelect" class="form-label">Select a Downgrade Plan</label>
-                        <select class="form-select" id="downgradeSelect" name="plan_id" required>
-                            <option value="" disabled selected>Select a plan...</option>
-                            @foreach($downgradePlans as $downgradePlan)
-                                <option value="{{ $downgradePlan->plan_id }}">{{ $downgradePlan->plan_code }} - ${{ $downgradePlan->plan_price }}</option>
-                            @endforeach
-                        </select>
+            @if($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+            <form id="downgradeForm" action="{{ route('downgrade_plan') }}" method="POST">
+            @csrf
+            <div class="mb-3">
+            <label for="downgradeSelect" class="form-label">Select a Downgrade Plan</label>
+                                      
+                     <div class="d-flex flex-column">
+                      <select id='downgradeSelect' name='plan_id' class="mt-4 form-select-lg border-dark shadow-none" required="" style="width:300px; ">
+                        <option class="py-3" value="" disabled selected>Select a Plan</option>
+                        @foreach($downgradePlans as $downgradePlan)
+                                                <option class="py-3" value="{{ $downgradePlan->plan_id }}">{{ $downgradePlan->plan_code }} - ${{ $downgradePlan->plan_price }}</option>
+                                                @endforeach
+                                              </select>
+                      <input type="submit" class="mt-5 w-25 btn btn-primary rounded" value="Submit">
                     </div>
-                    <button type="submit" class="btn btn-primary" style="padding: 10px 20px; border-radius: 8px; width: auto; text-align: center;">Submit</button>
-                    </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            </div>
-        </div>
+                  </form>
+                </div>
+            
+                
     </div>
 </div>
 

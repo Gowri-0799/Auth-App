@@ -144,7 +144,7 @@
                         </a>
                     </li>
                     <li class="sidebar-item">
-                        <a href="{{ route('customers') }}" class="sidebar-link">
+                        <a href="{{ route('customerdb') }}" class="sidebar-link">
                             <span>Partner</span>
                         </a>
                     </li>

@@ -10,6 +10,12 @@
             Invite Partner
         </a>
         <h2 class="text-center mb-4">Partner Details</h2>
+        @if ($customers->isEmpty())
+            <div class="alert alert-info text-center">
+                No partners available
+            </div>
+        @else
+
         <table class="table table-bordered table-striped">
             <thead class="table-dark">
                 <tr>
@@ -33,6 +39,7 @@
             @endforeach
             </tbody>
         </table>
+        @endif
     </div>
 </div>
 @endsection
