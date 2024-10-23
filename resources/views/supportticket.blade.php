@@ -46,14 +46,16 @@
                         <table class="table table-hover text-center table-bordered" style="background-color:#fff; width: 100%; max-width: 100%;">
                             <thead class="table-light">
                                 <tr>
-                                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">#</th>
+                                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">ID</th>
                                     <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Date</th>
                                     <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Request Type</th>
                                     <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Subscription Number</th>
                                     <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Company Name</th>
                                     <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Message</th>
-                                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Comments</th> <!-- New Comments Column -->
                                     <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Status</th>
+                                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Comments</th> <!-- New Comments Column -->
+                                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Action</th> <!-- New Comments Column -->
+
                                 </tr>
                             </thead>
                             <tbody>
@@ -65,16 +67,21 @@
                                         <td>{{ $ticket->subscription_number }}</td>
                                         <td>{{ $ticket->company_name }}</td>
                                         <td>{{ $ticket->message }}</td>
-                                        <td>
-                                            <!-- Revoke button with placeholder for future comment functionality -->
-                                            <a href="#" class="btn btn-sm btn-primary">Revoke</a>
-                                        </td>
+                                        
                                         <td class="p-2 status">
                                             @if(strtolower($ticket->status) == 'open')
                                                 <span class="badge-success">Open</span>
                                             @else
                                                 <span class="badge-fail">Closed</span>
                                             @endif
+                                        </td>
+                                        <td>
+                                            <!-- Revoke button with placeholder for future comment functionality -->
+                                            <a href="#" class="btn btn-sm btn-primary">Revoke</a>
+                                        </td>
+                                        <td>
+                                            <!-- Revoke button with placeholder for future comment functionality -->
+                                            <a href="#" class="btn button-clearlink text-primary fw-bold" type="submit">Close</a>
                                         </td>
                                     </tr>
                                 @endforeach

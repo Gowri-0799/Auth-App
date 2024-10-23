@@ -60,19 +60,19 @@ Route:: get("admin/customer", [ZohoController::class, "cust"])
 Route:: get("/in", [AuthController::class, "index"])
     ->name("in");
 
-Route::get('admin//plans', [ZohoController::class, "getAllPlans"])
+Route::get('admin/plans', [ZohoController::class, "getAllPlans"])
     ->name('plans');
-Route:: get("admin/Support-Ticket", [ZohoController::class, "supportticket"])
+Route:: get("admin/support-ticket", [ZohoController::class, "supportticket"])
     ->name("Support.Ticket");
 
  Route::get('/customer/Profile', [ZohoController::class, 'showCustomerDetails'])
      ->name('customer.details');
 
 
-     Route::get('/customer/ProviderData', [ProviderController::class, 'ProviderData'])
+     Route::get('/customer/providerdata', [ProviderController::class, 'ProviderData'])
      ->name('customer.provider');     
 
-     Route::get('/customer/CompanyInfo', [ CompanyinfoController::class, 'companyinfo'])
+     Route::get('/customer/companyinfo', [ CompanyinfoController::class, 'companyinfo'])
      ->name('customer.companyinfo');  
 Route::put('/customers/{zohocust_id}/update-address', [ZohoController::class, 'addupdate'])->name('customers.addupdate');
 
@@ -100,17 +100,17 @@ Route::get('/subscribe/{planId}', [ZohoController::class, 'subscribe'])->name('s
 
 Route::get('/payments/{zoho_cust_id}', [ZohoController::class, 'editPayment'])->name('payments.edit');
 
-Route::get('admin/Subscription',[Zohocontroller::class,'showsubscription'])->name('subdata');
-Route::get('/admin/Invoices',[Zohocontroller::class,'showinvoice'])->name('invdata');
+Route::get('admin/subscription',[Zohocontroller::class,'showsubscription'])->name('subdata');
+Route::get('/admin/invoices',[Zohocontroller::class,'showinvoice'])->name('invdata');
 
 Route::get('/thankyou', [ZohoController::class, 'retrieveHostedPage'])->name('thankyou');
 Route::get('/thanks', [ZohoController::class, 'retrieveRetHostedPage'])->name('thanks');
 
 
-Route::get('/customer/Subscriptions', [ZohoController::class, 'showCustomerSubscriptions'])->name('customer.subscriptions');
-Route::get('/customer/Invoices', [ZohoController::class, 'showCustomerInvoices'])->name('customer.invoices');
-Route::get('/customer/CreditNotes', [ZohoController::class, 'showCustomerCredits'])->name('customer.credites');
-Route::get('/customer/Support-Ticket', [ZohoController::class, 'showCustomerSupport'])->name('customer.support');
+Route::get('/customer/subscriptions', [ZohoController::class, 'showCustomerSubscriptions'])->name('customer.subscriptions');
+Route::get('/customer/invoices', [ZohoController::class, 'showCustomerInvoices'])->name('customer.invoices');
+Route::get('/customer/creditNotes', [ZohoController::class, 'showCustomerCredits'])->name('customer.credites');
+Route::get('/customer/support-ticket', [ZohoController::class, 'showCustomerSupport'])->name('customer.support');
 
 
 Route::get('/customers/{zohocust_id}/edit', [ZohoController::class, 'edit'])->name('customers.edit');
@@ -134,7 +134,7 @@ Route::post('/downgrade-plan', [ZohoController::class, 'downgrade'])->name('down
 Route::get('password/reset', [AuthController::class, 'showLinkRequestForm'])->name('password.request');
 Route ::get('/subscriptions/filter', [ZohoController::class, 'filterSubscriptions'])->name('subscriptions.filter');
 Route ::get('/Invoice/filter', [ZohoController::class, 'filteradInvoices'])->name('invoices.adfilter');
-Route ::get('/Support/Ticket/filter', [ZohoController::class, 'supportticketfilter'])->name('support.adfilter');
+Route ::get('/support/ticket/filter', [ZohoController::class, 'supportticketfilter'])->name('support.adfilter');
 
 
 
