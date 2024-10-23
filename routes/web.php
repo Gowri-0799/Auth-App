@@ -65,7 +65,7 @@ Route::get('admin/plans', [ZohoController::class, "getAllPlans"])
 Route:: get("admin/support-ticket", [ZohoController::class, "supportticket"])
     ->name("Support.Ticket");
 
- Route::get('/customer/Profile', [ZohoController::class, 'showCustomerDetails'])
+ Route::get('/customer/profile', [ZohoController::class, 'showCustomerDetails'])
      ->name('customer.details');
 
 
@@ -109,7 +109,7 @@ Route::get('/thanks', [ZohoController::class, 'retrieveRetHostedPage'])->name('t
 
 Route::get('/customer/subscriptions', [ZohoController::class, 'showCustomerSubscriptions'])->name('customer.subscriptions');
 Route::get('/customer/invoices', [ZohoController::class, 'showCustomerInvoices'])->name('customer.invoices');
-Route::get('/customer/creditNotes', [ZohoController::class, 'showCustomerCredits'])->name('customer.credites');
+Route::get('/customer/creditnotes', [ZohoController::class, 'showCustomerCredits'])->name('customer.credites');
 Route::get('/customer/support-ticket', [ZohoController::class, 'showCustomerSupport'])->name('customer.support');
 
 
