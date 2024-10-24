@@ -80,7 +80,7 @@
 
                         {{-- Next Renewal Date --}}
                         <div style="margin-top: 20px;">
-                            <span style="font-size: 16px; color: #888;">Next Renewal Date: 01-Nov-2024</span>
+                            <span style="font-size: 16px; color: #888;">Next Renewal Date: Next Renewal Date: {{ \Carbon\Carbon::parse($nextBillingDate)->format('d-M-Y') }}</span>
                         </div>
                     </div>
 

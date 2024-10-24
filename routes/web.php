@@ -103,6 +103,11 @@ Route::get('/customer',[ZohoController::class,'display']) ->name('cust.display')
 
 Route::get('/subscribe/{planId}', [ZohoController::class, 'subscribe'])->name('subscribe');
 
+
+Route::get('/customer/subscription/details',[ZohoController::class,'thankyousub']) ->name('thankyousub');
+Route::get('/customer/upgrade/details',[ZohoController::class,'thanksup']) ->name('thanksup');
+
+
 Route::get('/payments/{zoho_cust_id}', [ZohoController::class, 'editPayment'])->name('payments.edit');
 
 Route::get('admin/subscription',[Zohocontroller::class,'showsubscription'])->name('subdata');

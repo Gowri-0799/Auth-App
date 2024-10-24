@@ -583,7 +583,7 @@ class ZohoController extends Controller
         // dd($hostedPageData);
             //if (isset($hostedPageData['hostedpage']['data']['invoice']['payments'])) {
                 $this->storeSubscriptionData($hostedPageData); // Pass the JSON data to store it
-                return view('thankyou');
+                return redirect()->route('thankyousub');
             /*} else {
                 return back()->withErrors('Payment method is missing in the response.');
             }*/
@@ -611,8 +611,9 @@ class ZohoController extends Controller
         if ($response->successful()) {
             $hostedPageData = $response->json();
          
-                $this->upgradeSubscriptionData($hostedPageData); // Pass the JSON data to store it
-                return view('thanks');
+                $this->upgradeSubscriptionData($hostedPageData); 
+                return redirect()->route('thanksup');
+              
         } else {
             return back()->withErrors('Error retrieving hosted page data: ' . $response->body());
         }
@@ -741,9 +742,25 @@ if (!$existingInvoice) {
         }
 
         // Return success message or redirect as needed
-        return redirect()->route('thankyou')->with('success', 'Subscription successfully completed!');
+        return redirect()->route('thankyousub')->with('success', 'Subscription successfully completed!');
+    }
+public function thankyousub(){
+    $customer = Customer::where('customer_email', Session::get('user_email'))->first();
+
+    if (!$customer) {
+        return back()->withErrors('Customer not found.');
     }
 
+   
+    $subscriptions = Subscription::where('zoho_cust_id', $customer->zohocust_id)->first();
+    
+    $plans = null;
+    if ($subscriptions) {
+        $plans = Plan::where('plan_id', $subscriptions->plan_id)->first();
+    }
+
+    return view('thankyou', compact('subscriptions', 'plans'));
+}
     public function thankyou()
     {
         return view('thankyou');
@@ -1262,9 +1279,24 @@ if (!$existingInvoice) {
         }
 
         // Return success message or redirect as needed
-        return redirect()->route('thanks')->with('success', 'Subscription successfully completed!');
+        return redirect()->route('thanksup')->with('success', 'Subscription successfully completed!');
     }
-
+    public function thanksup(){
+        $customer = Customer::where('customer_email', Session::get('user_email'))->first();
+    
+        if (!$customer) {
+            return back()->withErrors('Customer not found.');
+        }
+    
+       
+        $subscriptions = Subscription::where('zoho_cust_id', $customer->zohocust_id)->first();
+        
+        $plans = null;
+        if ($subscriptions) {
+            $plans = Plan::where('plan_id', $subscriptions->plan_id)->first();
+        }
+        return view('thanks', compact('subscriptions', 'plans'));
+    }
 
     public function filterInvoices(Request $request)
 {
@@ -1574,14 +1606,15 @@ public function supportticketfilter(Request $request)
     
     return view('supportticket', compact('supports'));
 }
-
 public function downgradesub(Request $request)
 {
     $accessToken = $this->zohoService->getAccessToken();
     
     $subscription_id = $request->input('subscription_id');
     $planId = $request->input('plan_code');
- 
+    $customerName = $request->input('customer_name'); // Get the customer's name
+    $customerEmail = $request->input('customer_email'); // Get the customer's email
+
     $response = Http::withHeaders([
         'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
         'Content-Type' => 'application/json'
@@ -1593,6 +1626,7 @@ public function downgradesub(Request $request)
         ],
         'redirect_url' => url('subdown')
     ]);
+
     if ($response->successful()) {
         $hostedPageData = $response->json();
         $hostedPageUrl = $hostedPageData['hostedpage']['url'];
@@ -1600,15 +1634,17 @@ public function downgradesub(Request $request)
 
         // Store the hostedpage_id in the session for retrieval
         Session::put('hostedpage_id', $hostedPageId);
+        
         DB::table('supports')
-        ->where('zoho_cust_id', $request->input('zoho_cust_id'))
-        ->update([
-            'status' => 'Completed' 
-        ]);
+            ->where('zoho_cust_id', $request->input('zoho_cust_id'))
+            ->update(['status' => 'Completed']);
+
+        // Send the email using Mailgun
+        Mail::to($customerEmail)->send(new SubscriptionDowngrade($customerName, $planId));
 
         return redirect()->to($hostedPageUrl);
     } else {
-        return redirect()->back()->withErrors('Failed to upgrade subscription: ' . $response->body());
+        return redirect()->back()->withErrors('Failed to downgrade subscription: ' . $response->body());
     }
 }
 public function retrievedowntHostedPage()
