@@ -4,8 +4,11 @@
 <div id="content" class="p-3" style="background-color: #f8f9fc; margin-left: 240px; width: calc(100% - 220px);">
 
     <div class="container mt-5">
-   
+    <a href="{{ route('customers') }}" class="btn btn-primary position-absolute top-0 end-0 m-3" style="display: none;">
+            Sync with zoho
+        </a>
     <div class="position-relative">
+   
         <a href="{{ route('cust.display') }}" class="btn btn-primary position-absolute top-0 end-0 m-3">
             Invite Partner
         </a>
@@ -16,13 +19,13 @@
             </div>
         @else
 
-        <table class="table table-bordered table-striped">
-            <thead class="table-dark">
+        <table  class="table table-hover text-center table-bordered" style="background-color: #fff;">
+            <thead class="table-light">
                 <tr>
-                    <th>ID</th>
-                    <th>Partner Name</th>
-                    <th>partner Email</th>
-                    <th>Actions</th> <!-- New column for actions -->
+                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">ID</th>
+                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Partner Name</th>
+                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">partner Email</th>
+                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Actions</th> <!-- New column for actions -->
                 </tr>
             </thead>
             <tbody>

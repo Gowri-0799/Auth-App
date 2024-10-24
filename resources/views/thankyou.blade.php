@@ -10,7 +10,7 @@
             <div class="col-md-8">
                 <div class="card">
                     <div class="card-header">
-                        <h3>Thank You!</h3>
+                        <h3>Plan Subscribed!Thank You!</h3>
                     </div>
                     
                 </div>

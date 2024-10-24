@@ -5,7 +5,30 @@
 <div class="container"
     style="max-width: 1200px; margin: 0 auto; padding: 50px 0; background-color: #f9f9f9; min-height: 100vh;">
     <div class="d-flex flex-row row m-0 w-100 justify-content-center">
-        
+    
+    {{-- Alert Messages --}}
+    <div id="alert-container" style="position: fixed; top: 20px; right: 20px; z-index: 999; width: 300px;">
+        @if($errors->any())
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <strong>Error!</strong> 
+                <ul class="mb-0">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <strong>Success!</strong> {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+    </div>
+
+
         {{-- Check if $subscriptions or $plans are null or empty --}}
         @if(!$subscriptions || !$plans)
             {{-- Display a message if no subscription is found --}}
@@ -23,13 +46,13 @@
             {{-- Main Content --}}
             <div class="col-12 col-md-10 col-lg-9">
                 <div style="display: flex; width: 100%;">
-                  
+
                     {{-- Left Card with Subscription Details --}}
                     <div style="flex: 1; padding: 20px; background-color: #eaf1fc; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); margin-right: 20px; position: relative;">
                         
                         {{-- Live Badge Positioned on the Top Right --}}
                         <span class="sub-status p-1 px-3 badge-success mt-3 fs-5"
-                            style="display: inline-block; float: right; margin-right: 10px; margin-top: -10px;">
+                            style="display: inline-block; float: right; margin-right: 15px; margin-top: -10px;">
                             <strong>{{ $subscriptions->status }}</strong>
                         </span>
 
@@ -86,7 +109,7 @@
                 <div class="mt-5">
                     <h2 class="fw-bold">FAQ's</h2>
                     <div class="accordion accordion-flush" id="accordionFlushExample">
-                        <div class="accordion-item">
+                    <div class="accordion-item">
                             <h2 class="accordion-header" id="flush-headingOne">
                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
                                     Billing & Payments
@@ -142,68 +165,55 @@
                                 </div>
                             </div>
                         </div>
+                  
                     </div>
                 </div>
 
                 {{-- Modal for Downgrade Plan --}}
-<div class="modal fade" id="downgradeModal" tabindex="-1" aria-labelledby="downgradeModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="downgradeModalLabel">Downgrade Plans</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
+                <div class="modal fade" id="downgradeModal" tabindex="-1" aria-labelledby="downgradeModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="downgradeModalLabel">Downgrade Plans</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
 
-            <div class="modal-body">
-            @if($errors->any())
-    <div class="alert alert-danger">
-        <ul>
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
-            <form id="downgradeForm" action="{{ route('downgrade_plan') }}" method="POST">
-            @csrf
-            <div class="mb-3">
-            <label for="downgradeSelect" class="form-label">Select a Downgrade Plan</label>
-                                      
-                     <div class="d-flex flex-column">
-                      <select id='downgradeSelect' name='plan_id' class="mt-4 form-select-lg border-dark shadow-none" required="" style="width:300px; ">
-                        <option class="py-3" value="" disabled selected>Select a Plan</option>
-                        @foreach($downgradePlans as $downgradePlan)
-                                                <option class="py-3" value="{{ $downgradePlan->plan_id }}">{{ $downgradePlan->plan_code }} - ${{ $downgradePlan->plan_price }}</option>
+                                <form id="downgradeForm" action="{{ route('downgrade_plan') }}" method="POST">
+                                    @csrf
+                                    <div class="mb-3">
+                                        <label for="downgradeSelect" class="form-label">Select a Downgrade Plan</label>
+
+                                        <div class="d-flex flex-column">
+                                            <select id="downgradeSelect" name="plan_id" class="mt-4 form-select-lg border-dark shadow-none" required="" style="width:300px;">
+                                                <option class="py-3" value="" disabled selected>Select a Plan</option>
+                                                @foreach($downgradePlans as $downgradePlan)
+                                                    <option class="py-3" value="{{ $downgradePlan->plan_id }}">
+                                                        {{ $downgradePlan->plan_code }} 
+                                                    </option>
                                                 @endforeach
-                                              </select>
-                      <input type="submit" class="mt-5 w-25 btn btn-primary rounded" value="Submit">
+                                            </select>
+                                            <input type="submit" class="mt-5 w-25 btn btn-primary rounded" value="Submit">
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                     </div>
-                  </form>
                 </div>
-            
-                
-    </div>
-</div>
-
             </div>
         @endif
     </div>
 </div>
 
+{{-- JavaScript to keep the modal open if there are validation errors --}}
 <script>
-function handleDowngrade(event) {
-    event.preventDefault(); // Prevent the default form submission
-
-    // Get the selected downgrade plan
-    const selectedPlan = document.getElementById('downgradeSelect').value;
-
-    // Show the alert message with the selected plan
-    alert("Your downgrade request for plan ID " + selectedPlan + " has been submitted successfully!");
-
-    // Close the modal after showing the alert (optional)
-    $('#downgradeModal').modal('hide');
-
-    return false; // Prevent any further action
-}
+    // Automatically hide the alert after 5 seconds
+    setTimeout(() => {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            alert.classList.remove('show');
+            alert.classList.add('fade');
+        });
+    }, 5000);
 </script>
 @endsection

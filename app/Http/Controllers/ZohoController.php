@@ -402,7 +402,7 @@ class ZohoController extends Controller
 
     public function store(Request $request)
     {
-        // Validate the request data
+        
         $validatedData = $request->validate([
             'first_name' => 'nullable|string',
             'last_name' => 'nullable|string',
@@ -415,20 +415,22 @@ class ZohoController extends Controller
             'billing_zip' => 'nullable|string',
         ], [
             'customer_email.unique' => 'The email ID already exists.',
-            
         ]);
     
         $fullName = trim($validatedData['first_name'] . ' ' . $validatedData['last_name']);
-
+    
+       
         $exists = Customer::where('customer_name', $fullName)->exists();
-
-    if ($exists) {
-        return redirect()->back()->withErrors([
-            'name_combination' => 'The combination of first name and last name already exists.',
-        ])->withInput();
-    }
+    
+        if ($exists) {
+            return redirect()->back()->withErrors([
+                'name_combination' => 'The combination of first name and last name already exists.',
+            ])->withInput();
+        }
+    
         $defaultPassword = Hash::make('soxco123');
     
+       
         $customer = Customer::create([
             'customer_name' => $fullName,
             'first_name' => $validatedData['first_name'],
@@ -436,14 +438,14 @@ class ZohoController extends Controller
             'customer_email' => $validatedData['customer_email'],
             'company_name' => $validatedData['company_name'],
             'password' => $defaultPassword,
-            // Billing Address
+           
             'billing_attention' => $fullName,
             'billing_street' => $validatedData['billing_street'],
             'billing_city' => $validatedData['billing_city'],
             'billing_state' => $validatedData['billing_state'],
             'billing_country' => $validatedData['billing_country'],
             'billing_zip' => $validatedData['billing_zip'],
-            // Shipping Address
+            
             'shipping_attention' => $fullName,
             'shipping_street' => $validatedData['billing_street'],
             'shipping_city' => $validatedData['billing_city'],
@@ -452,12 +454,23 @@ class ZohoController extends Controller
             'shipping_zip' => $validatedData['billing_zip'],
         ]);
     
-        // Send the new customer to Zoho
-        $zohoResponse = $this->createCustomerInZoho($customer);
-        $customer->zohocust_id = $zohoResponse;
-        $customer->save();
+        try {
+           
+            $zohoResponse = $this->createCustomerInZoho($customer);
+            
+           
+            $customer->zohocust_id = $zohoResponse;
+            $customer->save();
     
-        return redirect(route('cust'))->with('success', 'Customer added successfully!');
+            
+            return redirect(route('cust'))->with('success', 'Customer added successfully!');
+        } catch (\Exception $e) {
+            
+            \Log::error('Failed to create a customer in Zoho: ' . $e->getMessage());
+    
+           
+            return redirect()->back()->withErrors('Failed to create a partner in Zoho.')->withInput();
+        }
     }
   
 
@@ -1462,43 +1475,66 @@ public function downgrade(Request $request)
     if (!$selectedPlan) {
         return back()->withErrors('Plan not found.');
     }
+
+    // Check if an open downgrade ticket exists
     $openTicket = Support::where('zoho_cust_id', $customer->zohocust_id)
         ->where('request_type', 'Downgrade')
         ->where('status', 'open')
         ->first();
 
     if ($openTicket) {
-        // If an open downgrade ticket exists, show an alert message
-        return back()->withErrors('An open downgrade request already exists. Please wait for it to be resolved before submitting another.');
+        // Return with an error message if an open ticket exists
+        return back()->withErrors('An open downgrade request already exists');
     }
 
-
+    // Create a new support ticket for downgrade
     Support::create([
         'date' => now(),
         'request_type' => 'Downgrade', 
         'subscription_number' => $subscription->subscription_number,
-        'message' => 'I would like to downgrade my subscription to the ' . $selectedPlan->plan_name . '. Please contact me with steps to downgrade.',        'status' => 'open',
+        'message' => 'I would like to downgrade my subscription to the ' . $selectedPlan->plan_name . '. Please contact me with steps to downgrade.',
+        'status' => 'open',
         'zoho_cust_id' => $customer->zohocust_id,
         'zoho_cpid' =>  $customer->zohocust_id, 
     ]);
 
-    // Redirect back with a success message
+    // Redirect with a success message
     return redirect()->route('show.support')->with('success', 'Downgrade request submitted successfully.');
 }
-
-public function supportticket()
+public function supportticket() 
 {
-    // Join the supports table with the customers table to get company name
-    $supports = DB::table('supports')
-        ->join('customers', 'supports.zoho_cust_id', '=', 'customers.zohocust_id')
-        ->select(
-            'supports.*', // All columns from the supports table
-            'customers.company_name' // Company name from the customers table
-        )
-        ->get(); // Retrieve the data
 
-    // Pass the data to the view
-    return view('supportticket', compact('supports'));
+  $supports = DB::table('supports') 
+    -> join('customers', 'supports.zoho_cust_id', '=', 'customers.zohocust_id') 
+    -> join('subscriptions', 'supports.subscription_number', '=', 'subscriptions.subscription_number') 
+    -> select('supports.*', 'customers.company_name', 'subscriptions.plan_id', 'subscriptions.subscription_id') 
+    -> get();
+
+  // Step 2: Prepare an array to hold plan codes based on plan names
+  $planCodes = DB::table('plans') -> pluck('plan_code', 'plan_name') -> toArray(); // Keyed by plan_name
+
+  // Step 3: Iterate through supports and extract plan name
+  foreach($supports as $support) {
+    $message = $support -> message;
+
+    // Extract the plan name from the message
+    $start = strpos($message, 'the') + strlen('the');
+    $end = strpos($message, '.', $start);
+
+    if ($start !== false && $end !== false) {
+      $planName = trim(substr($message, $start, $end - $start));
+
+      // Fetch the plan code based on the extracted plan name
+      $planCode = $planCodes[$planName] ?? null; // Get plan code or null if not found
+
+      // Add plan code to support object for further use
+      $support -> plan_code = $planCode;
+    } else {
+      $support -> plan_code = null; // Handle cases where extraction fails
+    }
+  }
+
+  return view('supportticket', compact('supports'));
 }
 public function supportticketfilter(Request $request)
 {
@@ -1542,26 +1578,16 @@ public function supportticketfilter(Request $request)
 public function downgradesub(Request $request)
 {
     $accessToken = $this->zohoService->getAccessToken();
-    $customer = Customer::where('customer_email', Session::get('user_email'))->first();
-
-    if (!$customer) {
-        return back()->withErrors('Customer not found.');
-    }
-
-    $subscription = Subscription::where('zoho_cust_id', $customer->zohocust_id)->first();
-
-    if (!$subscription) {
-        return back()->withErrors('Subscription not found.');
-    }
-
+    
+    $subscription_id = $request->input('subscription_id');
     $planId = $request->input('plan_code');
-
+ 
     $response = Http::withHeaders([
         'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
         'Content-Type' => 'application/json'
     ])->post('https://www.zohoapis.com/billing/v1/hostedpages/updatesubscription', [
         'organization_id' => config('services.zoho.zoho_org_id'),
-        'subscription_id' => $subscription->subscription_id,
+        'subscription_id' => $subscription_id,
         'plan' => [
             'plan_code' => $planId
         ],
@@ -1575,10 +1601,9 @@ public function downgradesub(Request $request)
         // Store the hostedpage_id in the session for retrieval
         Session::put('hostedpage_id', $hostedPageId);
         DB::table('supports')
-        ->where('zoho_cust_id', $customer->zohocust_id)
+        ->where('zoho_cust_id', $request->input('zoho_cust_id'))
         ->update([
             'status' => 'Completed' 
-
         ]);
 
         return redirect()->to($hostedPageUrl);
@@ -1586,7 +1611,6 @@ public function downgradesub(Request $request)
         return redirect()->back()->withErrors('Failed to upgrade subscription: ' . $response->body());
     }
 }
-
 public function retrievedowntHostedPage()
     {
         $accessToken = $this->zohoService->getAccessToken();
