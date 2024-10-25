@@ -41,11 +41,13 @@ return [
         'client_secret' => env('ZOHO_CLIENT_SECRET'),
         'redirect_uri' => env('ZOHO_REDIRECT_URI'),
         'refresh_token' => env('ZOHO_REFRESH_TOKEN'),
-        'zoho_org_id'=>env('ZOHO_ORG_ID')
+        'zoho_org_id' => env('ZOHO_ORG_ID')
     ],
+
     'mailgun' => [
-    'domain' => env('MAILGUN_DOMAIN'),
-    'secret' => env('MAILGUN_SECRET'),
-    'endpoint' => env('MAILGUN_ENDPOINT', 'https://api.mailgun.net'),
-],
+        'domain' => env('MAILGUN_DOMAIN'),
+        'secret' => env('MAILGUN_SECRET'),
+        'endpoint' => env('MAILGUN_ENDPOINT', 'api.mailgun.net'),
+        'scheme' => 'https',
+    ],
 ];
