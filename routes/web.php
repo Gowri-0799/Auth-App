@@ -152,3 +152,10 @@ Route ::get('/support/ticket/filter', [ZohoController::class, 'supportticketfilt
 
 Route ::get('/pdt/{creditnote_id}', [ZohoController::class, 'pdfdownload'])->name('pdf.download');
 
+Route::get('/test-mail', function () {
+    \Mail::raw('This is a test email', function ($message) {
+        $message->to('your_test_email@example.com')
+            ->subject('Test Email');
+    });
+    return 'Test email sent!';
+});

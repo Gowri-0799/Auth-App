@@ -18,7 +18,7 @@ class SubscriptionDowngrade extends Mailable
     /**
      * Create a new message instance.
      */
-    public function __construct()
+    public function __construct($customerName, $planId)
     {
         $this->customerName = $customerName;
         $this->planId = $planId;
@@ -45,7 +45,7 @@ class SubscriptionDowngrade extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'view.name',
+            view: 'emails.subscription_downgrade',
         );
     }
 

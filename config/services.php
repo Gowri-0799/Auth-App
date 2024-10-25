@@ -43,4 +43,9 @@ return [
         'refresh_token' => env('ZOHO_REFRESH_TOKEN'),
         'zoho_org_id'=>env('ZOHO_ORG_ID')
     ],
+    'mailgun' => [
+    'domain' => env('MAILGUN_DOMAIN'),
+    'secret' => env('MAILGUN_SECRET'),
+    'endpoint' => env('MAILGUN_ENDPOINT', 'https://api.mailgun.net'),
+],
 ];

@@ -19,6 +19,10 @@ use App\Models\Creditnote;
 use Carbon\Carbon;
 use App\Models\Support;
 use Illuminate\Support\Facades\Storage;
+use App\Mail\SubscriptionDowngrade;
+use Illuminate\Support\Facades\Mail;
+
+
 
 class ZohoController extends Controller
 {
@@ -1533,39 +1537,39 @@ public function downgrade(Request $request)
     // Redirect with a success message
     return redirect()->route('show.support')->with('success', 'Downgrade request submitted successfully.');
 }
-public function supportticket() 
+public function supportticket()
 {
+    // Join the supports table with the customers table to get company name
+    // Step 1: Fetch all supports along with relevant customer and subscription details
+$supports = DB::table('supports')
+->join('customers', 'supports.zoho_cust_id', '=', 'customers.zohocust_id')
+->join('subscriptions', 'supports.subscription_number', '=', 'subscriptions.subscription_number')
+->select('supports.*', 'customers.company_name', 'customers.customer_name', 'customers.customer_email', 'subscriptions.plan_id', 'subscriptions.subscription_id')
+->get();
 
-  $supports = DB::table('supports') 
-    -> join('customers', 'supports.zoho_cust_id', '=', 'customers.zohocust_id') 
-    -> join('subscriptions', 'supports.subscription_number', '=', 'subscriptions.subscription_number') 
-    -> select('supports.*', 'customers.company_name', 'subscriptions.plan_id', 'subscriptions.subscription_id') 
-    -> get();
+// Step 2: Prepare an array to hold plan codes based on plan names
+$planCodes = DB::table('plans')->pluck('plan_code', 'plan_name')->toArray(); // Keyed by plan_name
 
-  // Step 2: Prepare an array to hold plan codes based on plan names
-  $planCodes = DB::table('plans') -> pluck('plan_code', 'plan_name') -> toArray(); // Keyed by plan_name
+// Step 3: Iterate through supports and extract plan name
+foreach ($supports as $support) {
+$message = $support->message;
 
-  // Step 3: Iterate through supports and extract plan name
-  foreach($supports as $support) {
-    $message = $support -> message;
+// Extract the plan name from the message
+$start = strpos($message, 'the') + strlen('the');
+$end = strpos($message, '.', $start);
 
-    // Extract the plan name from the message
-    $start = strpos($message, 'the') + strlen('the');
-    $end = strpos($message, '.', $start);
-
-    if ($start !== false && $end !== false) {
-      $planName = trim(substr($message, $start, $end - $start));
-
-      // Fetch the plan code based on the extracted plan name
-      $planCode = $planCodes[$planName] ?? null; // Get plan code or null if not found
-
-      // Add plan code to support object for further use
-      $support -> plan_code = $planCode;
-    } else {
-      $support -> plan_code = null; // Handle cases where extraction fails
-    }
-  }
-
+if ($start !== false && $end !== false) {
+    $planName = trim(substr($message, $start, $end - $start));
+    
+    // Fetch the plan code based on the extracted plan name
+    $planCode = $planCodes[$planName] ?? null; // Get plan code or null if not found
+    
+    // Add plan code to support object for further use
+    $support->plan_code = $planCode;
+} else {
+    $support->plan_code = null; // Handle cases where extraction fails
+}
+}
   return view('supportticket', compact('supports'));
 }
 public function supportticketfilter(Request $request)
@@ -1599,11 +1603,9 @@ public function supportticketfilter(Request $request)
              
         });
     }
-
-   
+  
     $supports = $query->paginate($show);
 
-    
     return view('supportticket', compact('supports'));
 }
 public function downgradesub(Request $request)
@@ -1612,8 +1614,8 @@ public function downgradesub(Request $request)
     
     $subscription_id = $request->input('subscription_id');
     $planId = $request->input('plan_code');
-    $customerName = $request->input('customer_name'); // Get the customer's name
-    $customerEmail = $request->input('customer_email'); // Get the customer's email
+    $customerName = $request->input('customer_name'); 
+    $customerEmail = $request->input('customer_email'); 
 
     $response = Http::withHeaders([
         'Authorization' => 'Zoho-oauthtoken ' . $accessToken,

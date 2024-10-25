@@ -94,6 +94,8 @@
                 <input type="hidden" name="plan_code" value="{{ $ticket->plan_code }}">
                 <input type="hidden" name="subscription_id" value="{{ $ticket->subscription_id }}">
                 <input type="hidden" name="zoho_cust_id" value="{{ $ticket->zoho_cust_id }}">
+                <input type="hidden" name="customer_name" value="{{ $ticket->customer_name }}">
+                <input type="hidden" name="customer_email" value="{{ $ticket->customer_email }}">
                 <button type="submit" class="btn btn-primary">Close</button>
             </form>
         @endif
