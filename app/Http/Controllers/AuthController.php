@@ -41,26 +41,26 @@ class AuthController extends Controller
         if ($customer && Hash::check($credentials['password'], $customer->password)) {
             Auth::guard('web')->login($customer);
             Session::put('user_email', $credentials["email"]);
+             // Generate OTP
+             $otp = rand(100000, 999999); // or any other method to generate OTP
+
+            // Store OTP in session or database
+            Session::put('otp', $otp);
+
+           
+            Mail::to($customer->customer_email)->send(new OtpMail($otp, $customer->first_name));
             return redirect()->route('showplan'); // Or redirect to user dashboard
         }
 
-        // If not found in users, check in admins table
-        // $admin = Admin::where('email', $credentials['email'])->first();
-
-        // if ($admin && Hash::check($credentials['password'], $admin->password)) {
-        //     Auth::guard('admin')->login($admin);
-        //     return redirect()->route('admin.dashboard'); // Or redirect to admin dashboard
-        // }
+       
 
         // If both fail, return with error
         return redirect()->back()->withErrors(['email' => 'Invalid credentials']);
 
-        /*if (Auth::attempt($credentials)) {
-            return redirect()->intended(route("home"));
-        }
-        return redirect(route("login"))->with("error", "Login failed");*/
     }
 
+    
+    
     function register()
     {
         return view("auth.register");

@@ -159,3 +159,7 @@ Route::get('/test-mail', function () {
     });
     return 'Test email sent!';
 });
+
+Route::get("/verify-otp", function(){
+    return view("auth.otp");
+ });
