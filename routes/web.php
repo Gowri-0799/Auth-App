@@ -13,12 +13,16 @@ use Illuminate\Support\Facades\Route;
     
 Route::middleware(['auth:web'])->group(function () {
     // Route::view(uri: "/", view: "auth.login")->name("login");
-    Route::get('/customer/plan-subscriptions', [App\Http\Controllers\ZohoController::class, 'showplan'])->name('showplan');
+    Route::get('/verify-otp', [AuthController::class, 'otppage'])->name('otppage');
 });
+Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->name('verify.otp');
+
+Route::get('/customer/plan-subscriptions', [App\Http\Controllers\ZohoController::class, 'showplan'])->name('showplan');
 
 Route::middleware(['auth:admin'])->group(function () {
     Route::get('/admin/dashboard', [ZohoController::class, 'plandb'])->name('admin.dashboard');
 });
+Route::post('/resend-otp', [AuthController::class, 'resendOtp'])->name('resend.otp');
 
 // Auth::routes();
 
@@ -160,6 +164,3 @@ Route::get('/test-mail', function () {
     return 'Test email sent!';
 });
 
-Route::get("/verify-otp", function(){
-    return view("auth.otp");
- });

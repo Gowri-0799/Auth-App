@@ -11,13 +11,15 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\OtpMail;
 
 class AuthController extends Controller
 {
 
     protected function guard()
     {
-        return Auth::guard('web');  // This is the default guard
+        return Auth::guard('web');  
     }
 
     public function login()
@@ -30,37 +32,84 @@ class AuthController extends Controller
         return view("auth.login");
     }
 
-    function loginPost(Request $request)
+    public function loginPost(Request $request)
     {
-        $request->validate(["email" => "required", "password" => "required"]);
-
+        $request->validate(["email" => "required", "password" => "required_if:resend_otp,0"]);
+    
         $credentials = $request->only("email", "password");
-
-        $customer = Customer::Where("Customer_email", $credentials["email"])->first();
-
+        $customer = Customer::where("Customer_email", $credentials["email"])->first();
+    
+        if ($request->input('resend_otp') == '1') {
+            // Resend OTP logic
+            if ($customer) {
+                $otp = rand(100000, 999999); // Generate a new OTP
+                Session::put('otp', $otp);
+    
+                // Resend OTP email
+                Mail::to($customer->customer_email)->send(new OtpMail($otp, $customer->first_name));
+    
+                return redirect()->back()->with('success', 'A new OTP has been sent to your email.');
+            } else {
+                return redirect()->back()->withErrors(['email' => 'Email not found']);
+            }
+        }
+    
+        // Regular login flow
         if ($customer && Hash::check($credentials['password'], $customer->password)) {
             Auth::guard('web')->login($customer);
             Session::put('user_email', $credentials["email"]);
-             // Generate OTP
-             $otp = rand(100000, 999999); // or any other method to generate OTP
-
-            // Store OTP in session or database
+            
+            $otp = rand(100000, 999999); // Generate OTP
             Session::put('otp', $otp);
-
-           
+    
+            // Send OTP email
             Mail::to($customer->customer_email)->send(new OtpMail($otp, $customer->first_name));
-            return redirect()->route('showplan'); // Or redirect to user dashboard
+            
+            return redirect()->route('otppage');
         }
-
-       
-
-        // If both fail, return with error
+    
+        // If authentication fails
         return redirect()->back()->withErrors(['email' => 'Invalid credentials']);
-
     }
 
+    function otppage(){
+        return view("auth.otp");
+     }
     
-    
+     public function verifyOtp(Request $request)
+{
+    $request->validate([
+        "email" => "required",
+        "otp" => "required"
+    ]);
+
+    $sessionOtp = Session::get('otp');
+    $inputOtp = $request->input('otp');
+
+    if ($sessionOtp && $sessionOtp == $inputOtp) {
+        return redirect()->route('showplan');
+    }
+
+    return redirect()->back()->with('error', 'Invalid OTP, please try again.');
+}
+
+public function resendOtp(Request $request)
+{
+    $email = Session::get('user_email');
+    $customer = Customer::where('customer_email', $email)->first();
+
+    if ($customer) {
+        $otp = rand(100000, 999999); // Generate a new OTP
+        Session::put('otp', $otp); // Store the new OTP
+
+        // Resend OTP email
+        Mail::to($customer->customer_email)->send(new OtpMail($otp, $customer->first_name));
+        
+        return redirect()->back()->with('success', 'A new OTP has been sent to your email.');
+    } else {
+        return redirect()->back()->withErrors(['email' => 'Email not found']);
+    }
+}
     function register()
     {
         return view("auth.register");
