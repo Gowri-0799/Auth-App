@@ -20,9 +20,13 @@ Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->name('verify.o
 Route::get('/customer/plan-subscriptions', [App\Http\Controllers\ZohoController::class, 'showplan'])->name('showplan');
 
 Route::middleware(['auth:admin'])->group(function () {
-    Route::get('/admin/dashboard', [ZohoController::class, 'plandb'])->name('admin.dashboard');
+    Route::get('/admin/verify-otp', [AdminController::class, 'adminotppage'])->name('adminotppage');
 });
+Route::post('admin/verify-otp', [AdminController::class, 'adminverifyOtp'])->name('adminverify.otp');
+
+Route::get('/admin/dashboard', [ZohoController::class, 'plandb'])->name('admin.dashboard');
 Route::post('/resend-otp', [AuthController::class, 'resendOtp'])->name('resend.otp');
+Route::post('admin/resend-otp', [AdminController::class, 'adminresendOtp'])->name('adminresend.otp');
 
 // Auth::routes();
 
