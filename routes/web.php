@@ -29,6 +29,7 @@ Route::post('/resend-otp', [AuthController::class, 'resendOtp'])->name('resend.o
 Route::post('admin/resend-otp', [AdminController::class, 'adminresendOtp'])->name('adminresend.otp');
 
 // Auth::routes();
+Route::post('/password/reset-email', [AuthController::class, 'sendPasswordResetEmail'])->name('password.reset.email');
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
@@ -38,6 +39,12 @@ Route::get("/admin/login", [App\Http\Controllers\AdminController::class, "showLo
 Route::get("/login", [AuthController::class, "login"])
     ->name("login");
 
+Route::get("/reset-email", [AuthController::class, "emailsend"])
+    ->name("emailsend");
+   
+Route::get("/reset-mail", [AuthController::class, "resetlink"])
+    ->name("password.reset");
+    
 Route::post("/login", [AuthController::class, "loginPost"])
     ->name("login.post");
 

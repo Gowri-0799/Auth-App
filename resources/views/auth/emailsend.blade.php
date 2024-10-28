@@ -15,18 +15,15 @@
             <div class="card p-4 w-100 shadow-sm border-0 rounded login-card bg-clearlink">
                <!-- Adjusted card size -->
                <div class="rounded p-2">
-               <form action="{{ route('password.reset.email') }}" method="post">
+               <form action="{{ route('adminlogin') }}" >
     @csrf
     <div class="mb-3 fw-bold">
         <!-- Reduced font size for description -->
-        Please provide the verified email address associated with your user account, and we will send you a password reset link.
+        Please check your email for a password reset link. If you don’t see it within a few minutes, be sure to check your spam folder.
     </div>
-    <div class="form-group mb-3">
-        <input type="email" class="form-control mt-2 border-dark shadow-none" placeholder="Enter Email" name="email" style="font-size: 0.9rem; padding: 8px;">
-        <span class="text-danger"></span>
-    </div>
+   
     <div class="form-group mb-3 d-flex justify-content-start align-items-center">
-        <button class="btn btn-primary" type="submit" style="font-size: 0.9rem; padding: 6px 12px;">Submit</button>
+        <button class="btn btn-primary" type="submit" style="font-size: 0.9rem; padding: 6px 12px;">Return to login</button>
     </div>
 </form>
                </div>

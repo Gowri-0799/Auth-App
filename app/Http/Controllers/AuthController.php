@@ -13,6 +13,8 @@ use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\OtpMail;
+use Illuminate\Support\Str;
+use App\Mail\ResetPasswordMail;
 
 class AuthController extends Controller
 {
@@ -148,5 +150,38 @@ public function resendOtp(Request $request)
     function showLinkRequestForm(){
         return view("auth.reset");
     }
+
+    public function sendPasswordResetEmail(Request $request)
+{
+    $request->validate(['email' => 'required|email']);
+    $credentials = $request->only("email");
+        $customer = Customer::where("Customer_email", $credentials["email"])->first();
+    
+    if ( $customer) {
+        // Generate the reset URL
+        $token = Str::random(60); // Use a secure token
+        $resetUrl = route('password.reset', ['token' => $token, 'email' => $customer->customer_email]);
+dd($resetUrl);
+        // Send the reset email
+        Mail::to( $customer->customer_email)->send(new ResetPasswordMail($customer->first_name,$resetUrl));
+
+        return redirect(route("emailsend"))->with("success", "Register successfully");
+    } else {
+        return back()->withErrors(['email' => 'This email does not exist in our records.']);
+    }
+}
+
+function emailsend(){
+    return view("auth.emailsend");
+}
+
+public function resetlink(Request $request)
+{
+    $token = $request->query('token');
+    $email = $request->query('email');
+    
+    // Pass the token and email to the view for verification or display
+    return view("emails.resetlink", compact('token', 'email'));
+}
 
 }
