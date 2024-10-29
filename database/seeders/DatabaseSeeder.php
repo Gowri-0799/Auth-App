@@ -30,7 +30,7 @@ class DatabaseSeeder extends Seeder
         Admin::factory()->create([
             'admin_name' => 'test',
             'email' => 'zohotestpr@gmail.com',
-            'password' => 'Test@123'
+            'password' => 'Socxo@123'
         ]);
     }
 }
