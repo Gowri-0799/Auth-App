@@ -54,7 +54,7 @@
                   </div>
                   <div class="d-flex justify-content-between align-items-center mt-3 mb-3">
                      <button class="btn btn-primary" type="submit">Login</button>
-                     <a href="{{ route('password.request') }}" class="text-decoration-none text-primary">Forgot password?</a>
+                     <a href="{{ route('admin.password.request') }}" class="text-decoration-none text-primary">Forgot password?</a>
                   </div>
                   </form>
                </div>

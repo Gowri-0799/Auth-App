@@ -15,7 +15,7 @@
 
             <div class="card p-4 w-100 shadow-sm border-0 rounded login-card bg-clearlink">
                <div class="rounded p-2">
-                  <form method="POST" action="{{ route('password.update') }}">
+                  <form method="POST" action="{{ route('admin.password.update') }}">
                      @csrf
                      <input type="hidden" name="token" value="{{ $token }}">
                      <input type="hidden" name="email" value="{{ $email }}">

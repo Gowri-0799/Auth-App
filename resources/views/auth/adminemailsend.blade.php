@@ -15,7 +15,7 @@
             <div class="card p-4 w-100 shadow-sm border-0 rounded login-card bg-clearlink">
                <!-- Adjusted card size -->
                <div class="rounded p-2">
-               <form action="{{ route('login') }}" >
+               <form action="{{ route('adminlogin') }}" >
     @csrf
     <div class="mb-3 fw-bold">
         <!-- Reduced font size for description -->

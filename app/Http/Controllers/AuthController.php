@@ -158,11 +158,10 @@ public function resendOtp(Request $request)
         $customer = Customer::where("Customer_email", $credentials["email"])->first();
     
     if ( $customer) {
-        // Generate the reset URL
-        $token = Str::random(60); // Use a secure token
+        
+        $token = Str::random(60); 
         $resetUrl = route('password.reset', ['token' => $token, 'email' => $customer->customer_email]);
-dd($resetUrl);
-        // Send the reset email
+
         Mail::to( $customer->customer_email)->send(new ResetPasswordMail($customer->first_name,$resetUrl));
 
         return redirect(route("emailsend"))->with("success", "Register successfully");
@@ -179,9 +178,33 @@ public function resetlink(Request $request)
 {
     $token = $request->query('token');
     $email = $request->query('email');
-    
-    // Pass the token and email to the view for verification or display
+   
     return view("emails.resetlink", compact('token', 'email'));
+   
+}
+public function updatePassword(Request $request)
+{
+    // Validate the request data
+    $request->validate([
+        'token' => 'required',
+        'email' => 'required|email',
+        'password' => 'required|confirmed|min:6',
+    ]);
+
+    // Find the customer by email
+    $customer = Customer::where('customer_email', $request->email)->first();
+
+    // Check if the customer exists and if the token is valid
+    if (!$customer) {
+        return redirect()->back()->withErrors(['email' => 'Invalid email or token.']);
+    }
+
+    // Update the customer's password
+    $customer->password = Hash::make($request->password);
+    $customer->save();
+
+    // Redirect to a success page or login page
+    return redirect()->route('login')->with('success', 'Your password has been successfully updated.');
 }
 
 }

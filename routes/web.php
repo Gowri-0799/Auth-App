@@ -31,6 +31,9 @@ Route::post('admin/resend-otp', [AdminController::class, 'adminresendOtp'])->nam
 // Auth::routes();
 Route::post('/password/reset-email', [AuthController::class, 'sendPasswordResetEmail'])->name('password.reset.email');
 
+Route::post('admin/password/reset-email', [AdminController::class, 'adsendPasswordResetEmail'])->name('adpassword.reset.email');
+
+
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
 Route::get("/admin/login", [App\Http\Controllers\AdminController::class, "showLoginForm"])
@@ -41,9 +44,15 @@ Route::get("/login", [AuthController::class, "login"])
 
 Route::get("/reset-email", [AuthController::class, "emailsend"])
     ->name("emailsend");
-   
+    Route::get("admin/reset-email", [AdminController::class, "ademailsend"])
+    ->name("ademailsend");
 Route::get("/reset-mail", [AuthController::class, "resetlink"])
     ->name("password.reset");
+    Route::get("admin/reset-mail", [AdminController::class, "adresetlink"])
+    ->name("adpassword.reset");
+
+    Route::post('/password/update', [AuthController::class, 'updatePassword'])->name('password.update');
+    Route::post('admin/password/update', [AdminController::class, 'updateAdminPassword'])->name('admin.password.update');
     
 Route::post("/login", [AuthController::class, "loginPost"])
     ->name("login.post");
@@ -159,6 +168,7 @@ Route::post('/tickets/store', [ZohoController::class, 'ticketstore'])->name('tic
 Route::get('/support', [ZohoController::class, 'showCustomerSupport'])->name('show.support');
 Route::post('/downgrade-plan', [ZohoController::class, 'downgrade'])->name('downgrade_plan');
 Route::get('password/reset', [AuthController::class, 'showLinkRequestForm'])->name('password.request');
+Route::get('admin/password/reset', [AdminController::class, 'adshowLinkRequestForm'])->name('admin.password.request');
 Route ::get('/subscriptions/filter', [ZohoController::class, 'filterSubscriptions'])->name('subscriptions.filter');
 Route ::get('/Invoice/filter', [ZohoController::class, 'filteradInvoices'])->name('invoices.adfilter');
 Route ::get('/support/ticket/filter', [ZohoController::class, 'supportticketfilter'])->name('support.adfilter');

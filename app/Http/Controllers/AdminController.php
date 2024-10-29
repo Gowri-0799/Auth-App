@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Hash;
 use App\Mail\OtpMail;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
+use App\Mail\ResetPasswordMail;
 
 class AdminController extends Controller
 {
@@ -112,4 +114,71 @@ function adminotppage(){
         Auth::guard('admin')->logout();
         return redirect()->route('admin.login');
     }
+
+    function adshowLinkRequestForm(){
+        return view("auth.adminreset");
+    }
+
+    public function adsendPasswordResetEmail(Request $request)
+{
+    // Validate the request data
+    $request->validate(['email' => 'required|email']);
+    $credentials = $request->only("email");
+    
+    // Find the admin by email
+    $admin = Admin::where("email", $credentials["email"])->first();
+    
+    if ($admin) {
+        // Generate a password reset token
+        $token = Str::random(60); 
+
+        // Create the reset URL
+        $resetUrl = route('adpassword.reset', ['token' => $token, 'email' => $admin->email]);
+
+        // Send the reset password email
+        Mail::to($admin->email)->send(new ResetPasswordMail($admin->admin_name, $resetUrl));
+
+        // Redirect to a success page
+        return redirect(route("ademailsend"))->with("success", "Password reset email sent successfully.");
+    } else {
+        return back()->withErrors(['email' => 'This email does not exist in our records.']);
+    }
+}
+
+public function adresetlink(Request $request)
+{
+    $token = $request->query('token');
+    $email = $request->query('email');
+   
+    return view("emails.adminrestlink", compact('token', 'email'));
+   
+}
+function ademailsend(){
+    return view("auth.adminemailsend");
+}
+
+public function updateAdminPassword(Request $request)
+{
+    // Validate the request data
+    $request->validate([
+        'token' => 'required',
+        'email' => 'required|email',
+        'password' => 'required|confirmed|min:6',
+    ]);
+
+    // Find the admin by email
+    $admin = Admin::where('email', $request->email)->first();
+
+    // Check if the admin exists and if the token is valid
+    if (!$admin) {
+        return redirect()->back()->withErrors(['email' => 'Invalid email or token.']);
+    }
+
+    // Update the admin's password
+    $admin->password = Hash::make($request->password);
+    $admin->save();
+
+    // Redirect to a success page or login page
+    return redirect()->route('adminlogin')->with('success', 'Your password has been successfully updated.');
+}
 }
