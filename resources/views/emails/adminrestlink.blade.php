@@ -38,12 +38,20 @@
                      </div>
                      <div class="mt-3">
                         <h5 class="fw-bold">Password Instructions</h5>
-                        <ul>
-                           <li>The password should have a minimum length of 6 characters</li>
-                           <li>The password should contain at least one letter</li>
-                           <li>The password should contain at least one number</li>
-                           <li>The password should contain at least one symbol (special character)</li>
-                        </ul>
+                        <ul id="billing" class="">
+                    <li class="billing">
+                        The password should have a minimum length of 6 characters
+                    </li>
+                    <li class="billing">
+                        The password should contain at least one letter
+                    </li>
+                    <li class="billing">
+                        The password should contain at least one number
+                    </li>
+                    <li class="billing">
+                        The password should contain at least one symbol (special character)
+                    </li>
+                </ul>
                      </div>
                   </form>
                </div>
@@ -54,6 +62,22 @@
          @ Testlink Technologies 2024
       </footer>
    </div>
+
+   <style>
+      /* Ensure bullet points are visible */
+      .bullet-list {
+         list-style-type: disc !important; /* Force bullet points */
+         padding-left: 20px; /* Adds space for bullet visibility */
+         margin-left: 0; /* Ensures alignment */
+      }
+      .bullet-list li {
+         display: list-item !important; /* Explicitly set list-item for li */
+         list-style-position: outside; /* Bullets outside the text */
+      }
+      .billing {
+    list-style-type: disc;
+}
+   </style>
 
    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
