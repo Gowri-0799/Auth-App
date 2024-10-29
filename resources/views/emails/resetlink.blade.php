@@ -64,15 +64,15 @@
    </div>
 
    <style>
-      /* Ensure bullet points are visible */
+     
       .bullet-list {
-         list-style-type: disc !important; /* Force bullet points */
-         padding-left: 20px; /* Adds space for bullet visibility */
-         margin-left: 0; /* Ensures alignment */
+         list-style-type: disc !important; 
+         padding-left: 20px; 
+         margin-left: 0; 
       }
       .bullet-list li {
-         display: list-item !important; /* Explicitly set list-item for li */
-         list-style-position: outside; /* Bullets outside the text */
+         display: list-item !important; 
+         list-style-position: outside; 
       }
       .billing {
     list-style-type: disc;
