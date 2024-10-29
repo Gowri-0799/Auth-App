@@ -1,46 +1,50 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Password Reset</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            background: #ffffff;
-            padding: 20px;
-            border-radius: 5px;
-            max-width: 600px;
-            margin: auto;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .button {
+        .reset-button {
             display: inline-block;
+            text-decoration: none;
             padding: 12px 24px;
             font-size: 16px;
+            font-weight: bold;
             color: #ffffff;
             background-color: #007bff;
-            text-decoration: none;
             border-radius: 5px;
-            margin-top: 20px;
+            box-shadow: 0 4px 6px rgba(0, 123, 255, 0.3);
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            font-family: Arial, sans-serif;
+            color: #333333;
+        }
+        .footer-logo {
+            display: block;
+            margin: 20px auto 0;
+            width: 100px;
         }
     </style>
 </head>
-<body>
+<body style="background-color: #f8f9fa; padding: 20px;">
     <div class="container">
         <p>Dear {{ $userName }},</p>
         <p>We heard that you lost your password. Sorry about that!</p>
-        <p>But don’t worry! You can use the button below to reset your password:</p>
-        <div style="text-align: center;">
-            <a href="{{ $resetUrl }}" class="button">RESET PASSWORD</a>
+        <p>But don’t worry! You can use the following button to reset your password:</p>
+
+        <div style="text-align: center; margin: 20px 0;">
+            <a href="{{ $resetUrl }}" target="_blank" class="reset-button">RESET PASSWORD</a>
         </div>
-        <p>If you did not request a password reset, please ignore this email.</p>
-        <p>Thank you,<br>The Testlink Team</p>
+
+        <p>Yours,<br>TestLink Technologies LLC</p>
+
+        <img src="/assets/images/Ln_logo.png" alt="Testlink Logo" class="footer-logo">
     </div>
 </body>
 </html>
