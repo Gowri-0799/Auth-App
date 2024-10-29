@@ -23,21 +23,10 @@ class DatabaseSeeder extends Seeder
 
         Admin::factory()->create([
             'admin_name' => 'admin',
-            'email' => 'admin@email.com',
-            'password' => 'admin123'
+            'email' => 't6847292@gmail.com',
+            'password' => 'Socxo@123'
         ]);
 
-        Admin::factory()->create([
-            'admin_name' => 'user',
-            'email' => 'user@email.com',
-            'password' => 'user123'
-        ]);
-
-        Admin::factory()->create([
-            'admin_name' => 'test',
-            'email' => 'test@email.com',
-            'password' => 'test123'
-        ]);
         Admin::factory()->create([
             'admin_name' => 'test',
             'email' => 'zohotestpr@gmail.com',

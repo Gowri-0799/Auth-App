@@ -17,8 +17,9 @@
                <div class="rounded p-2">
                   <form method="POST" action="{{ route('admin.password.update') }}"> 
                      @csrf
-                     <input type="hidden" name="token" value="{{ $token }}">
+                     <!-- Hidden input fields for form submission -->
                      <input type="hidden" name="email" value="{{ $email }}">
+                    
                      <div class="form-group mb-3">
                         <label for="password" class="form-label fw-bold">Password</label>
                         <div class="input-group">
