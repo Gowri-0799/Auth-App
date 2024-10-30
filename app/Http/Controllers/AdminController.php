@@ -128,7 +128,7 @@ class AdminController extends Controller
     // Validate the request data
     $request->validate(['email' => 'required|email']);
     $credentials = $request->only("email");
-    
+
     // Find the admin by email
     $admin = Admin::where("email", $credentials["email"])->first();
     

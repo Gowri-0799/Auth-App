@@ -20,7 +20,7 @@
                 @if($plans->count() == 0)
                     <!-- Centered Add Plan Button -->
                     <div class="d-flex justify-content-center">
-                        <a href="{{ route('plans.create') }}" class="btn btn-primary" style="background-color: #007bff; border-color: #007bff;">Add Plan</a>
+                        <a href="{{ route('plans') }}" class="btn btn-primary" style="background-color: #007bff; border-color: #007bff;">Add Plan</a>
                     </div>
                 @else
                     <!-- Styled Bootstrap Table -->

@@ -154,9 +154,10 @@ public function resendOtp(Request $request)
     public function sendPasswordResetEmail(Request $request)
 {
     $request->validate(['email' => 'required|email']);
+   
     $credentials = $request->only("email");
         $customer = Customer::where("Customer_email", $credentials["email"])->first();
-    
+ 
     if ( $customer) {
         
         $token = Str::random(60); 
