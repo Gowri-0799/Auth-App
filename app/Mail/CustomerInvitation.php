@@ -23,7 +23,7 @@ class CustomerInvitation extends Mailable
 
     public function build()
     {
-        return $this->subject('Welcome to TestLink Technologies')
+        return $this->subject('Invitation to join Testlink ISP Partner Program')
                     ->view('emails.customer-invitation');
     }
 }

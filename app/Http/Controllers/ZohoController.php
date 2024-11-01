@@ -22,8 +22,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Mail\SubscriptionDowngrade;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\CustomerInvitation;
-
-
+use Illuminate\Support\Str;
 
 
 class ZohoController extends Controller
@@ -425,7 +424,7 @@ class ZohoController extends Controller
                 'name_combination' => 'The combination of first name and last name already exists.',
             ])->withInput();
         }
-        $defaultPassword = 'soxco123';
+        $defaultPassword = Str::random(16);
         $customer = Customer::create([
             'customer_name' => $fullName,
             'first_name' => $validatedData['first_name'],
