@@ -27,21 +27,21 @@
                <div class="rounded p-2">
                   <form method="POST" action="{{route("login.post")}}">
                   @csrf
-                  <div class="form-group mb-3">
+                  <div class="mb-3">
                      <label for="email" class="form-label fw-bold">Email address</label>
-                     <input type="text" placeholder="Enter Email" id="email" class="form-control" name="email" required autofocus>
+                     <input type="text" placeholder="Enter Email" id="email" class="form-control shadow-none" name="email" required autofocus>
                      @if($errors->has('email'))
                      <span class="text-danger">
                      {{$errors->first('email')}}
                      </span> 
                      @endif
                   </div>
-                  <div class="form-group mb-3">
+                  <div class="mb-3">
                      <label for="password" class="form-label fw-bold">Password</label>
                      <div class="input-group">
-                        <input type="password" placeholder="Enter Password" id="password" class="form-control" name="password" required>
-                        <span class="input-group-text bg-white border-start-0 password-toggle-icon" style="cursor: pointer;">
-                           <i class="fas fa-eye" id="togglePassword"></i>
+                        <input type="password" placeholder="Enter Password" id="password" class="form-control border-end-0 shadow-none" name="password" required>
+                        <span class="input-group-text bg-white border-start-0" style="cursor: pointer;">
+                           <i class="fas password-toggle-icon fa-eye"></i>
                         </span>
                      </div>
                      @if($errors->has('password'))
@@ -65,23 +65,6 @@
    </div>
 
    <!-- Ensure jQuery is included -->
-   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-   <script>
-      $(document).ready(function() {
-         // Click event to toggle password visibility
-         $('#togglePassword').click(function() {
-            const passwordField = $('#password');
-            const passwordFieldType = passwordField.attr('type');
-
-            if (passwordFieldType === 'password') {
-               passwordField.attr('type', 'text'); // Show password
-               $(this).removeClass('fa-eye').addClass('fa-eye-slash'); // Change to eye-slash icon
-            } else {
-               passwordField.attr('type', 'password'); // Hide password
-               $(this).removeClass('fa-eye-slash').addClass('fa-eye'); // Change back to eye icon
-            }
-         });
-      });
-   </script>
+   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>   
 </body>
 @endsection

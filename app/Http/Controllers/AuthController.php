@@ -42,12 +42,10 @@ class AuthController extends Controller
         $customer = Customer::where("Customer_email", $credentials["email"])->first();
     
         if ($request->input('resend_otp') == '1') {
-            // Resend OTP logic
+            
             if ($customer) {
-                $otp = rand(100000, 999999); // Generate a new OTP
+                $otp = rand(100000, 999999); 
                 Session::put('otp', $otp);
-    
-                // Resend OTP email
                 Mail::to($customer->customer_email)->send(new OtpMail($otp, $customer->first_name));
     
                 return redirect()->back()->with('success', 'A new OTP has been sent to your email.');
@@ -55,22 +53,20 @@ class AuthController extends Controller
                 return redirect()->back()->withErrors(['email' => 'Email not found']);
             }
         }
-    
-        // Regular login flow
         if ($customer && Hash::check($credentials['password'], $customer->password)) {
             Auth::guard('web')->login($customer);
+            $email = $credentials["email"];
             Session::put('user_email', $credentials["email"]);
             
-            $otp = rand(100000, 999999); // Generate OTP
+            if($customer ->first_login){
+
+                 return redirect()->route('password.reset', compact('email'));
+            }
+            $otp = rand(100000, 999999); 
             Session::put('otp', $otp);
-    
-            // Send OTP email
             Mail::to($customer->customer_email)->send(new OtpMail($otp, $customer->first_name));
-            
             return redirect()->route('otppage');
         }
-    
-        // If authentication fails
         return redirect()->back()->withErrors(['email' => 'Invalid credentials']);
     }
 
@@ -185,20 +181,31 @@ public function resetlink(Request $request)
 }
 public function updatePassword(Request $request)
 {
+    // Validate the request data
     $request->validate([
-        'token' => 'required',
         'email' => 'required|email',
         'password' => 'required|confirmed|min:6',
     ]);
 
+    
+    // Find the customer by email
     $customer = Customer::where('customer_email', $request->email)->first();
 
+    // Check if the customer exists and if the token is valid
     if (!$customer) {
         return redirect()->back()->withErrors(['email' => 'Invalid email or token.']);
     }
 
+    // Update the customer's password
     $customer->password = Hash::make($request->password);
-    $customer->save();
+    $customer->first_login = false;
+    if($customer->save()){
+        if (!$customer->first_login) {
+            return redirect()->route('showplan')->with('success', 'Your password has been successfully updated.');
+        } else {
+            return redirect()->route('login')->with('success', 'Your password has been successfully updated.');
+        }
+    }
 
     return redirect()->route('login')->with('success', 'Your password has been successfully updated.');
 }

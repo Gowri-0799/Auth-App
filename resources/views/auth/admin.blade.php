@@ -37,13 +37,13 @@
                      </span> 
                      @endif
                   </div>
-                  <div class="form-group mb-3">
+                  <div class=" mb-3">
                      <label for="password" class="form-label fw-bold">Password</label>
                      <div class="input-group">
-                        <input type="password" placeholder="Enter Password" id="password" class="form-control"
+                        <input type="password" placeholder="Enter Password" id="password" class="form-control border-end-0 shadow-none"
                            name="password" required>
-                        <span class="input-group-text bg-white border-start-0 password-toggle-icon" style="cursor: pointer;">
-                           <i class="fas fa-eye" id="togglePassword"></i>
+                        <span class="input-group-text bg-white border-start-0" style="cursor: pointer;">
+                        <i class="fas password-toggle-icon fa-eye"></i>
                         </span>
                      </div>
                      @if($errors->has('password'))

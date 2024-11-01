@@ -174,7 +174,7 @@
                         <a class="sidebar-footer p-0 m-0 mb-2 ms-4">
                             <span class="text-dark">{{ session('user_email') }}</span>
                         </a>
-                        <a href="/logout" class="sidebar-footer text-center p-0 m-0 mb-4 ms-4 logout">
+                        <a href="{{ route('adminlogin') }}" class="sidebar-footer text-center p-0 m-0 mb-4 ms-4 logout">
                             <span class="btn fw-bold text-primary">Logout</span>
                         </a>
                     </div>

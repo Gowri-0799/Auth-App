@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('last_name')->nullable();
             $table->string('password')->nullable();
             $table->string('company_name')->nullable();
+            $table->boolean('first_login')->default(true);
             // billing address fields
             $table->string('billing_attention')->nullable();
             $table->string('billing_street')->nullable();

@@ -21,6 +21,8 @@ use App\Models\Support;
 use Illuminate\Support\Facades\Storage;
 use App\Mail\SubscriptionDowngrade;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\CustomerInvitation;
+
 
 
 
@@ -139,13 +141,10 @@ class ZohoController extends Controller
 
     private function createPlanInZoho($plan)
     {
-        // Get the Zoho access token
+        
         $accessToken = $this->zohoService->getAccessToken();
 
-        // Define the plan_code (Zoho requires this to be a unique identifier)
-      // You can generate this dynamically or have custom logic
-
-        // Make a POST request to Zoho API to create the plan
+        
         $response = Http::withHeaders([
             'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
             'Content-Type'  => 'application/json',
@@ -153,19 +152,16 @@ class ZohoController extends Controller
         ])->post('https://www.zohoapis.com/billing/v1/plans', [
             'plan_code' => $plan->plan_code,
             'name' => $plan->plan_name,
-            'recurring_price' => (float) $plan->plan_price, // Ensure price is in correct format (float)
-            'product_id' => '5437538000000088227', // Check if this product_id is correct
-            'interval_unit' => 'months', // Confirm this is the right value
-            'interval' => 1, // Confirm the correct interval
+            'recurring_price' => (float) $plan->plan_price, 
+            'product_id' => '5437538000000088227', 
+            'interval_unit' => 'months', 
+            'interval' => 1, 
         ]);
         
-        // Debugging: Show response details
-       
-
-        // Check if the response is successful
+      
         if ($response->successful()) {
             $responseData = $response->json();
-            return $responseData['plan']['plan_id']; // Return Zoho's plan ID
+            return $responseData['plan']['plan_id']; 
         } else {
             throw new \Exception('Zoho API error: ' . $response->body());
         }
@@ -291,13 +287,13 @@ class ZohoController extends Controller
     }
     public function filterSubscriptions(Request $request)
     {
-        // Get the search term and dates
+        
         $search = $request->input('search');
         $startDate = $request->input('startDate');
         $endDate = $request->input('endDate');
-        $perPage = $request->input('show', 10); // Number of entries to show
+        $perPage = $request->input('show', 10); 
     
-        // Start the query for filtering subscriptions
+     
         $query = DB::table('subscriptions')
             ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
             ->join('customers', 'subscriptions.zoho_cust_id', '=', 'customers.zohocust_id')
@@ -312,7 +308,7 @@ class ZohoController extends Controller
                 'subscriptions.status'
             );
     
-        // Apply the date filters if they exist
+        
         if ($startDate) {
             $query->whereDate('subscriptions.start_date', '>=', $startDate);
         }
@@ -320,7 +316,7 @@ class ZohoController extends Controller
             $query->whereDate('subscriptions.start_date', '<=', $endDate);
         }
     
-        // Apply the search filter on the plan name
+       
         if ($search) {
             $query->where('plans.plan_name', 'LIKE', "%{$search}%");
         }
@@ -406,7 +402,6 @@ class ZohoController extends Controller
 
     public function store(Request $request)
     {
-        
         $validatedData = $request->validate([
             'first_name' => 'nullable|string',
             'last_name' => 'nullable|string',
@@ -422,8 +417,7 @@ class ZohoController extends Controller
         ]);
     
         $fullName = trim($validatedData['first_name'] . ' ' . $validatedData['last_name']);
-    
-       
+
         $exists = Customer::where('customer_name', $fullName)->exists();
     
         if ($exists) {
@@ -431,25 +425,20 @@ class ZohoController extends Controller
                 'name_combination' => 'The combination of first name and last name already exists.',
             ])->withInput();
         }
-    
-        $defaultPassword = Hash::make('soxco123');
-    
-       
+        $defaultPassword = 'soxco123';
         $customer = Customer::create([
             'customer_name' => $fullName,
             'first_name' => $validatedData['first_name'],
             'last_name' => $validatedData['last_name'],
             'customer_email' => $validatedData['customer_email'],
             'company_name' => $validatedData['company_name'],
-            'password' => $defaultPassword,
-           
+            'password' => Hash::make($defaultPassword),
             'billing_attention' => $fullName,
             'billing_street' => $validatedData['billing_street'],
             'billing_city' => $validatedData['billing_city'],
             'billing_state' => $validatedData['billing_state'],
             'billing_country' => $validatedData['billing_country'],
             'billing_zip' => $validatedData['billing_zip'],
-            
             'shipping_attention' => $fullName,
             'shipping_street' => $validatedData['billing_street'],
             'shipping_city' => $validatedData['billing_city'],
@@ -457,22 +446,17 @@ class ZohoController extends Controller
             'shipping_country' => $validatedData['billing_country'],
             'shipping_zip' => $validatedData['billing_zip'],
         ]);
-    
         try {
-           
             $zohoResponse = $this->createCustomerInZoho($customer);
-            
-           
             $customer->zohocust_id = $zohoResponse;
             $customer->save();
-    
-            
+
+            $loginUrl = route('login'); 
+
+            Mail::to($customer->customer_email)->send(new CustomerInvitation($customer, $defaultPassword, $loginUrl));
             return redirect(route('cust'))->with('success', 'Customer added successfully!');
         } catch (\Exception $e) {
-            
             \Log::error('Failed to create a customer in Zoho: ' . $e->getMessage());
-    
-           
             return redirect()->back()->withErrors('Failed to create a partner in Zoho.')->withInput();
         }
     }
@@ -482,8 +466,6 @@ class ZohoController extends Controller
     {
         $accessToken = $this->zohoService->getAccessToken();
 
-
-        // Call the Zoho API to create the customer
         $response = Http::withHeaders([ 'Authorization' => 'Zoho-oauthtoken ' .$accessToken
         ])->post('https://www.zohoapis.com/billing/v1/customers', [
             'organization_id' => config('services.zoho.zoho_org_id'),
@@ -516,7 +498,7 @@ class ZohoController extends Controller
 
         if ($response->successful()) {
             $responseData = $response->json();
-            return $responseData['customer']['customer_id']; // Return Zoho's plan ID
+            return $responseData['customer']['customer_id']; 
         } else {
             throw new \Exception('Zoho API error: ' . $response->body());
         }

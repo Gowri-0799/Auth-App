@@ -56,4 +56,50 @@
       </div>
    </div>
 </div>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const passwordField = document.getElementById("password1");
+    const confirmPasswordField = document.getElementById("password");
+    const errorSpan = document.querySelector(".text-danger");
+
+    function validatePassword() {
+        const password = passwordField.value;
+        let errors = [];
+
+        // Check for minimum length of 6 characters
+        if (password.length < 6) {
+            errors.push("Password must be at least 6 characters.");
+        }
+        
+        // Check for at least one letter
+        if (!/[a-zA-Z]/.test(password)) {
+            errors.push("Password must contain at least one letter.");
+        }
+        
+        // Check for at least one number
+        if (!/[0-9]/.test(password)) {
+            errors.push("Password must contain at least one number.");
+        }
+        
+        // Check for at least one special character
+        if (!/[@$!%*?&]/.test(password)) {
+            errors.push("Password must contain at least one special character.");
+        }
+        
+        // Display all errors, or clear if none
+        errorSpan.textContent = errors.join(" ");
+    }
+
+    function validateConfirmPassword() {
+        if (passwordField.value !== confirmPasswordField.value) {
+            errorSpan.textContent = "Passwords do not match.";
+        } else {
+            validatePassword(); // Run complexity validation if passwords match
+        }
+    }
+
+    passwordField.addEventListener("input", validatePassword);
+    confirmPasswordField.addEventListener("input", validateConfirmPassword);
+});
+</script>
 @endsection

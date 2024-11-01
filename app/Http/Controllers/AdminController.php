@@ -32,14 +32,14 @@ class AdminController extends Controller
     $credentials = $request->only("email", "password");
     $admin = Admin::where('email', $credentials['email'])->first();
 
-    // Check if resend OTP was requested
+    
     if ($request->input('resend_otp') == '1') {
-        // Resend OTP logic
+       
         if ($admin) {
-            $otp = rand(100000, 999999); // Generate a new OTP
+            $otp = rand(100000, 999999); 
             Session::put('otp', $otp);
 
-            // Send OTP email
+           
             Mail::to($admin->email)->send(new OtpMail($otp, $admin->name));
 
             return redirect()->back()->with('success', 'A new OTP has been sent to your email.');
@@ -54,18 +54,18 @@ class AdminController extends Controller
         Session::put('user_email', $email);
         
         if ($admin->first_login) {
-            // Redirect to password reset page
+           
             return redirect()->route('adpassword.reset', compact('email'));
         }     
-        // Generate OTP and send email
+        
         $otp = rand(100000, 999999);
         Session::put('otp', $otp);
         Mail::to($admin->email)->send(new OtpMail($otp, $admin->name));
         
-        return redirect()->route('adminotppage'); // Redirect to OTP verification page
+        return redirect()->route('adminotppage'); 
     }
 
-    // If authentication fails
+   
     return redirect()->back()->withErrors(['email' => 'Invalid credentials']);
     }
 
@@ -161,24 +161,32 @@ class AdminController extends Controller
 
     public function updateAdminPassword(Request $request)
     {
-        // Validate the request data
+      
         $request->validate([
             'email' => 'required|email',
-            'password' => 'required|confirmed|min:6',
+            'password' => [
+                'required',
+                'confirmed',
+                'min:6',
+                'regex:/[a-zA-Z]/',      
+                'regex:/[0-9]/',          
+                'regex:/[@$!%*?&]/'       
+            ],
+        ], [
+            'password.regex' => 'The password must contain at least one letter, one number, and one special character.'
         ]);
-        // Find the admin by email
+  
         $admin = Admin::where('email', $request->email)->first();
-        // Check if the admin exists and if the token is valid
+      
         if (!$admin) {
             return redirect()->back()->withErrors(['email' => 'Invalid email or token.']);
         }
-        
-        // Update the admin's password
+     
         $admin->password = Hash::make($request->password);
         $admin->first_login = false;
 
         if ($admin->save()) {
-            // Redirect based on the first_login field
+           
             if ($admin->first_login == 0) {
                 return redirect()->route('admin.dashboard')->with('success', 'Your password has been successfully updated.');
             } else {

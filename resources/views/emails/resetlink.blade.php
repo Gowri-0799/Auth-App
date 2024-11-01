@@ -8,7 +8,7 @@
 </nav>
 <div class="main mb-5">
    <div class="container d-flex justify-content-center align-items-center flex-column mt-5">
-      <h3 class="text-primary mb-3">Teslink ISP Admin Program Change Password</h3>
+      <h3 class="text-primary mb-3">Teslink ISP Partner Program Change Password</h3>
       <div style="margin-bottom: 100px;" class="card p-4 w-100 shadow-sm border-0 rounded login-card bg-clearlink">
          <div class="rounded p-2">
             <form method="POST" action="{{ route('password.update') }}">
@@ -56,4 +56,45 @@
       </div>
    </div>
 </div>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const passwordField = document.getElementById("password1");
+    const confirmPasswordField = document.getElementById("password");
+    const errorSpan = document.querySelector(".text-danger");
+
+    function validatePassword() {
+        const password = passwordField.value;
+        let errors = [];
+
+        if (password.length < 6) {
+            errors.push("Password must be at least 6 characters.");
+        }
+
+        if (!/[a-zA-Z]/.test(password)) {
+            errors.push("Password must contain at least one letter.");
+        }
+
+        if (!/[0-9]/.test(password)) {
+            errors.push("Password must contain at least one number.");
+        }
+        
+        if (!/[@$!%*?&]/.test(password)) {
+            errors.push("Password must contain at least one special character.");
+        }
+        
+        errorSpan.textContent = errors.join(" ");
+    }
+
+    function validateConfirmPassword() {
+        if (passwordField.value !== confirmPasswordField.value) {
+            errorSpan.textContent = "Passwords do not match.";
+        } else {
+            validatePassword(); 
+        }
+    }
+
+    passwordField.addEventListener("input", validatePassword);
+    confirmPasswordField.addEventListener("input", validateConfirmPassword);
+});
+</script>
 @endsection
