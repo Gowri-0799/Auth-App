@@ -176,9 +176,17 @@ class AdminController extends Controller
         // Update the admin's password
         $admin->password = Hash::make($request->password);
         $admin->first_login = false;
-        $admin->save();
 
-        // Redirect to a success page or login page
+        if ($admin->save()) {
+            // Redirect based on the first_login field
+            if ($admin->first_login == 0) {
+                return redirect()->route('admin.dashboard')->with('success', 'Your password has been successfully updated.');
+            } else {
+                return redirect()->route('adminlogin')->with('success', 'Your password has been successfully updated.');
+            }
+        }
         return redirect()->route('adminlogin')->with('success', 'Your password has been successfully updated.');
     }
+
+   
 }

@@ -53,7 +53,7 @@ Route::get("/reset-mail", [AuthController::class, "resetlink"])
 
     Route::post('/password/update', [AuthController::class, 'updatePassword'])->name('password.update');
     Route::post('admin/password/update', [AdminController::class, 'updateAdminPassword'])->name('admin.password.update');
-    
+
 Route::post("/login", [AuthController::class, "loginPost"])
     ->name("login.post");
 
