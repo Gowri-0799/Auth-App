@@ -56,8 +56,8 @@
 
             @if ($isSubscribed)
                 <span class="position-absolute top-0 start-50 rounded-1 border border-2 fs-6 translate-middle badge text-primary bg-white">Current Plan</span>
-                <a href="#" class="btn btn-primary">Monthly Click Add-On</a>
-
+               
+                <a href="{{ route('addon', $plan->plan_code) }}" class="btn btn-primary">Monthly Click Add-On</a>
                 <!-- Show next renewal date for the subscribed plan -->
                 @if($nextBillingDate)
                     <p class="mt-2 mb-2"><small>Next Renewal Date: {{ \Carbon\Carbon::parse($nextBillingDate)->format('d-M-Y') }}</small></p>

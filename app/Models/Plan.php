@@ -20,6 +20,7 @@ class Plan extends Authenticatable
         'plan_name',
         'plan_price',
         'plan_code',
-        'plan_id'
+        'plan_id',
+        'addon_code'
     ];
 }

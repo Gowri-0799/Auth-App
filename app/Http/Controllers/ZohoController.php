@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Plan;
+use App\Models\Addon;
 use Illuminate\Support\Facades\Hash;  
 use Illuminate\Support\Facades\Route;
 use App\Models\Customer;
@@ -36,6 +37,8 @@ class ZohoController extends Controller
     protected $payment;
     protected $Creditnote;
     protected $support;
+    protected $addon;
+
 
     public function __construct(ZohoService $zohoService)
     {
@@ -47,41 +50,65 @@ class ZohoController extends Controller
         $this->payment =new Payment();
         $this->creditnote =new Creditnote();
         $this->support=new Support();
+        $this->addon=new Addon();
     }
 
     public function getAllPlans()
     {
         
             $plans = $this->zohoService->getZohoPlans();
-    
-            // Check if 'plans' is nested inside another key (adjust based on API response structure)
             if (isset($plans['plans'])) {
 
                 Plan::truncate();
 
                 foreach ($plans['plans'] as $plan) {
 
-                    // Delete existing plan with the same name
-                    //Plan::where('plan_name', $plan['name'])->delete();
+                    $this->plan = new Plan(); 
 
-                    $this->plan = new Plan(); // Create a new instance for each plan
-
-                    $this->plan->plan_name = $plan['name'] ?? null; // Set default null if key doesn't exist
-                    $this->plan->plan_price = $plan['recurring_price'] ?? null; // Set default null if key doesn't exist
+                    $this->plan->plan_name = $plan['name'] ?? null; 
+                    $this->plan->plan_price = $plan['recurring_price'] ?? null; 
                     $this->plan->plan_code=$plan['plan_code']??null;
                     $this->plan->plan_id=$plan['plan_id']??null;
-                    $this->plan->save(); // Save the plan to the database
+                    if (isset($plan['addons']) && count($plan['addons']) > 0) {
+                        $this->plan->addon_code = $plan['addons'][0]['addon_code'] ?? null;
+                    } else {
+                        $this->plan->addon_code = null; 
+                    }
+                    $this->plan->save(); 
                 }
             }
-       // }
 
         return redirect(route("plantest"));
     }
+    public function getAlladdons(){
+        $addons = $this->zohoService->getZohoaddons();
+        if (isset($addons['addons'])) {
+            Addon::truncate();
+            foreach ($addons['addons'] as $addons) {
+                $this->addon = new Addon(); 
+                $this->addon->name = $addons['name'] ?? null;
+                $this->addon->addon_code = $addons['addon_code'] ?? null;
+                $this->addon->unit_name = $addons['unit_name'] ?? null;
+                $this->addon->quantity = $addons['price_brackets'][0]['quantity'] ?? 0;
+                $this->addon->price = $addons['price_brackets'][0]['price'] ?? 0; 
+                $this->addon->save(); 
+            }
+        }
+        return redirect(route("addontest"));
+        
+    }
+
     function plantest()
     {
         $response['plans'] = $this->plan->all();
       
         return view("plan")->with($response);
+    }
+    function addontest()
+    {
+        $response['addons'] = $this->addon->all();
+      
+        return view("addons")->with($response);
     }
     public function plandb()
     {
@@ -1798,10 +1825,234 @@ if (!$existingInvoice) {
             }
         }
 
-        // Return success message or redirect as needed
         return redirect()->route('Support.Ticket')->with('success', 'Subscription successfully completed!');
     }
 
+    public function addons($planId)
+    {
+      
+        $accessToken = $this->zohoService->getAccessToken();
+
+        $customer = Customer::where('customer_email', Session::get('user_email'))->first();
+
+        if (!$customer) {
+            return back()->withErrors('Customer not found.');
+        }
+
+        $subscriptions = Subscription::where('zoho_cust_id', $customer->zohocust_id)->first();
+  
+        if (!$subscriptions) {
+            return back()->withErrors('Subscription not found.');
+        }
+        $plans = Plan::where('plan_code', $planId)->first();
+   
+        $response = Http::withHeaders([
+            'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
+            'Content-Type'  => 'application/json',
+            'organization_id' => config('services.zoho.zoho_org_id')
+        ])->post('https://www.zohoapis.com/billing/v1/hostedpages/buyonetimeaddon', [
+          
+            'subscription_id' => $subscriptions->subscription_id,
+            'addons' => [
+                [
+                    'addon_code' => $plans->addon_code,
+                    'quantity'=> 1,
+                ]
+            ],
+            'redirect_url' => url('addonthanks')
+        ]);
+       
+        if ($response->successful()) {
+            $hostedPageData = $response->json();
+           
+            
+            $hostedPageUrl = $hostedPageData['hostedpage']['url'];
+            
+            $hostedPageId = $hostedPageData['hostedpage']['hostedpage_id'];
+
+            Session::put('hostedpage_id', $hostedPageId); 
+            return redirect()->to($hostedPageUrl);
+
+        } else {
+            return back()->withErrors('Error creating subscription: ' . $response->body());
+        }
+    }
+
+    public function retrieveaddonHostedPage()
+    {
+        
+        $accessToken = $this->zohoService->getAccessToken();
+        $hostedPageId = Session::get('hostedpage_id'); 
+
+        if (!$hostedPageId) {
+            return back()->withErrors('Hosted page ID is missing.');
+        }
+
+        $response = Http::withHeaders([
+            'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
+            'Content-Type'  => 'application/json'
+        ])->get("https://www.zohoapis.com/billing/v1/hostedpages/{$hostedPageId}");
+     dd($response->json());
+
+        if ($response->successful()) {
+            $hostedPageData = $response->json();
+                $this->addonSubscriptionData($hostedPageData); 
+                return view('thanksadd', ['hostedPageData' => $hostedPageData]);
+        } else {
+            return back()->withErrors('Error retrieving hosted page data: ' . $response->body());
+        }
+    }
+
+    public function addonSubscriptionData($data)
+    {
+        $subscriptionData = $data['data']['subscription'];
+        $invoiceData = $data['data']['invoice'];
+        $paymentMethodData = $invoiceData['payments'] ?? [];
+        $cardData = $subscriptionData['card'];
+        $paymentMethodId = $cardData['card_id'] ?? ($paymentMethodData['payment_method_id'] ?? null);
+    
+        // Fetch the existing subscription by Zoho subscription ID
+        $existingSubscription = Subscription::where('subscription_id', $subscriptionData['subscription_id'])->first();
+ 
+        if (!$existingSubscription) {
+            $subscription = Subscription::create([
+           'subscription_id' => $subscriptionData['subscription_id'],
+           'subscription_number' => $subscriptionData['subscription_number'],
+           'plan_id' => $subscriptionData['plan']['plan_id'],
+           'invoice_id' => $invoiceData['invoice_id'],
+           'payment_method_id' => $paymentMethodId,
+           'next_billing_at' => $subscriptionData['next_billing_at'],
+           'start_date' => $subscriptionData['start_date'],
+           'zoho_cust_id' => $subscriptionData['customer_id'],
+           'status' => $data['status'],
+       ]);
+   } else {
+       $existingSubscription->update([
+           'subscription_number' => $subscriptionData['subscription_number'],
+           'plan_id' => $subscriptionData['plan']['plan_id'],
+           'invoice_id' => $invoiceData['invoice_id'],
+           'payment_method_id' => $paymentMethodId,
+           'next_billing_at' => $subscriptionData['next_billing_at'],
+           'start_date' => $subscriptionData['start_date'],
+           'zoho_cust_id' => $subscriptionData['customer_id'],
+           'status' => $data['status'],
+       ]);
+   }
+// Check if an invoice record with the same invoice_id already exists
+$existingInvoice = Invoice::where('invoice_id', $invoiceData['invoice_id'])->first();
+$invoiceItems = json_encode($invoiceData['invoice_items'] ?? []);
+$paymentItems = json_encode($invoiceData['payments'] ?? []);
+if (!$existingInvoice) {
+    // Create a new invoice record if it doesn't already exist
+    Invoice::create([
+        'invoice_id' => $invoiceData['invoice_id'],
+        'invoice_date' => $invoiceData['date'],
+        'invoice_number' => $invoiceData['invoice_number'],
+        'subscription_id' => $subscriptionData['subscription_id'], // Link to subscription
+        'credits_applied' => $invoiceData['credits_applied'],
+        'discount' => $subscription->discount ?? null,
+        'payment_made' => $invoiceData['payment_made'],
+        'payment_method' => $paymentMethodId,
+        'invoice_link' => $invoiceData['invoice_url'],
+        'zoho_cust_id' => $subscriptionData['customer_id'],
+        'invoice_items' => $invoiceItems,
+        'payment_details' => $paymentItems,
+        'status' => $invoiceData['status'],
+    ]);
+} else {
+    // Optionally, update the existing record if needed
+    $existingInvoice->updateOrInsert([
+        'invoice_date' => $invoiceData['date'],
+        'invoice_number' => $invoiceData['invoice_number'],
+        'subscription_id' => $subscriptionData['subscription_id'],
+        'credits_applied' => $invoiceData['credits_applied'],
+        'discount' => $subscription->discount ?? null,
+        'payment_made' => $invoiceData['payment_made'],
+        'payment_method_id' => $paymentMethodId,
+        'invoice_link' => $invoiceData['invoice_url'],
+        'zoho_cust_id' => $subscriptionData['customer_id'],
+        'invoice_items' => $invoiceItems,
+        'status' => $invoiceData['status'],
+    ]);
+}
+
+  // Step 3: Store the credits from the invoice into the 'creditnotes' table
+  $credits = $invoiceData['credits'] ?? [];
+  if (!empty($credits)) {
+      foreach ($credits as $credit) {
+          CreditNote::updateOrCreate(
+              ['creditnote_id' => $credit['creditnote_id']],
+              [
+                  'creditnote_number' => $credit['creditnotes_number'] ?? null,
+                  'credited_date' => $credit['credited_date'] ?? null,
+                  'invoice_number' => $credit['invoice_id'] ?? null,
+                  'zoho_cust_id' => $subscriptionData['customer_id'],
+                  'status' => 'credited', // Assuming this is a credited status
+                  'credited_amount' => $credit['credited_amount'],
+                  'balance' => 0, // Set the balance, or you can modify as per your requirements
+              ]
+          );
+      }
+  }
+        // Step 4: Store payment method data in the 'payments' table (only if payment method exists)
+        if (!empty($paymentMethodData) && isset($subscriptionData['card'])) {
+            $cardData = $subscriptionData['card'];
+            
+            // Check if 'payments' exists in the 'invoice' section and is not empty
+            $invoicePayments = $invoiceData['payments'] ?? [];
+         
+            if (!empty($invoicePayments)) {
+                // Extract payment mode and amount from the first payment record (assuming single payment)
+                $paymentDetails = $invoicePayments[0]; 
+        
+                // Check if a payment record with the same payment_method_id already exists
+                $existingPayment = Payment::where('payment_method_id', $cardData['card_id'])->first();
+        
+                if (!$existingPayment) {
+                    // Create a new payment record if it doesn't already exist
+                    Payment::create([
+                        'payment_method_id' => $cardData['card_id'] ?? null,// Use null if card_id not present
+                        'type' => $cardData['card_type'] ?? null, // Correct field name
+                        'zoho_cust_id' => $subscriptionData['customer_id'],
+                        'last_four_digits' => $cardData['last_four_digits'] ?? null,
+                        'expiry_year' => $cardData['expiry_year'] ?? null,
+                        'expiry_month' => $cardData['expiry_month'] ?? null,
+                        'payment_gateway' => $cardData['payment_gateway'] ?? null,
+                        'status' => $invoiceData['status'],
+                        'payment_mode' => $paymentDetails['payment_mode'] ?? null,  // Extract payment mode from payments array
+                        'amount' => $paymentDetails['amount'] ?? null,              // Extract amount from payments array
+                        'invoice_id' => $invoiceData['invoice_id'],  
+                        'payment_id' =>$paymentDetails['payment_id'],
+ 
+                    ]);
+                } else {
+                    // Optionally, update the existing record if needed
+                    $existingPayment->updateOrInsert([
+                        'payment_method_id' => $paymentDetails['payment_id'] ?? null,
+                        'type' => $cardData['card_type'] ?? null,
+                        'zoho_cust_id' => $subscriptionData['customer_id'],
+                        'last_four_digits' => $cardData['last_four_digits'] ?? null,
+                        'expiry_year' => $cardData['expiry_year'] ?? null,
+                        'expiry_month' => $cardData['expiry_month'] ?? null,
+                        'payment_gateway' => $cardData['payment_gateway'] ?? null,
+                        'status' => $invoiceData['status'],
+                        'payment_mode' => $paymentDetails['payment_mode'] ?? null,  // Extract payment mode from payments array
+                        'amount' => $paymentDetails['amount'] ?? null,              // Extract amount from payments array
+                        'invoice_id' => $invoiceData['invoice_id'],    
+                         'payment_id' =>$paymentDetails['payment_id']
+                    ]);
+                }
+            }
+        }
+
+        // Return success message or redirect as needed
+        return redirect()->route('thanksadd')->with('success', 'Subscription successfully completed!');
+    }
+
+    public function thanksadd()
+    {
+        return view('thanksadd');
+    }
 
 }
 

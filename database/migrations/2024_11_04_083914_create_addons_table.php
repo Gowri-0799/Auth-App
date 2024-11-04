@@ -11,20 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('plans', function (Blueprint $table) {
+        Schema::create('addons', function (Blueprint $table) {
             $table->id();
-            $table->string('plan_name');
-            $table->decimal('plan_price', 8, 2);
-            $table->string('plan_code');
-            $table->string('plan_id')->nullable();
             $table->string('addon_code')->unique();
+            $table->integer('quantity')->default(0);
+            $table->decimal('price', 10, 2);
+            $table->string('name');
+            $table->string('unit_name');
             $table->timestamps();
         });
     }
 
-    
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
-        Schema::dropIfExists('plans');
+        Schema::dropIfExists('addons');
     }
 };

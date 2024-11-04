@@ -71,7 +71,8 @@ Route::get("/logout", [AuthController::class, "logout"])
 
 Route:: get("/plantest", [ZohoController::class, "plantest"])
     ->name("plantest");
-    
+    Route:: get("/addontest", [ZohoController::class, "addontest"])
+    ->name("addontest"); 
     Route:: get("admin/plan", [ZohoController::class, "plandb"])
     ->name("plandb");
     Route::get('admin/plans/create', [ZohoController::class, 'create'])
@@ -86,6 +87,9 @@ Route:: get("/in", [AuthController::class, "index"])
 
 Route::get('admin/plans', [ZohoController::class, "getAllPlans"])
     ->name('plans');
+
+Route::get('admin/addons', [ZohoController::class, "getAlladdons"])
+    ->name('addons');
 Route:: get("admin/support-ticket", [ZohoController::class, "supportticket"])
     ->name("Support.Ticket");
 
@@ -126,10 +130,12 @@ Route::post('/customerdetail', [ZohoController::class, 'store'])->name('customer
 Route::get('/customer',[ZohoController::class,'display']) ->name('cust.display');
 
 Route::get('/subscribe/{planId}', [ZohoController::class, 'subscribe'])->name('subscribe');
+Route::get('/addon/{planId}', [ZohoController::class, 'addons'])->name('addon');
 
 
 Route::get('/customer/subscription/details',[ZohoController::class,'thankyousub']) ->name('thankyousub');
 Route::get('/customer/upgrade/details',[ZohoController::class,'thanksup']) ->name('thanksup');
+Route::get('/customer/subscription/addon',[ZohoController::class,'thanksadd']) ->name('thanksadd');
 
 
 Route::get('/payments/{zoho_cust_id}', [ZohoController::class, 'editPayment'])->name('payments.edit');
@@ -139,6 +145,9 @@ Route::get('/admin/invoices',[Zohocontroller::class,'showinvoice'])->name('invda
 
 Route::get('/thankyou', [ZohoController::class, 'retrieveHostedPage'])->name('thankyou');
 Route::get('/thanks', [ZohoController::class, 'retrieveRetHostedPage'])->name('thanks');
+
+Route::get('/addonthanks', [ZohoController::class, 'retrieveaddonHostedPage'])->name('addonthanks');
+
 Route::get('/subdown', [ZohoController::class, 'retrievedowntHostedPage'])->name('subdown');
 
 Route::get('/customer/subscriptions', [ZohoController::class, 'showCustomerSubscriptions'])->name('customer.subscriptions');

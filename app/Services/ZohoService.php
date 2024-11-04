@@ -128,9 +128,8 @@ class ZohoService
         $response = Http::withHeaders([
             'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
         ])->get('https://www.zohoapis.com/billing/v1/plans');
-        
-        // Handle the response
-        if ($response->successful()) {
+    
+         if ($response->successful()) {
             return $response->json(); // Return the API data
         } else {
             // If the request fails (e.g., 401 Unauthorized), handle the error
@@ -138,6 +137,23 @@ class ZohoService
         }
     }
 
+    public function getZohoaddons()
+    {
+        // Get the access token
+        $accessToken = $this->getAccessToken();
+
+        // Make the API request with the token
+        $response = Http::withHeaders([
+            'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
+        ])->get('https://www.zohoapis.com/billing/v1/addons');
+   
+         if ($response->successful()) {
+            return $response->json(); // Return the API data
+        } else {
+            // If the request fails (e.g., 401 Unauthorized), handle the error
+            throw new \Exception('Failed to fetch Zoho plans: ' . $response->body());
+        }
+    }
     public function getZohoCustomers()
     {
         // Get the access token

@@ -26,7 +26,6 @@
                               <p style="color:black;font-size:16px;font-family:Verdana,sans-serif;font-weight:400;text-align:left;line-height:26px">
                                  For security reasons, please change your password after your first login.
                               </p>
-                           
                         </td>
                      </tr>
                   </tbody>
