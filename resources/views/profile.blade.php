@@ -36,7 +36,9 @@
             </div>
             <div class="d-flex flex-row">
               <a class="btn btn-primary  right-margin rounded" data-bs-toggle="modal" data-bs-target="#updateAddressModal">Update Address</a>
-              <a class="btn text-primary text-decoration-underline fw-bold ps-0" data-bs-toggle="modal">Update Password</a>
+              <a class="btn text-primary text-decoration-underline fw-bold ps-0" data-bs-toggle="modal" data-bs-target="#updatePasswordModal">
+    Update Password
+</a>
             </div>
           </div>
         </div>
@@ -146,6 +148,132 @@
         </div>
       </div>
     </div>
+
+<!-- Update Password Modal -->
+<div class="modal fade" id="updatePasswordModal" tabindex="-1" aria-labelledby="updatePasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 bg-clearlink rounded">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updatePasswordModalLabel">Change Password</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="updatePasswordForm" action="#" method="POST">
+                    @csrf
+                    <!-- Current Password Field with Eye Icon -->
+                    <div class="mb-3 position-relative">
+                        <label for="currentPassword" class="form-label">Current Password</label>
+                        <div class="position-relative">
+                            <input type="password" class="form-control" id="currentPassword" name="current_password" required>
+                            <span class="eye-icon position-absolute" style="right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;">
+                                <i class="fa fa-eye"></i>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- New Password Field with Eye Icon -->
+                    <div class="mb-3 position-relative">
+                        <label for="newPassword" class="form-label">New Password</label>
+                        <div class="position-relative">
+                            <input type="password" class="form-control" id="newPassword" name="new_password" required>
+                            <span class="eye-icon position-absolute" style="right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;">
+                                <i class="fa fa-eye"></i>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Confirm New Password Field with Eye Icon -->
+                    <div class="mb-3 position-relative">
+                        <label for="confirmNewPassword" class="form-label">Confirm New Password</label>
+                        <div class="position-relative">
+                            <input type="password" class="form-control" id="confirmNewPassword" name="confirm_new_password" required>
+                            <span class="eye-icon position-absolute" style="right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;">
+                                <i class="fa fa-eye"></i>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary w-100">Update Password</button>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <h6>Password Instructions:</h6>
+                        <ul class="password-instructions">
+                            <li>The password should have a minimum length of 6 characters.</li>
+                            <li>The password should contain at least one letter.</li>
+                            <li>The password should contain at least one number.</li>
+                            <li>The password should contain at least one special character.</li>
+                        </ul>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-clearlink {
+        background-color: #f7f8fa;
+    }
+
+    .password-instructions {
+        list-style-type: disc;
+        padding-left: 20px;
+        margin-top: 10px;
+    }
+
+    .modal-content {
+        padding: 20px;
+    }
+
+    .modal-footer {
+        border-top: none;
+    }
+
+    /* Eye icon styling */
+    .eye-icon {
+        cursor: pointer;
+        display: none; /* Initially hidden */
+    }
+</style>
+
+<script>
+    // JavaScript to toggle password visibility and show the eye icon only when input is not empty
+    document.querySelectorAll('.form-control').forEach(input => {
+        const eyeIcon = input.parentNode.querySelector('.eye-icon');
+
+        // Show the eye icon when typing starts
+        input.addEventListener('input', () => {
+            if (input.value.length > 0) {
+                eyeIcon.style.display = 'inline'; // Show icon if there's text in the input
+            } else {
+                eyeIcon.style.display = 'none'; // Hide if input is empty
+                input.type = 'password'; // Reset to password type if the field is cleared
+                eyeIcon.querySelector('i').classList.add('fa-eye');
+                eyeIcon.querySelector('i').classList.remove('fa-eye-slash');
+            }
+        });
+
+        // Toggle password visibility on icon click
+        eyeIcon.addEventListener('click', function () {
+            if (input.type === 'password') {
+                input.type = 'text';
+                eyeIcon.querySelector('i').classList.add('fa-eye-slash');
+                eyeIcon.querySelector('i').classList.remove('fa-eye');
+            } else {
+                input.type = 'password';
+                eyeIcon.querySelector('i').classList.add('fa-eye');
+                eyeIcon.querySelector('i').classList.remove('fa-eye-slash');
+            }
+        });
+    });
+</script>
+
+
+
+
+
   </div>
 </div> 
 @endsection

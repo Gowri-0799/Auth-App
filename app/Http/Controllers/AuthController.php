@@ -210,4 +210,6 @@ public function updatePassword(Request $request)
     return redirect()->route('login')->with('success', 'Your password has been successfully updated.');
 }
 
+
+
 }

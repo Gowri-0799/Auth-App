@@ -16,8 +16,11 @@ return new class extends Migration
             $table->string('plan_name');
             $table->decimal('plan_price', 8, 2);
             $table->string('plan_code');
+            $table->decimal('addon_price', 10, 2);
+            $table->string('addon_name');
             $table->string('plan_id')->nullable();
             $table->string('addon_code')->unique();
+
             $table->timestamps();
         });
     }

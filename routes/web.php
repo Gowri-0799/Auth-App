@@ -71,8 +71,7 @@ Route::get("/logout", [AuthController::class, "logout"])
 
 Route:: get("/plantest", [ZohoController::class, "plantest"])
     ->name("plantest");
-    Route:: get("/addontest", [ZohoController::class, "addontest"])
-    ->name("addontest"); 
+  
     Route:: get("admin/plan", [ZohoController::class, "plandb"])
     ->name("plandb");
     Route::get('admin/plans/create', [ZohoController::class, 'create'])
@@ -88,8 +87,7 @@ Route:: get("/in", [AuthController::class, "index"])
 Route::get('admin/plans', [ZohoController::class, "getAllPlans"])
     ->name('plans');
 
-Route::get('admin/addons', [ZohoController::class, "getAlladdons"])
-    ->name('addons');
+
 Route:: get("admin/support-ticket", [ZohoController::class, "supportticket"])
     ->name("Support.Ticket");
 

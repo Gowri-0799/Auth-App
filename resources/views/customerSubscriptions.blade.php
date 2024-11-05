@@ -39,7 +39,7 @@
             {{-- Sidebar --}}
             <div class="col-12 col-md-10 col-lg-3"> 
                 <div style="padding: 20px;">
-                    <h5>Sidebar</h5>
+                    <!-- <h5>Sidebar</h5> -->
                 </div>
             </div>
 
@@ -68,9 +68,17 @@
 
                         {{-- Buttons for Add-On and Upgrade --}}
                         <div style="margin-top: 25px; display: flex; justify-content: space-between;">
-                            <button class="btn btn-primary" style="padding: 12px 25px; border-radius: 8px; background-color: #007bff;">Monthly Click Add-On</button>
-                            <button class="btn btn-primary" style="padding: 12px 25px; border-radius: 8px; background-color: #007bff;">Upgrade</button>
-                        </div>
+                        @if($subscriptions->addon == 1)
+                        <p class="mt-3 w-50 text-dark">You have also Subscribed to: <span>{{$plans->addon_code}}</span> for the current month</p>
+
+    @else
+        <button class="btn btn-primary" style="padding: 12px 25px; border-radius: 8px; background-color: #007bff;">
+            Monthly Click Add-On
+        </button>
+    @endif
+    <a id="upgrade-button" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#upgradeModal" class="btn btn-primary m-3 d-flex align-items-center  w-50 justify-content-center  rounded  p-2">Upgrade</a>
+   
+                    </div>
 
                         {{-- Downgrade and Cancellation Links --}}
                         <div style="margin-top: 20px; display: flex; justify-content: space-between;">
@@ -200,6 +208,36 @@
                         </div>
                     </div>
                 </div>
+                {{-- Modal for Upgrade Plan --}}
+<div class="modal fade" id="upgradeModal" tabindex="-1" aria-labelledby="upgradeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="upgradeModalLabel">Upgrade Plans</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form id="upgradeForm" action="#" method="POST">
+                @csrf
+                <div class="mb-3">
+                    <label for="upgradeSelect" class="form-label">Select an Upgrade Plan</label>
+
+                    <div class="d-flex flex-column">
+                        <select id="upgradeSelect" name="plan_id" class="mt-4 form-select-lg border-dark shadow-none" required style="width:300px;">
+                            <option class="py-3" value="" disabled selected>Select a Plan</option>
+                            @foreach($upgradePlans as $upgradePlan)
+                                <option class="py-3" value="{{ $upgradePlan->plan_id }}">
+                                    {{ $upgradePlan->plan_code }} 
+                                </option>
+                            @endforeach
+                        </select>
+                        <input type="submit" class="mt-5 w-25 btn btn-primary rounded" value="Submit">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
             </div>
         @endif
     </div>

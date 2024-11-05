@@ -143,11 +143,7 @@
                             <span>Plans </span>
                         </a>
                     </li>
-                    <li class="sidebar-item">
-                        <a href="{{ route('addons') }}" class="sidebar-link">
-                            <span>ADD Add-on </span>
-                        </a>
-                    </li>
+                   
                     <li class="sidebar-item">
                         <a href="{{ route('customerdb') }}" class="sidebar-link">
                             <span>Partner</span>

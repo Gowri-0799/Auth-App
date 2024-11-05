@@ -21,17 +21,6 @@
                         </th>
                             
 
-                        <!-- <th class=" align-middle position-relative">
-                         <div>
-                                
-                          <h5 class="text-dark mb-2"><strong><span class="text-primary">Basic</span>&nbsp;<span>Monthly</span></strong></h5>
-                          <h5 class="text-dark mb-2"><strong>$1,000 </strong></h5>
-                          <span class="position-absolute top-0 start-50 rounded-1 border border-2 fs-6 translate-middle badge text-primary bg-white">Current Plan</span>
-                            <a href="a" id="save" class="btn btn-primary mt-2 mb-2">Monthly Click Add-On</a>
-                            <p class="mt-2 mb-2"><small>Next Renewal Date: 01-Nov-2024</small></p>
-
-                          </div>
-                        </th> -->
                         @php
     // Get the price and next billing date of the subscribed plan
     $subscribedPlan = $subscriptions->first();
@@ -53,15 +42,25 @@
                 // Check if subscriptions exist and if the user is subscribed to the current plan
                 $isSubscribed = $subscriptions->contains('plan_id', $plan->plan_id);
             @endphp
+            @php
+    // Check if the user has subscribed to the add-on
+    $isAddonSubscribed = $subscriptions->contains(function ($subscription) {
+        return $subscription->addon == 1; // Assuming 'addon' column is used to track the add-on subscription
+    });
+@endphp
 
-            @if ($isSubscribed)
-                <span class="position-absolute top-0 start-50 rounded-1 border border-2 fs-6 translate-middle badge text-primary bg-white">Current Plan</span>
-               
-                <a href="{{ route('addon', $plan->plan_code) }}" class="btn btn-primary">Monthly Click Add-On</a>
-                <!-- Show next renewal date for the subscribed plan -->
-                @if($nextBillingDate)
-                    <p class="mt-2 mb-2"><small>Next Renewal Date: {{ \Carbon\Carbon::parse($nextBillingDate)->format('d-M-Y') }}</small></p>
-                @endif
+@if ($isSubscribed)
+    <span class="position-absolute top-0 start-50 rounded-1 border border-2 fs-6 translate-middle badge text-primary bg-white">Current Plan</span>
+    
+    @if ($isAddonSubscribed)
+    <p class="mt-1 fw-normal p-1"><small>You have also Subscribed to: <span>{{$plan->addon_code}}</span> for the current month</small></p>
+    @else
+        <a href="{{ route('addon', $plan->plan_code) }}" class="btn btn-primary">Monthly Click Add-On</a>
+    @endif
+    
+    @if($nextBillingDate)
+        <p class="mt-2 mb-2"><small>Next Renewal Date: {{ \Carbon\Carbon::parse($nextBillingDate)->format('d-M-Y') }}</small></p>
+    @endif
             @else
                 @if ($plan->plan_price < $subscribedPlanPrice)
                     <!-- No buttons for plans cheaper than the subscribed plan -->
