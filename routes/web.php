@@ -101,8 +101,7 @@ Route:: get("admin/support-ticket", [ZohoController::class, "supportticket"])
      Route::get('/customer/companyinfo', [ CompanyinfoController::class, 'companyinfo'])
      ->name('customer.companyinfo');  
 Route::put('/customers/{zohocust_id}/update-address', [ZohoController::class, 'addupdate'])->name('customers.addupdate');
-
-
+Route::post('/profile/password/update', [ZohoController::class, 'updatePasswordinprofile'])->name('profile.password.update');
 
 
     Route:: get("customers/allcustomer", [ZohoController::class, "customerdb"])

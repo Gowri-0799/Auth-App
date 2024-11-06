@@ -41,7 +41,12 @@ return [
         'client_secret' => env('ZOHO_CLIENT_SECRET'),
         'redirect_uri' => env('ZOHO_REDIRECT_URI'),
         'refresh_token' => env('ZOHO_REFRESH_TOKEN'),
-        'zoho_org_id' => env('ZOHO_ORG_ID')
+        'zoho_org_id' => env('ZOHO_ORG_ID'),
+        'zoho_create_customer'=>env('ZOHO_CREATE_CUSTOMER'),
+        'zoho_new_subscription'=>env('ZOHO_NEW_SUBSCRIPTION'),
+        'zoho_add_payment'=>env('ZOHO_ADD_PAYMENT'),
+        'zoho_upgrade_subscription'=>env('ZOHO_UPGRADE_SUBSCRIPTION'),
+        'zoho_addon'=>env('ZOHO_ADDON')
     ],
 
     'mailgun' => [

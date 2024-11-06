@@ -495,7 +495,7 @@ class ZohoController extends Controller
         $accessToken = $this->zohoService->getAccessToken();
 
         $response = Http::withHeaders([ 'Authorization' => 'Zoho-oauthtoken ' .$accessToken
-        ])->post('https://www.zohoapis.com/billing/v1/customers', [
+        ])->post(config('services.zoho.zoho_create_customer'), [
             'organization_id' => config('services.zoho.zoho_org_id'),
             // 'JSONString' => json_encode($customerData)
             'display_name' =>  $customer->customer_name, 
@@ -546,7 +546,7 @@ class ZohoController extends Controller
         $response = Http::withHeaders([
             'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
             'Content-Type'  => 'application/json' // Ensure the Content-Type is JSON
-        ])->post('https://www.zohoapis.com/billing/v1/hostedpages/newsubscription', [
+        ])->post(config('services.zoho.zoho_new_subscription'), [
             'organization_id' => config('services.zoho.zoho_org_id'),
             'customer_id'  => $customer->zohocust_id, // Zoho customer ID
             'customer' => [
@@ -1022,7 +1022,7 @@ public function addupdate(Request $request, $id)
 
         $response = Http::withHeaders([ 'Authorization' => 'Zoho-oauthtoken ' .$accessToken,
             'Content-Type'  => 'application/json'
-        ])->post('https://www.zohoapis.com/billing/v1/hostedpages/addpaymentmethod', [
+        ])->post(config('services.zoho.zoho_add_payment'), [
             'organization_id' => config('services.zoho.zoho_org_id'),
             'customer_id' => $zoho_cust_id,
             'redirect_url' => route('zoho.callback')
@@ -1103,7 +1103,7 @@ public function addupdate(Request $request, $id)
         $response = Http::withHeaders([
             'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
             'Content-Type' => 'application/json'
-        ])->post('https://www.zohoapis.com/billing/v1/hostedpages/updatesubscription', [
+        ])->post(config('services.zoho.zoho_upgrade_subscription'), [
             'organization_id' => config('services.zoho.zoho_org_id'),
             'subscription_id' => $subscription->subscription_id,
             'plan' => [
@@ -1315,7 +1315,12 @@ if (!$existingInvoice) {
         if ($subscriptions) {
             $plans = Plan::where('plan_id', $subscriptions->plan_id)->first();
         }
-        return view('thanks', compact('subscriptions', 'plans'));
+
+        $invoice = Invoice::where('zoho_cust_id', $customer->zohocust_id)
+        ->where('subscription_id', $subscriptions->subscription_id) // Ensure there's a subscription_id column in your Invoice table
+        ->first();
+
+        return view('thanks', compact('subscriptions', 'plans','invoice'));
     }
 
     public function filterInvoices(Request $request)
@@ -1636,7 +1641,7 @@ public function downgradesub(Request $request)
     $response = Http::withHeaders([
         'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
         'Content-Type' => 'application/json'
-    ])->post('https://www.zohoapis.com/billing/v1/hostedpages/updatesubscription', [
+    ])->post(config('services.zoho.zoho_upgrade_subscription'), [
         'organization_id' => config('services.zoho.zoho_org_id'),
         'subscription_id' => $subscription_id,
         'plan' => [
@@ -1858,7 +1863,7 @@ if (!$existingInvoice) {
             'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
             'Content-Type'  => 'application/json',
             'organization_id' => config('services.zoho.zoho_org_id')
-        ])->post('https://www.zohoapis.com/billing/v1/hostedpages/buyonetimeaddon', [
+        ])->post(config('services.zoho.zoho_addon'), [
           
             'subscription_id' => $subscriptions->subscription_id,
             'addons' => [
@@ -1872,8 +1877,7 @@ if (!$existingInvoice) {
        
         if ($response->successful()) {
             $hostedPageData = $response->json();
-           
-            
+
             $hostedPageUrl = $hostedPageData['hostedpage']['url'];
             
             $hostedPageId = $hostedPageData['hostedpage']['hostedpage_id'];
@@ -1952,10 +1956,34 @@ if (!$existingInvoice) {
         return redirect()->route('customer.subscriptions')->with('success', 'Subscription successfully completed!');
     }
 
-    public function thanksadd()
-    {
-        return view('thanksadd');
+    public function updatePasswordinprofile(Request $request)
+{
+   
+    $request->validate([
+        'email' => 'required|email',
+        'current_password' => 'required',
+        'new_password' => 'required|confirmed|min:6',
+    ]);
+
+    // Find the customer by email
+    $customer = Customer::where('customer_email', $request->email)->first();
+
+    // Check if the customer exists and if the current password is correct
+    if (!$customer || !Hash::check($request->current_password, $customer->password)) {
+        return redirect()->back()->withErrors(['current_password' => 'Invalid current password or email.']);
     }
+
+    // Update the customer's password
+    $customer->password = Hash::make($request->new_password);
+    $customer->first_login = false;
+
+    if ($customer->save()) {
+        return redirect()->route('customer.details')->with('success', 'Your password has been successfully updated.');
+    }
+
+    return redirect()->route('customer.details')->withErrors(['error' => 'Failed to update the password.']);
+}
+
 
     
 }

@@ -146,7 +146,7 @@ class ZohoService
         $response = Http::withHeaders([
             'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
         ])->get('https://www.zohoapis.com/billing/v1/addons');
-   
+
          if ($response->successful()) {
             return $response->json(); // Return the API data
         } else {

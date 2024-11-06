@@ -95,6 +95,53 @@
         </div>
       </div>
     </div>
+    <!-- Address Update Modal -->
+    <div class="modal fade" id="updateAddressModal" tabindex="-1" aria-labelledby="updateAddressModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="updateAddressModalLabel">Update Address</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{ route('customers.addupdate', $customer->zohocust_id) }}" method="POST">
+                        @csrf
+                        @method('PUT')
+                        <!-- Billing Street -->
+                        <div class="mb-3">
+                            <label for="billing_street" class="form-label">Address*</label>
+                            <input type="text" class="form-control" id="billing_street" name="billing_street" value="{{ $customer->billing_street }}" required>
+                        </div>
+                        <!-- Zip Code -->
+                        <div class="mb-3">
+                            <label for="billing_zip" class="form-label">Zip Code*</label>
+                            <input type="text" class="form-control" id="billing_zip" name="billing_zip" value="{{ $customer->billing_zip }}" required>
+                        </div>
+                        <!-- City -->
+                        <div class="mb-3">
+                            <label for="billing_city" class="form-label">City*</label>
+                            <input type="text" class="form-control" id="billing_city" name="billing_city" value="{{ $customer->billing_city }}" required>
+                        </div>
+                        <!-- State -->
+                        <div class="mb-3">
+                            <label for="billing_state" class="form-label">State*</label>
+                            <input type="text" class="form-control" id="billing_state" name="billing_state" value="{{ $customer->billing_state }}" required>
+                        </div>
+                        <!-- Country -->
+                        <div class="mb-3">
+                            <label for="billing_country" class="form-label">Country*</label>
+                            <input type="text" class="form-control" id="billing_country" name="billing_country" value="{{ $customer->billing_country }}" required>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-primary">Update Address</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     
     <!-- Payment Method Section -->
     <div class="row mb-5">
@@ -150,129 +197,51 @@
     </div>
 
 <!-- Update Password Modal -->
-<div class="modal fade" id="updatePasswordModal" tabindex="-1" aria-labelledby="updatePasswordModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 bg-clearlink rounded">
+
+        <div class="modal fade" id="updatePasswordModal" tabindex="-1" aria-labelledby="updatePasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md modal-dialog-centered ">
+            <div class="modal-content bg-popup">
             <div class="modal-header">
-                <h5 class="modal-title" id="updatePasswordModalLabel">Change Password</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
+                    <h3 class="modal-title" id="passwordUpdateModalLabel">Change Password</h3>
+                    <button type="button" class="close border-0" data-bs-dismiss="modal" aria-label="Close"><i class="fa-solid fa-xmark fs-3"></i></button>
+                </div>
             <div class="modal-body">
-                <form id="updatePasswordForm" action="#" method="POST">
-                    @csrf
-                    <!-- Current Password Field with Eye Icon -->
-                    <div class="mb-3 position-relative">
-                        <label for="currentPassword" class="form-label">Current Password</label>
-                        <div class="position-relative">
-                            <input type="password" class="form-control" id="currentPassword" name="current_password" required>
-                            <span class="eye-icon position-absolute" style="right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;">
-                                <i class="fa fa-eye"></i>
-                            </span>
-                        </div>
-                    </div>
-                    
-                    <!-- New Password Field with Eye Icon -->
-                    <div class="mb-3 position-relative">
-                        <label for="newPassword" class="form-label">New Password</label>
-                        <div class="position-relative">
-                            <input type="password" class="form-control" id="newPassword" name="new_password" required>
-                            <span class="eye-icon position-absolute" style="right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;">
-                                <i class="fa fa-eye"></i>
-                            </span>
-                        </div>
-                    </div>
-                    
-                    <!-- Confirm New Password Field with Eye Icon -->
-                    <div class="mb-3 position-relative">
-                        <label for="confirmNewPassword" class="form-label">Confirm New Password</label>
-                        <div class="position-relative">
-                            <input type="password" class="form-control" id="confirmNewPassword" name="confirm_new_password" required>
-                            <span class="eye-icon position-absolute" style="right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;">
-                                <i class="fa fa-eye"></i>
-                            </span>
-                        </div>
-                    </div>
-                    
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary w-100">Update Password</button>
-                    </div>
-                    
-                    <div class="mt-3">
-                        <h6>Password Instructions:</h6>
-                        <ul class="password-instructions">
-                            <li>The password should have a minimum length of 6 characters.</li>
-                            <li>The password should contain at least one letter.</li>
-                            <li>The password should contain at least one number.</li>
-                            <li>The password should contain at least one special character.</li>
+            <form id="passwordUpdateForm" action="{{ route('profile.password.update') }}" method="post">
+    @csrf
+    <input type="hidden" name="email" value="{{ $customer->customer_email }}">
+
+    <label class="fw-bold">Current Password</label>
+    <input type="password" name="current_password" class="form-control" required />
+
+    <label class="fw-bold popup-element">New Password</label>
+    <input type="password" name="new_password" class="form-control" required />
+
+    <label class="fw-bold popup-element">Confirm New Password</label>
+    <input type="password" name="new_password_confirmation" class="form-control" required />
+
+    <input type="submit" class="btn btn-primary px-3 py-2 rounded popup-element" value="Update Password">
+</form>
+                    <div class="text-dark popup-element">
+                        <h4 class="fw-bold">Password Instructions:</h4>
+                        <ul id="billing" class="">
+                            <li class="billing">
+                                The password should have a minimum length of 6 characters
+                            </li>
+                            <li class="billing">
+                                The password should contain at least one letter
+                            </li>
+                            <li class="billing">
+                                The password should contain at least one number
+                            </li>
+                            <li class="billing">
+                                The password should contain at least one symbol (special character)
+                            </li>
                         </ul>
                     </div>
-                </form>
-            </div>
+                </div>
         </div>
     </div>
 </div>
-
-<style>
-    .bg-clearlink {
-        background-color: #f7f8fa;
-    }
-
-    .password-instructions {
-        list-style-type: disc;
-        padding-left: 20px;
-        margin-top: 10px;
-    }
-
-    .modal-content {
-        padding: 20px;
-    }
-
-    .modal-footer {
-        border-top: none;
-    }
-
-    /* Eye icon styling */
-    .eye-icon {
-        cursor: pointer;
-        display: none; /* Initially hidden */
-    }
-</style>
-
-<script>
-    // JavaScript to toggle password visibility and show the eye icon only when input is not empty
-    document.querySelectorAll('.form-control').forEach(input => {
-        const eyeIcon = input.parentNode.querySelector('.eye-icon');
-
-        // Show the eye icon when typing starts
-        input.addEventListener('input', () => {
-            if (input.value.length > 0) {
-                eyeIcon.style.display = 'inline'; // Show icon if there's text in the input
-            } else {
-                eyeIcon.style.display = 'none'; // Hide if input is empty
-                input.type = 'password'; // Reset to password type if the field is cleared
-                eyeIcon.querySelector('i').classList.add('fa-eye');
-                eyeIcon.querySelector('i').classList.remove('fa-eye-slash');
-            }
-        });
-
-        // Toggle password visibility on icon click
-        eyeIcon.addEventListener('click', function () {
-            if (input.type === 'password') {
-                input.type = 'text';
-                eyeIcon.querySelector('i').classList.add('fa-eye-slash');
-                eyeIcon.querySelector('i').classList.remove('fa-eye');
-            } else {
-                input.type = 'password';
-                eyeIcon.querySelector('i').classList.add('fa-eye');
-                eyeIcon.querySelector('i').classList.remove('fa-eye-slash');
-            }
-        });
-    });
-</script>
-
-
-
-
 
   </div>
 </div> 
