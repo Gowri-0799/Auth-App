@@ -5,7 +5,7 @@
 
 @section('content')
 <div id="content" style="box-sizing: border-box; margin-left:300px; width:100%" class="p-3">
-    <!-- Card Wrapper for the Plan Details -->
+   
     <div class="d-flex flex-column justify-content-center align-items-center ">
 
     <div class="d-flex flex-row row m-2 mb-0 w-100 justify-content-center align-items-center">
@@ -63,11 +63,11 @@
     @endif
             @else
                 @if ($plan->plan_price < $subscribedPlanPrice)
-                    <!-- No buttons for plans cheaper than the subscribed plan -->
-                    <span class="text-muted"></span> <!-- Optional message for user -->
+                   
+                    <span class="text-muted"></span> 
                 @else
                     @if ($subscriptions->isNotEmpty())
-                        <!-- Upgrade Button with Form -->
+                      
                         <form action="{{ route('upgrade.subscription') }}" method="POST" style="display: inline;">
                             @csrf
                             <input type="hidden" name="plan_code" value="{{ $plan->plan_code }}">
@@ -92,7 +92,7 @@
                 </thead>
                 <tbody>
                 <tr>
-            <!-- Fixed column for plan features -->
+            
             <td class="fixed-column align-left fs-5 fw-bold">
                 <div>
                     <ul>
@@ -108,22 +108,7 @@
                     </ul>
                 </div>
             </td>
-            <!-- <td>
-                <div>
-                    <ul>
-                        <li><i class="fa-solid fa-check text-check fs-3"></i></li>
-                        <li><i class="fa-solid fa-check text-check fs-3"></i></li>
-                        <li><i class="fa-solid fa-check text-check fs-3"></i></li>
-                        <li><i class="fa-solid fa-check text-check fs-3"></i></li>
-                        <li><i class="fa-solid fa-check text-check fs-3"></i></li>
-                        <li><i class="fa-solid fa-check text-check fs-3"></i></li>
-                        <li>Daily</li>
-                        <li>Over 2,000/month</li>
-                    </ul>
-                </div>
-            </td> -->
-
-            <!-- Loop over each plan to display corresponding features -->
+            
             @foreach ($plans as $plan)
             <td>
                 <div>
@@ -141,7 +126,7 @@
                 </div>
             </td>
             @endforeach
-            <!-- Static "Contact Us" column for the last column -->
+           
             <td>
                 <div>
                     <ul>
