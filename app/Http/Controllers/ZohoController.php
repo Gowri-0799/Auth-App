@@ -1985,7 +1985,30 @@ if (!$existingInvoice) {
 }
 
 
-    
+public function showUpgradePreview(Request $request)
+{
+    $planCode = $request->input('plan_code');
+  
+    $newPlan = Plan::where('plan_code', $planCode)->first();
+   
+    $customer = Customer::where('customer_email', Session::get('user_email'))->first();
+
+    if (!$customer) {
+        return back()->withErrors('Customer not found.');
+    }
+
+    $subscription = Subscription::where('zoho_cust_id', $customer->zohocust_id)->first();
+
+    return view('upgrade-preview', compact('subscription', 'newPlan'));
+}
+public function processUpgrade(Request $request)
+{
+    $planCode = $request->input('plan_code');
+    // Logic to process the subscription upgrade goes here
+    // You might need to update the user's subscription record to the new plan
+
+    return redirect()->route('subscription.details')->with('success', 'Your subscription has been upgraded successfully.');
+}
 }
 
 

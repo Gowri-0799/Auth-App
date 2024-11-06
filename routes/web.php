@@ -183,6 +183,10 @@ Route ::get('/support/ticket/filter', [ZohoController::class, 'supportticketfilt
 
 Route ::get('/pdt/{creditnote_id}', [ZohoController::class, 'pdfdownload'])->name('pdf.download');
 
+
+Route::post('/upgrade/preview', [ZohoController::class, 'showUpgradePreview'])->name('upgrade.preview');
+Route::post('/upgrade/subscription', [ZohoController::class, 'processUpgrade'])->name('upgrade.subscription.detail');
+
 Route::get('/test-mail', function () {
     \Mail::raw('This is a test email', function ($message) {
         $message->to('your_test_email@example.com')
