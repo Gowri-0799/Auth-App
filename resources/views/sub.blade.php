@@ -22,20 +22,36 @@
                             
 
                         @php
-    // Get the price and next billing date of the subscribed plan
+    
     $subscribedPlan = $subscriptions->first();
-    $subscribedPlanPrice = $subscribedPlan->plan->plan_price ?? 0; // Assuming 'plan' relation is set up
-    $nextBillingDate = $subscribedPlan->next_billing_at ?? null; // Get next_billing_at from subscription
+    $subscribedPlanPrice = $subscribedPlan->plan->plan_price ?? 0; 
+    $nextBillingDate = $subscribedPlan->next_billing_at ?? null; 
 @endphp
 
 @foreach ($plans as $plan)
     <th class="align-middle position-relative">
         <div>
-            <h5 class="text-dark mb-2">
-                <strong><span class="text-primary">{{ $plan->plan_name }}</span>&nbsp;<span>{{ $plan->plan_code }}</span></strong>
+        @php
+                
+                $isSubscribed = $subscriptions->contains('plan_id', $plan->plan_id);
+
+                
+                $isAddonSubscribed = $subscriptions->contains(function ($subscription) use ($plan) {
+                    return $subscription->addon == 1 && $subscription->plan_id == $plan->plan_id;
+                });
+            @endphp
+        <h5 class="text-dark mb-2">
+                <strong>
+                    <span class="text-primary">{{ $plan->plan_name }}</span>&nbsp;<span>{{ $plan->plan_code }}</span>
+                </strong>
             </h5>
             <h5 class="text-dark mb-2">
-                <strong>${{ $plan->plan_price }}</strong>
+                <strong>
+                    ${{ $plan->plan_price }}
+                    @if ($isAddonSubscribed)
+                        + ${{ $plan->addon_price }}
+                    @endif
+                </strong>
             </h5>
 
             @php
@@ -55,8 +71,12 @@
     @if ($isAddonSubscribed)
     <p class="mt-1 fw-normal p-1"><small>You have also Subscribed to: <span>{{$plan->addon_code}}</span> for the current month</small></p>
     @else
-        <a href="{{ route('addon', $plan->plan_code) }}" class="btn btn-primary">Monthly Click Add-On</a>
-    @endif
+    <form action="{{ route('addon.preview') }}" method="POST" style="display: inline;">
+    @csrf
+    <input type="hidden" name="plan_code" value="{{ $plan->plan_code }}">
+    <button type="submit" class="btn btn-primary">Monthly Click Add-On</button>
+</form>  
+  @endif
     
     @if($nextBillingDate)
         <p class="mt-2 mb-2"><small>Next Renewal Date: {{ \Carbon\Carbon::parse($nextBillingDate)->format('d-M-Y') }}</small></p>

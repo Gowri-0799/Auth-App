@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Plan;
 use App\Models\Addon;
+use App\Models\Term;
 use Illuminate\Support\Facades\Hash;  
 use Illuminate\Support\Facades\Route;
 use App\Models\Customer;
@@ -38,6 +39,7 @@ class ZohoController extends Controller
     protected $Creditnote;
     protected $support;
     protected $addon;
+    protected $term;
 
 
     public function __construct(ZohoService $zohoService)
@@ -51,6 +53,7 @@ class ZohoController extends Controller
         $this->creditnote =new Creditnote();
         $this->support=new Support();
         $this->addon=new Addon();
+        $this->term=new Term();
     }
 
     public function getAllPlans()
@@ -1085,6 +1088,25 @@ public function addupdate(Request $request, $id)
     
     public function upgrade(Request $request)
     {
+        $validated = $request->validate([
+            'zoho_cust_id' => 'required|string',
+            'subscription_number' => 'required|string',
+            'plan_name' => 'required|string',
+            'amount' => 'required|numeric',
+            'consent' => 'required|boolean',  
+        ]);
+
+    Term::create([
+        'zoho_cust_id' => $validated['zoho_cust_id'],
+        'zoho_cpid' => null,  // Set Zoho CPID as null for now
+        'subscription_number' => $validated['subscription_number'],
+        'ip_address' => $request->ip(),  // Get the IP address of the user
+        'browser_agent' => $request->header('User-Agent'),  // Get the browser agent
+        'consent' => $validated['consent'],  // Store the consent value
+        'plan_name' => $validated['plan_name'],
+        'amount' => $validated['amount'],
+    ]);
+
         $accessToken = $this->zohoService->getAccessToken();
         $customer = Customer::where('customer_email', Session::get('user_email'))->first();
     
@@ -1178,6 +1200,7 @@ public function addupdate(Request $request, $id)
            'start_date' => $subscriptionData['start_date'],
            'zoho_cust_id' => $subscriptionData['customer_id'],
            'status' => $subscriptionData['status'], 
+           'addon' => 0,
        ]);
    } else {
        $existingSubscription->update([
@@ -1189,6 +1212,7 @@ public function addupdate(Request $request, $id)
            'start_date' => $subscriptionData['start_date'],
            'zoho_cust_id' => $subscriptionData['customer_id'],
            'status' => $subscriptionData['status'], 
+           'addon' => 0,
        ]);
    }
 // Check if an invoice record with the same invoice_id already exists
@@ -1841,9 +1865,29 @@ if (!$existingInvoice) {
         return redirect()->route('Support.Ticket')->with('success', 'Subscription successfully completed!');
     }
 
-    public function addons($planId)
+    public function addons(Request $request)
     {
-      
+        $validated = $request->validate([
+            'zoho_cust_id' => 'required|string',
+            'subscription_number' => 'required|string',
+            'plan_name' => 'required|string',
+            'amount' => 'required|numeric',
+            'consent' => 'required|boolean',  
+        ]);
+
+    Term::create([
+        'zoho_cust_id' => $validated['zoho_cust_id'],
+        'zoho_cpid' => null,  // Set Zoho CPID as null for now
+        'subscription_number' => $validated['subscription_number'],
+        'ip_address' => $request->ip(),  // Get the IP address of the user
+        'browser_agent' => $request->header('User-Agent'),  // Get the browser agent
+        'consent' => $validated['consent'],  // Store the consent value
+        'plan_name' => $validated['plan_name'],
+        'amount' => $validated['amount'],
+    ]);
+
+        $planId = $request->input('plan_id'); 
+       
         $accessToken = $this->zohoService->getAccessToken();
 
         $customer = Customer::where('customer_email', Session::get('user_email'))->first();
@@ -1857,8 +1901,8 @@ if (!$existingInvoice) {
         if (!$subscriptions) {
             return back()->withErrors('Subscription not found.');
         }
-        $plans = Plan::where('plan_code', $planId)->first();
-   
+        $plans = Plan::where('plan_id', $planId)->first();
+
         $response = Http::withHeaders([
             'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
             'Content-Type'  => 'application/json',
@@ -1998,16 +2042,55 @@ public function showUpgradePreview(Request $request)
     }
 
     $subscription = Subscription::where('zoho_cust_id', $customer->zohocust_id)->first();
-
-    return view('upgrade-preview', compact('subscription', 'newPlan'));
+    $plan=Plan::where ('plan_id',$subscription->plan_id)->first();
+    return view('upgrade-preview', compact('subscription', 'newPlan','plan'));
 }
 public function processUpgrade(Request $request)
 {
     $planCode = $request->input('plan_code');
-    // Logic to process the subscription upgrade goes here
-    // You might need to update the user's subscription record to the new plan
 
     return redirect()->route('subscription.details')->with('success', 'Your subscription has been upgraded successfully.');
+}
+
+public function showAddonPreview(Request $request)
+{
+    $planCode = $request->input('plan_code');
+
+    // Fetch the selected add-on plan
+    $newPlan = Plan::where('plan_code', $planCode)->first();
+  
+    if (!$newPlan) {
+        return back()->withErrors('Plan not found.');
+    }
+
+    // Fetch customer and subscription details
+    $customer = Customer::where('customer_email', Session::get('user_email'))->first();
+    if (!$customer) {
+        return back()->withErrors('Customer not found.');
+    }
+
+    $subscription = Subscription::where('zoho_cust_id', $customer->zohocust_id)->first();
+    $plan = Plan::where('plan_id', $subscription->plan_id)->first();
+
+    // Return the Add-On Preview view with the necessary data
+    return view('addon-preview', compact('subscription', 'newPlan', 'plan'));
+}
+
+public function storeTerms(Request $request)
+{
+   
+    $validated = $request->validate([
+        'zoho_cust_id' => 'required|string',
+        'subscription_number' => 'required|string',
+        'plan_name' => 'required|string',
+        'amount' => 'required|numeric',
+        'consent' => 'required|boolean',  
+    ]);
+
+    
+  
+
+    return redirect(route('addon'))->with('success', 'Your agreement has been recorded successfully.');
 }
 }
 

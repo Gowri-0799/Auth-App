@@ -18,8 +18,8 @@
                 <h6><strong>Information:</strong></h6>
                 <ul class="billing">
                     <li class="billing mb-1">
-                        We've implemented calendar billing on the 1st of every month. If you subscribe after the 1st of the month, the first upgrade will be prorated. Subsequent renewals will be charged for the full calendar month.
-                    </li>
+                    The total amount for the Monthly Add-On will be charged once you complete the purchase process.
+                     </li>
                 </ul>
             </div>
 
@@ -30,15 +30,15 @@
                 <p>US ${{ number_format($plan->plan_price ?? 0, 2) }}</p>
                 <p><small>Next Renewal Date: {{ \Carbon\Carbon::parse($subscription->next_billing_at)->format('d-M-Y') }}</small></p>
 
-                <h4 class="mb-3">Selected New Plan Details</h4>
+                <h4 class="mb-3">Add-On Plan Details</h4>
                 <p><strong>You are upgrading to</strong></p>
-                <p>{{ $newPlan->plan_name ?? 'N/A' }}</p>
-                <p>US ${{ number_format($newPlan->plan_price ?? 0, 2) }}</p>
+                <p>{{ $newPlan->addon_name ?? 'N/A' }}</p>
+                <p>US ${{ number_format($newPlan->addon_price ?? 0, 2) }}</p>
 
+                <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#termsModal">
+                    Add Add-On
+                </button>
                
-<button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#termsModal">
-Change Plan
-</button>
 
 <!-- Terms and Conditions Modal -->
 <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -101,16 +101,16 @@ Change Plan
     </div>
 </div>
 
-<!-- Hidden Form to Submit -->
-<form id="addonForm" action="{{ route('upgrade.subscription') }}" method="POST" style="display: none;">
-    @csrf
-    <input type="hidden" name="plan_code" value="{{ $newPlan->plan_code }}">
-    <input type="hidden" name="zoho_cust_id" value="{{ $subscription->zoho_cust_id ?? 'default_customer_id' }}">
+<form id="addonForm" action="{{ route('addon') }}" method="POST" style="display: none;">
+                    @csrf
+                    <input type="hidden" name="plan_id" value="{{ $newPlan->plan_id }}">
+                    <input type="hidden" name="zoho_cust_id" value="{{ $subscription->zoho_cust_id ?? 'default_customer_id' }}">
     <input type="hidden" name="subscription_number" value="{{ $subscription->subscription_number ?? 'default_subscription_number' }}">
     <input type="hidden" name="plan_name" value="{{ $plan->plan_name ?? 'default_plan_name' }}">
     <input type="hidden" name="amount" value="{{ $plan->plan_price ?? 0 }}">
     <input type="hidden" name="consent" id="consent" value="0">
-</form>
+                </form>
+           
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -118,7 +118,7 @@ Change Plan
         const submitButton = document.getElementById('submitAddonButton');
         const form = document.getElementById('addonForm');
 
-        // Enable the submit button when the checkbox is checked
+        
         checkbox.addEventListener('change', function () {
             if (checkbox.checked) {
                 submitButton.classList.remove('disabled');
@@ -127,7 +127,7 @@ Change Plan
             }
         });
 
-        // Submit the form when the submit button is clicked
+        
         submitButton.addEventListener('click', function () {
             if (checkbox.checked) {
                 form.submit();
@@ -135,10 +135,4 @@ Change Plan
         });
     });
 </script>
-
-
-            </div>
-        </div>
-    </div>
-</div>
 @endsection

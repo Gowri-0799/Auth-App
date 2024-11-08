@@ -127,8 +127,7 @@ Route::post('/customerdetail', [ZohoController::class, 'store'])->name('customer
 Route::get('/customer',[ZohoController::class,'display']) ->name('cust.display');
 
 Route::get('/subscribe/{planId}', [ZohoController::class, 'subscribe'])->name('subscribe');
-Route::get('/addon/{planId}', [ZohoController::class, 'addons'])->name('addon');
-
+Route::post('/addon', [ZohoController::class, 'addons'])->name('addon');
 
 Route::get('/customer/subscription/details',[ZohoController::class,'thankyousub']) ->name('thankyousub');
 Route::get('/customer/upgrade/details',[ZohoController::class,'thanksup']) ->name('thanksup');
@@ -186,6 +185,10 @@ Route ::get('/pdt/{creditnote_id}', [ZohoController::class, 'pdfdownload'])->nam
 
 Route::post('/upgrade/preview', [ZohoController::class, 'showUpgradePreview'])->name('upgrade.preview');
 Route::post('/upgrade/subscription', [ZohoController::class, 'processUpgrade'])->name('upgrade.subscription.detail');
+
+Route::post('/store-terms', [ZohoController::class, 'storeTerms'])->name('storeTerms');
+
+Route::post('/addon-preview', [ZohoController::class, 'showAddonPreview'])->name('addon.preview');
 
 Route::get('/test-mail', function () {
     \Mail::raw('This is a test email', function ($message) {
