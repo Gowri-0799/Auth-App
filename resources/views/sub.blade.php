@@ -5,6 +5,63 @@
 
 @section('content')
 <div id="content" style="box-sizing: border-box; margin-left:300px; width:100%" class="p-3">
+    <!-- Add Modal for First Login Alert -->
+<div class="modal fade" id="showAlertModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-popup">
+            <div class="modal-header d-flex justify-content-end border-0 bg-popup">
+                <button type="button" class="close border-0 bg-popup" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="fa-solid text-dark fa-xmark fs-3"></i>
+                </button>
+            </div>
+            <div class="modal-body mb-5">
+                <h3 class="message">Please complete the following to create a Subscription</h3>
+                <ul class="message">
+                    <li class="d-flex justify-content-between">
+                        <span>Upload Logo (Company Info)</span>
+                        <!-- Show tick if logo_image is not null -->
+                        @if ($companyInfo && $companyInfo->logo_image)
+                            <i class="fa-solid fa-check text-check fs-3"></i>
+                        @else
+                           
+                        @endif
+                    </li>
+                    <li class="d-flex justify-content-between">
+                        <span>Add Company Name (Company Info)</span>
+                        <!-- Show tick if company_name is not null -->
+                        @if ($companyInfo && $companyInfo->company_name)
+                            <i class="fa-solid fa-check text-check fs-3"></i>
+                        @else
+                            
+                        @endif
+                    </li>
+                    <li class="d-flex justify-content-between">
+                        <span>Set Landing Page URL (Company Info)</span>
+                        <!-- Show tick if landing_page_uri is not null -->
+                        @if ($companyInfo && $companyInfo->landing_page_uri)
+                            <i class="fa-solid fa-check text-check fs-3"></i>
+                        @else
+                           
+                        @endif
+                    </li>
+                    <!-- Optionally, you can add other fields here like 'Upload Provider Data' -->
+                </ul>
+            </div>
+            <div class="modal-footer border-0">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript to Display Modal if First Login -->
+@if ($firstLogin)
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var showAlertModal = new bootstrap.Modal(document.getElementById("showAlertModal"), {});
+        showAlertModal.show();
+    });
+</script>
+@endif
    
     <div class="d-flex flex-column justify-content-center align-items-center ">
 
@@ -247,7 +304,6 @@
     </div>
   </div>
 </div>
-   
    
    
 

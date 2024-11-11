@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Plan;
 use App\Models\Addon;
 use App\Models\Term;
+use App\Models\CompanyInfo;
 use Illuminate\Support\Facades\Hash;  
 use Illuminate\Support\Facades\Route;
 use App\Models\Customer;
@@ -40,6 +41,7 @@ class ZohoController extends Controller
     protected $support;
     protected $addon;
     protected $term;
+    protected $companyinfo;
 
 
     public function __construct(ZohoService $zohoService)
@@ -54,6 +56,7 @@ class ZohoController extends Controller
         $this->support=new Support();
         $this->addon=new Addon();
         $this->term=new Term();
+        $this->companyinfo=new CompanyInfo();
     }
 
     public function getAllPlans()
@@ -278,23 +281,23 @@ class ZohoController extends Controller
 
     
 
-    function showplan()
+    public function showplan()
     {
         $customer = Customer::where('customer_email', Session::get('user_email'))->first();
-
-        // Check if the customer exists
+    
         if (!$customer) {
             return back()->withErrors('Customer not found.');
         }
     
-        // Fetch subscriptions for the customer
         $subscriptions = Subscription::where('zoho_cust_id', $customer->zohocust_id)->get();
     
-        // Fetch all plans ordered by price
+        $companyInfo = CompanyInfo::where('zoho_cust_id', $customer->zohocust_id)->first();
+     
         $plans = Plan::orderBy('plan_price', 'asc')->get();
+     
+        $firstLogin = $customer->first_login;
     
-        // Pass both subscriptions and plans to the view
-        return view('sub', compact('subscriptions', 'plans'));
+        return view('sub', compact('subscriptions', 'plans', 'firstLogin', 'companyInfo'));
     }
     function showsubscription()
     {
@@ -457,34 +460,57 @@ class ZohoController extends Controller
             ])->withInput();
         }
         $defaultPassword = Str::random(16);
-        $customer = Customer::create([
-            'customer_name' => $fullName,
-            'first_name' => $validatedData['first_name'],
-            'last_name' => $validatedData['last_name'],
-            'customer_email' => $validatedData['customer_email'],
-            'company_name' => $validatedData['company_name'],
-            'password' => Hash::make($defaultPassword),
-            'billing_attention' => $fullName,
-            'billing_street' => $validatedData['billing_street'],
-            'billing_city' => $validatedData['billing_city'],
-            'billing_state' => $validatedData['billing_state'],
-            'billing_country' => $validatedData['billing_country'],
-            'billing_zip' => $validatedData['billing_zip'],
-            'shipping_attention' => $fullName,
-            'shipping_street' => $validatedData['billing_street'],
-            'shipping_city' => $validatedData['billing_city'],
-            'shipping_state' => $validatedData['billing_state'],
-            'shipping_country' => $validatedData['billing_country'],
-            'shipping_zip' => $validatedData['billing_zip'],
-        ]);
         try {
-            $zohoResponse = $this->createCustomerInZoho($customer);
-            $customer->zohocust_id = $zohoResponse;
-            $customer->save();
+            $customerData = [
+                'first_name' => $validatedData['first_name'],
+                'last_name' => $validatedData['last_name'],
+                'email' => $validatedData['customer_email'],
+                'company_name' => $validatedData['company_name'],
+                'billing_address' => $validatedData['billing_street'],
+                'billing_city' => $validatedData['billing_city'],
+                'billing_state' => $validatedData['billing_state'],
+                'billing_country' => $validatedData['billing_country'],
+                'billing_zip' => $validatedData['billing_zip'],
+                'shipping_address' => $validatedData['billing_street'],  
+                'shipping_city' => $validatedData['billing_city'],
+                'shipping_state' => $validatedData['billing_state'],
+                'shipping_country' => $validatedData['billing_country'],
+                'shipping_zip' => $validatedData['billing_zip'],
+                'customer_name' => $fullName,  
+            ];
+       
+            $zohoResponse = $this->createCustomerInZoho($customerData); 
 
+            if (!isset($zohoResponse['customer']['customer_id'])) {
+                throw new \Exception('Failed to create a customer in Zoho. No customer ID returned.');
+            }
+            
+            $zohoCustomerId = $zohoResponse['customer']['customer_id'];
+            $customer = Customer::create([
+                'customer_name' => $fullName,
+                'first_name' => $validatedData['first_name'],
+                'last_name' => $validatedData['last_name'],
+                'customer_email' => $validatedData['customer_email'],
+                'company_name' => $validatedData['company_name'],
+                'password' => Hash::make($defaultPassword),
+                'billing_attention' => $fullName,
+                'billing_street' => $validatedData['billing_street'],
+                'billing_city' => $validatedData['billing_city'],
+                'billing_state' => $validatedData['billing_state'],
+                'billing_country' => $validatedData['billing_country'],
+                'billing_zip' => $validatedData['billing_zip'],
+                'shipping_attention' => $fullName,
+                'shipping_street' => $validatedData['billing_street'],
+                'shipping_city' => $validatedData['billing_city'],
+                'shipping_state' => $validatedData['billing_state'],
+                'shipping_country' => $validatedData['billing_country'],
+                'shipping_zip' => $validatedData['billing_zip'],
+               'zohocust_id' => $zohoCustomerId,  // Save Zoho customer ID locally
+            ]);
+      
             $loginUrl = route('login'); 
-
             Mail::to($customer->customer_email)->send(new CustomerInvitation($customer, $defaultPassword, $loginUrl));
+        
             return redirect(route('cust'))->with('success', 'Customer added successfully!');
         } catch (\Exception $e) {
             \Log::error('Failed to create a customer in Zoho: ' . $e->getMessage());
@@ -496,40 +522,40 @@ class ZohoController extends Controller
     private function createCustomerInZoho($customer)
     {
         $accessToken = $this->zohoService->getAccessToken();
-
-        $response = Http::withHeaders([ 'Authorization' => 'Zoho-oauthtoken ' .$accessToken
-        ])->post(config('services.zoho.zoho_create_customer'), [
+    
+        \Log::info('Customer data:', ['customer' => $customer]);
+        $response = Http::withHeaders([
+            'Authorization' => 'Zoho-oauthtoken ' . $accessToken
+        ])->post('https://www.zohoapis.com/billing/v1/customers', [
             'organization_id' => config('services.zoho.zoho_org_id'),
-            // 'JSONString' => json_encode($customerData)
-            'display_name' =>  $customer->customer_name, 
-            // 'customer_id' =>    $custCode,   
-            'first_name' =>  $customer->first_name,
-            'last_name' =>  $customer->last_name,
-            'email' =>  $customer->customer_email,
-            'company_name'=>$customer->company_name,
+            'display_name' => $customer['customer_name'],
+            'first_name' => $customer['first_name'],
+            'last_name' => $customer['last_name'],
+            'email' => $customer['email'],
+            'company_name' => $customer['company_name'],
             'billing_address' => [
-                'attention' => $customer->billing_attention,
-                'street' => $customer->billing_street,
-                'city' => $customer->billing_city,
-                'state' => $customer->billing_state,
-                'country' => $customer->billing_country,
-                'zip' => $customer->billing_zip,
-               
+                'attention' => $customer['customer_name'],
+                'street' => $customer['billing_address'],
+                'city' => $customer['billing_city'],
+                'state' => $customer['billing_state'],
+                'country' => $customer['billing_country'],
+                'zip' => $customer['billing_zip'],
             ],
             'shipping_address' => [
-                'attention' => $customer->shipping_attention,
-                'street' => $customer->shipping_street,
-                'city' => $customer->shipping_city,
-                'state' => $customer->shipping_state,
-                'country' => $customer->shipping_country,
-                'zip' => $customer->shipping_zip,
-               
+                'attention' => $customer['customer_name'],
+                'street' => $customer['shipping_address'],
+                'city' => $customer['shipping_city'],
+                'state' => $customer['shipping_state'],
+                'country' => $customer['shipping_country'],
+                'zip' => $customer['shipping_zip'],
             ]
         ]);
-
+    
+        \Log::info('Zoho API Response:', ['response' => $response->body()]);
+      
         if ($response->successful()) {
             $responseData = $response->json();
-            return $responseData['customer']['customer_id']; 
+            return $responseData; // Return the entire response for further use
         } else {
             throw new \Exception('Zoho API error: ' . $response->body());
         }
@@ -2009,17 +2035,14 @@ if (!$existingInvoice) {
         'new_password' => 'required|confirmed|min:6',
     ]);
 
-    // Find the customer by email
     $customer = Customer::where('customer_email', $request->email)->first();
 
-    // Check if the customer exists and if the current password is correct
     if (!$customer || !Hash::check($request->current_password, $customer->password)) {
         return redirect()->back()->withErrors(['current_password' => 'Invalid current password or email.']);
     }
 
-    // Update the customer's password
     $customer->password = Hash::make($request->new_password);
-    $customer->first_login = false;
+   
 
     if ($customer->save()) {
         return redirect()->route('customer.details')->with('success', 'Your password has been successfully updated.');
@@ -2076,6 +2099,18 @@ public function showAddonPreview(Request $request)
     return view('addon-preview', compact('subscription', 'newPlan', 'plan'));
 }
 
+public function companyinfo()
+{
+    $customer = Customer::where('customer_email', Session::get('user_email'))->first();
+    if (!$customer) {
+        return back()->withErrors('Customer not found.');
+    }
+   
+    $company = CompanyInfo::where('zoho_cust_id', $customer->zohocust_id)->first();
+
+   return view('companyinfo',compact('company', 'customer'));
+}
+
 public function storeTerms(Request $request)
 {
    
@@ -2086,11 +2121,53 @@ public function storeTerms(Request $request)
         'amount' => 'required|numeric',
         'consent' => 'required|boolean',  
     ]);
-
-    
-  
-
     return redirect(route('addon'))->with('success', 'Your agreement has been recorded successfully.');
+}
+public function updatecompanyinfo(Request $request)
+{
+    $request->validate([
+        'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        'company_name' => 'required|string|max:255',
+        'tune_link' => 'required|url',
+        'landing_page_url' => 'required|url',
+        'landing_page_url_spanish' => 'nullable|url',
+    ]);
+
+    // Get the customer using the session email
+    $customer = Customer::where('customer_email', Session::get('user_email'))->first();
+
+    if (!$customer) {
+        return redirect()->back()->withErrors('Customer not found.');
+    }
+
+    // Prepare the data array
+    $data = [
+        'company_name' => $request->company_name,
+        'landing_page_uri' => $request->landing_page_url,
+        'landing_page_url_spanish' => $request->landing_page_url_spanish,
+        'tune_link' => $request->tune_link,
+        'uploaded_by' => Session::get('user_email'),
+        'zoho_cust_id' => $customer->zohocust_id,
+    ];
+
+    // If there's a new logo uploaded, store it and update the data
+    if ($request->hasFile('logo')) {
+        $logoPath = $request->file('logo')->store('logos', 'public');
+        $data['logo_image'] = $logoPath;
+    }
+
+    // Update or create the company info based on the zoho_cust_id
+    $companyInfo = CompanyInfo::updateOrCreate(
+        ['zoho_cust_id' => $customer->zohocust_id], // Use zoho_cust_id to find existing or create new record
+        $data
+    );
+
+    // Mark the first login as done
+    $customer->first_login = false;
+    $customer->save();
+
+    // Redirect back with success message
+    return redirect()->back()->with('success', 'Company information updated successfully.');
 }
 }
 

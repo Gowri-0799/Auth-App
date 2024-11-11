@@ -51,7 +51,7 @@
                 </button>
             </div>
             <div class="modal-body terms-modal">
-                <!-- Terms and Conditions Content -->
+             
                 <p>Any plans or packages selected herein by you (“Deliverables”) shall be subject to these Terms and Conditions between you (the “<b> Advertiser</b>”), and Clear Link Technologies, LLC (the “<b>Media Company</b>”) and are governed by the AAAA/IAB Standard Terms and Conditions for Internet Advertising for Media Buys One Year or Less version 3.0 available at www.iab.com (the “<b>IAB Terms</b>”), with Utah as governing law and venue. Capitalized terms not defined herein will have the meaning as set forth in the IAB Terms. Additionally, the following terms apply and, in any case of conflict with the IAB Terms, will control:</p>
     <ol class="list-group list-group-numbered bg-popup ">
         <li class="list-group-item border-0 bg-popup">The Advertiser will be considered both the <b>“Agency”</b> and <b>“Advertiser”</b> under the IAB Terms. <b>“Clearlink”</b> is the “Media Company”, as defined in the IAB Terms. Any modification to these Terms and Conditions must be in writing signed by both parties.</li>

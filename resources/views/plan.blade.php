@@ -32,6 +32,9 @@
                                         <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">#</th>
                                         <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Plan Name</th>
                                         <th style="font-family: Arial, sans-serif; font-size: 16px;background-color:#EEF1F4;">Plan Price $</th>
+                                        <th style="font-family: Arial, sans-serif; font-size: 16px;background-color:#EEF1F4;">Addon Name</th>
+                                        <th style="font-family: Arial, sans-serif; font-size: 16px;background-color:#EEF1F4;">Addon Price $</th>
+
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -40,6 +43,8 @@
                                      <td>{{ ++$key }}</td>
                                      <td>{{ $plan->plan_name }}</td>
                                      <td>{{ $plan->plan_price }}</td>
+                                     <td>{{ $plan->addon_name }}</td>
+                                     <td>{{ $plan->addon_price }}</td>
                                     </tr>
                                 @endforeach
                                 </tbody>

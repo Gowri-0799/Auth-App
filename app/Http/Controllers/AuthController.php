@@ -181,35 +181,29 @@ public function resetlink(Request $request)
 }
 public function updatePassword(Request $request)
 {
-    // Validate the request data
     $request->validate([
         'email' => 'required|email',
         'password' => 'required|confirmed|min:6',
     ]);
 
-    
-    // Find the customer by email
     $customer = Customer::where('customer_email', $request->email)->first();
 
-    // Check if the customer exists and if the token is valid
     if (!$customer) {
         return redirect()->back()->withErrors(['email' => 'Invalid email or token.']);
     }
 
-    // Update the customer's password
     $customer->password = Hash::make($request->password);
-    $customer->first_login = false;
+    
     if($customer->save()){
-        if (!$customer->first_login) {
+       
             return redirect()->route('showplan')->with('success', 'Your password has been successfully updated.');
-        } else {
-            return redirect()->route('login')->with('success', 'Your password has been successfully updated.');
-        }
     }
 
     return redirect()->route('login')->with('success', 'Your password has been successfully updated.');
 }
 
 
-
+function provider(){
+    return view("provider");
+}
 }

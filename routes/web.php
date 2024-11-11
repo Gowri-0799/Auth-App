@@ -17,7 +17,10 @@ Route::middleware(['auth:web'])->group(function () {
 });
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->name('verify.otp');
 
-Route::get('/customer/plan-subscriptions', [App\Http\Controllers\ZohoController::class, 'showplan'])->name('showplan');
+Route::get('/customer/plan-subscriptions', [ZohoController::class, 'showplan'])->name('showplan');
+
+
+Route::get('/customer/provider-data', [AuthController::class, 'provider'])->name('provider');
 
 Route::middleware(['auth:admin'])->group(function () {
     Route::get('/admin/verify-otp', [AdminController::class, 'adminotppage'])->name('adminotppage');
@@ -98,7 +101,7 @@ Route:: get("admin/support-ticket", [ZohoController::class, "supportticket"])
      Route::get('/customer/providerdata', [ProviderController::class, 'ProviderData'])
      ->name('customer.provider');     
 
-     Route::get('/customer/companyinfo', [ CompanyinfoController::class, 'companyinfo'])
+     Route::get('/customer/companyinfo', [ ZohoController::class, 'companyinfo'])
      ->name('customer.companyinfo');  
 Route::put('/customers/{zohocust_id}/update-address', [ZohoController::class, 'addupdate'])->name('customers.addupdate');
 Route::post('/profile/password/update', [ZohoController::class, 'updatePasswordinprofile'])->name('profile.password.update');
@@ -189,6 +192,9 @@ Route::post('/upgrade/subscription', [ZohoController::class, 'processUpgrade'])-
 Route::post('/store-terms', [ZohoController::class, 'storeTerms'])->name('storeTerms');
 
 Route::post('/addon-preview', [ZohoController::class, 'showAddonPreview'])->name('addon.preview');
+
+Route::post('/company-info/update', [ZohoController::class, 'updatecompanyinfo'])->name('company-info.update');
+
 
 Route::get('/test-mail', function () {
     \Mail::raw('This is a test email', function ($message) {
