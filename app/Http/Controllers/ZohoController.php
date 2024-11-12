@@ -508,12 +508,17 @@ class ZohoController extends Controller
                'zohocust_id' => $zohoCustomerId,  // Save Zoho customer ID locally
             ]);
       
-            $loginUrl = route('login'); 
-            Mail::to($customer->customer_email)->send(new CustomerInvitation($customer, $defaultPassword, $loginUrl));
+            $loginUrl = route('login');
+            try {
+                Mail::to($customer->customer_email)->send(new CustomerInvitation($customer, $defaultPassword, $loginUrl));
+            } catch (\Exception $e) {
+                \Log::error('Failed to send email: ' . $e->getMessage());
+                return redirect()->back()->withErrors('Partner created successfully; but unable to send email.')->withInput();
+            }
         
             return redirect(route('cust'))->with('success', 'Customer added successfully!');
         } catch (\Exception $e) {
-            \Log::error('Failed to create a customer in Zoho: ' . $e->getMessage());
+            \Log::error('Failed to create a partner  in Zoho: ' . $e->getMessage());
             return redirect()->back()->withErrors('Failed to create a partner in Zoho.')->withInput();
         }
     }
