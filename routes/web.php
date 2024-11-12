@@ -98,7 +98,7 @@ Route:: get("admin/support-ticket", [ZohoController::class, "supportticket"])
      ->name('customer.details');
 
 
-     Route::get('/customer/providerdata', [ProviderController::class, 'ProviderData'])
+     Route::get('/customer/providerdata', [ZohoController::class, 'ProviderData'])
      ->name('customer.provider');     
 
      Route::get('/customer/companyinfo', [ ZohoController::class, 'companyinfo'])
@@ -195,6 +195,11 @@ Route::post('/addon-preview', [ZohoController::class, 'showAddonPreview'])->name
 
 Route::post('/company-info/update', [ZohoController::class, 'updatecompanyinfo'])->name('company-info.update');
 
+Route::post('/store-provider-data', [ZohoController::class, 'providerdatastore'])->name('provider-data.store');
+
+Route::post('/upload-csv', [ZohoController::class, 'uploadCsv'])->name('provider-data.upload');
+
+Route::get('/provider-info', [ZohoController::class, 'ProviderDatafilter'])->name('provider.info');
 
 Route::get('/test-mail', function () {
     \Mail::raw('This is a test email', function ($message) {

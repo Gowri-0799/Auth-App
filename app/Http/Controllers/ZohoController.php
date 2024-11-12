@@ -6,6 +6,7 @@ use App\Models\Plan;
 use App\Models\Addon;
 use App\Models\Term;
 use App\Models\CompanyInfo;
+use App\Models\ProviderData;
 use Illuminate\Support\Facades\Hash;  
 use Illuminate\Support\Facades\Route;
 use App\Models\Customer;
@@ -26,6 +27,7 @@ use App\Mail\SubscriptionDowngrade;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\CustomerInvitation;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 
 class ZohoController extends Controller
@@ -42,6 +44,7 @@ class ZohoController extends Controller
     protected $addon;
     protected $term;
     protected $companyinfo;
+    protected $providerdata;
 
 
     public function __construct(ZohoService $zohoService)
@@ -57,6 +60,7 @@ class ZohoController extends Controller
         $this->addon=new Addon();
         $this->term=new Term();
         $this->companyinfo=new CompanyInfo();
+        $this->providerdata=new ProviderData();
     }
 
     public function getAllPlans()
@@ -294,10 +298,11 @@ class ZohoController extends Controller
         $companyInfo = CompanyInfo::where('zoho_cust_id', $customer->zohocust_id)->first();
      
         $plans = Plan::orderBy('plan_price', 'asc')->get();
-     
+        $providerData = ProviderData::where('zoho_cust_id', $customer->zohocust_id)->first(); 
+       
         $firstLogin = $customer->first_login;
-    
-        return view('sub', compact('subscriptions', 'plans', 'firstLogin', 'companyInfo'));
+
+        return view('sub', compact('subscriptions', 'plans', 'firstLogin', 'companyInfo','providerData'));
     }
     function showsubscription()
     {
@@ -2138,14 +2143,12 @@ public function updatecompanyinfo(Request $request)
         'landing_page_url_spanish' => 'nullable|url',
     ]);
 
-    // Get the customer using the session email
     $customer = Customer::where('customer_email', Session::get('user_email'))->first();
 
     if (!$customer) {
         return redirect()->back()->withErrors('Customer not found.');
     }
 
-    // Prepare the data array
     $data = [
         'company_name' => $request->company_name,
         'landing_page_uri' => $request->landing_page_url,
@@ -2155,25 +2158,151 @@ public function updatecompanyinfo(Request $request)
         'zoho_cust_id' => $customer->zohocust_id,
     ];
 
-    // If there's a new logo uploaded, store it and update the data
     if ($request->hasFile('logo')) {
         $logoPath = $request->file('logo')->store('logos', 'public');
         $data['logo_image'] = $logoPath;
     }
 
-    // Update or create the company info based on the zoho_cust_id
+    
     $companyInfo = CompanyInfo::updateOrCreate(
-        ['zoho_cust_id' => $customer->zohocust_id], // Use zoho_cust_id to find existing or create new record
+        ['zoho_cust_id' => $customer->zohocust_id], 
         $data
     );
 
-    // Mark the first login as done
-    $customer->first_login = false;
+    
     $customer->save();
 
     // Redirect back with success message
     return redirect()->back()->with('success', 'Company information updated successfully.');
 }
+public function providerdatastore(Request $request)
+{
+    // Validate the file input and other fields
+    $request->validate([
+        'uploaded_by' => 'required|string',
+        'file_name' => 'required|file|mimes:csv,txt|max:2048', // Accepts only CSV format
+        'zip_count' => 'required|integer',
+        'url' => 'nullable|string',
+    ]);
+
+    // Find the customer based on the session email
+    $customer = Customer::where('customer_email', Session::get('user_email'))->first();
+    if (!$customer) {
+        return redirect()->back()->withErrors('Customer not found.');
+    }
+
+    // Process the file upload
+    if ($request->hasFile('file_name')) {
+        $file = $request->file('file_name');
+        
+        // Retrieve the original file name and file size
+        $originalName = $file->getClientOriginalName();
+        $fileSize = $file->getSize();
+        
+        // Store the file and get the path
+        $path = $file->storeAs('uploads/provider_data', $originalName, 'public');
+
+        // Create a new record in the provider_data table
+        ProviderData::create([
+            'zoho_cust_id' => $customer->zohocust_id,
+            'uploaded_by' => $request->uploaded_by,
+            'file_name' => $originalName,
+            'file_size' => $fileSize,
+            'zip_count' => $request->zip_count,
+            'url' => $path,
+        ]);
+
+        // Return success response
+        return response()->json(['success' => 'Data stored successfully!']);
+    }
+
+    return response()->json(['error' => 'File upload failed.'], 400);
+}
+public function ProviderData()
+{
+    $customer = Customer::where('customer_email', Session::get('user_email'))->first();
+    if (!$customer) {
+        return back()->withErrors('Customer not found.');
+    }
+   
+    $providerData = ProviderData::where('zoho_cust_id', $customer->zohocust_id)->get();   
+    Log::info('Provider Data:', $providerData->toArray());
+
+   return view('provider',compact('providerData', 'customer'));
+}
+
+public function uploadCsv(Request $request)
+{
+
+    try {
+        $request->validate([
+            'csv_file' => 'required|mimes:csv,txt|max:2048',
+        ]);
+
+        if (!$request->hasFile('csv_file')) {
+            return response()->json(['error' => 'No file received.'], 400);
+        }
+
+        $file = $request->file('csv_file');
+        $fileName = $file->getClientOriginalName(); 
+        $fileSize = $file->getSize();
+        $filePath = $file->storeAs('uploads/csv_files', $fileName, 'public');
+
+        $customer = Customer::where('customer_email', Session::get('user_email'))->first();
+        if (!$customer) {
+            return response()->json(['error' => 'Customer not found.'], 404);
+        }
+
+        $providerData = new ProviderData();
+        $providerData->file_name = $fileName;
+        $providerData->file_size =  $fileSize;
+        $providerData->url = $filePath;
+        $providerData->zoho_cust_id = $customer->zohocust_id;
+        $providerData->uploaded_by = $customer->customer_name;
+        $providerData->save();
+
+        
+        $customer->first_login = false;
+        $customer->save();
+        return redirect()->route('customer.provider', ['customer' => $customer->id])
+        ->with('success', 'File uploaded successfully!');
+    } catch (\Exception $e) {
+        Log::error('CSV Upload Error', ['error' => $e->getMessage()]);
+        return response()->json(['error' => 'An unexpected error occurred.'], 500);
+    }
+}
+
+public function ProviderDatafilter(Request $request)
+{
+
+     $query = ProviderData::query();
+
+     if ($request->has('search') && $request->search != '') {
+         $query->where('file_name', 'like', '%' . $request->search . '%');
+     }
+
+     if ($request->has('start_date') && $request->start_date != '') {
+         $query->whereDate('created_at', '>=', $request->start_date);
+     }
+ 
+     if ($request->has('end_date') && $request->end_date != '') {
+         $query->whereDate('created_at', '<=', $request->end_date);
+     }
+
+     $perPage = $request->get('per_page', 10);
+
+     $providerData = $query->paginate($perPage);
+
+     $providerData->appends([
+         'search' => $request->get('search'),
+         'start_date' => $request->get('start_date'),
+         'end_date' => $request->get('end_date'),
+         'per_page' => $request->get('per_page')
+     ]);
+
+     return view('provider', compact('providerData'));
+}
+
 }
 
 

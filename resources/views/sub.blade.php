@@ -22,17 +22,13 @@
                         <!-- Show tick if logo_image is not null -->
                         @if ($companyInfo && $companyInfo->logo_image)
                             <i class="fa-solid fa-check text-check fs-3"></i>
-                        @else
-                           
                         @endif
                     </li>
                     <li class="d-flex justify-content-between">
                         <span>Add Company Name (Company Info)</span>
                         <!-- Show tick if company_name is not null -->
                         @if ($companyInfo && $companyInfo->company_name)
-                            <i class="fa-solid fa-check text-check fs-3"></i>
-                        @else
-                            
+                            <i class="fa-solid fa-check text-check fs-3"></i>   
                         @endif
                     </li>
                     <li class="d-flex justify-content-between">
@@ -40,11 +36,15 @@
                         <!-- Show tick if landing_page_uri is not null -->
                         @if ($companyInfo && $companyInfo->landing_page_uri)
                             <i class="fa-solid fa-check text-check fs-3"></i>
-                        @else
-                           
                         @endif
                     </li>
-                    <!-- Optionally, you can add other fields here like 'Upload Provider Data' -->
+                    <li class="d-flex justify-content-between">
+                        <span>Set Landing Page URL (Company Info)</span>
+                        <!-- Show tick if landing_page_uri is not null -->
+                        @if ($providerData && $providerData->url)
+                            <i class="fa-solid fa-check text-check fs-3"></i>
+                        @endif
+                    </li>
                 </ul>
             </div>
             <div class="modal-footer border-0">
