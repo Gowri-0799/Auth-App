@@ -2078,6 +2078,21 @@ public function showUpgradePreview(Request $request)
     $plan=Plan::where ('plan_id',$subscription->plan_id)->first();
     return view('upgrade-preview', compact('subscription', 'newPlan','plan'));
 }
+public function showsubscribePreview(Request $request)
+{
+    $planCode = $request->input('plan_code');
+  
+    $newPlan = Plan::where('plan_code', $planCode)->first();
+   
+    $customer = Customer::where('customer_email', Session::get('user_email'))->first();
+
+    if (!$customer) {
+        return back()->withErrors('Customer not found.');
+    }
+
+   
+    return view('subscribe-preview', compact('newPlan'));
+}
 public function processUpgrade(Request $request)
 {
     $planCode = $request->input('plan_code');
@@ -2225,10 +2240,10 @@ public function ProviderData()
         return back()->withErrors('Customer not found.');
     }
    
-    $providerData = ProviderData::where('zoho_cust_id', $customer->zohocust_id)->get();   
-    Log::info('Provider Data:', $providerData->toArray());
+    $providerData = ProviderData::where('zoho_cust_id', $customer->zohocust_id)->get(); 
+    $totalCount = ProviderData::where('uploaded_by', $customer->customer_name)->count();  
 
-   return view('provider',compact('providerData', 'customer'));
+   return view('provider',compact('providerData', 'customer','totalCount'));
 }
 
 public function uploadCsv(Request $request)
@@ -2252,13 +2267,30 @@ public function uploadCsv(Request $request)
         if (!$customer) {
             return response()->json(['error' => 'Customer not found.'], 404);
         }
-
+        $lineCount = 0;
+        if (($handle = fopen($file->getPathname(), 'r')) !== false) {
+            // Skip the header row
+            $headerSkipped = false;
+            while (($data = fgetcsv($handle)) !== false) {
+                if (!$headerSkipped) {
+                    $headerSkipped = true; // Skip the first row (header)
+                    continue;
+                }
+                // Check if the row has any non-empty content
+                if (array_filter($data)) {
+                    $lineCount++;
+                }
+            }
+            fclose($handle);
+        }
+    
         $providerData = new ProviderData();
         $providerData->file_name = $fileName;
         $providerData->file_size =  $fileSize;
         $providerData->url = $filePath;
         $providerData->zoho_cust_id = $customer->zohocust_id;
         $providerData->uploaded_by = $customer->customer_name;
+        $providerData->zip_count = $lineCount;
         $providerData->save();
 
         
@@ -2302,7 +2334,27 @@ public function ProviderDatafilter(Request $request)
 
      return view('provider', compact('providerData'));
 }
+public function show($zohocust_id)
+{
+    // Retrieve the customer by zoho_cust_id
+    $customer = Customer::where('zohocust_id', $zohocust_id)->first();
 
+    // Check if customer exists
+    if (!$customer) {
+        return redirect()->back()->with('error', 'Customer not found.');
+    }
+    dd($customer->zohocust_id);
+    // Retrieve the subscriptions related to this customer
+    $subscriptions = Subscription::where('zoho_cust_id', $customer->zohocust_id)->get();
+    $invoices = Invoice::where('zoho_cust_id', $customer->zohocust_id)->get();
+    dd($invoices );
+    $creditnotes = Creditnote::where('zoho_cust_id', $customer->zohocust_id)->get();
+    dd($creditnotes);
+    $payments = Payment::where('zoho_cust_id', $customer->zohocust_id)->get();
+    dd($payments);
+    // Pass both customer and subscriptions data to the view
+    return view('customer-show', compact('customer', 'subscriptions','invoices','creditnotes','payments'));
+}
 }
 
 

@@ -187,6 +187,7 @@ Route ::get('/pdt/{creditnote_id}', [ZohoController::class, 'pdfdownload'])->nam
 
 
 Route::post('/upgrade/preview', [ZohoController::class, 'showUpgradePreview'])->name('upgrade.preview');
+Route::post('/subscribe/preview', [ZohoController::class, 'showsubscribePreview'])->name('subscribe.preview');
 Route::post('/upgrade/subscription', [ZohoController::class, 'processUpgrade'])->name('upgrade.subscription.detail');
 
 Route::post('/store-terms', [ZohoController::class, 'storeTerms'])->name('storeTerms');
@@ -201,11 +202,6 @@ Route::post('/upload-csv', [ZohoController::class, 'uploadCsv'])->name('provider
 
 Route::get('/provider-info', [ZohoController::class, 'ProviderDatafilter'])->name('provider.info');
 
-Route::get('/test-mail', function () {
-    \Mail::raw('This is a test email', function ($message) {
-        $message->to('your_test_email@example.com')
-            ->subject('Test Email');
-    });
-    return 'Test email sent!';
-});
+Route::get('/customers/{zohocust_id}/view', [ZohoController::class, 'show'])->name('customers.show');
+
 

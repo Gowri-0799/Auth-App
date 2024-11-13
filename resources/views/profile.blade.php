@@ -14,7 +14,7 @@
             <h4 class="right-margin">Account Details</h4>
             <p class="m-0">
               <i class="fa fa-building right-margin text-primary" aria-hidden="true"></i>
-              <strong></strong>
+              <strong>{{ $customer->company_name }}</strong>
             </p>
             <p class="m-0">
               <i class="fa fa-user right-margin text-primary" aria-hidden="true"></i>

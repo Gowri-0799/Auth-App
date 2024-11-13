@@ -169,7 +169,7 @@
     <div class="mt-2 mb-5 paginate">
         <div class="row">
             <div class="col-lg mt-4">
-                Total Count: <strong></strong>
+               Total Count: <strong>{{ $totalCount }}</strong>
             </div>
 
             <div class="pagination col-lg m-0">

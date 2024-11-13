@@ -39,7 +39,7 @@
                         @endif
                     </li>
                     <li class="d-flex justify-content-between">
-                        <span>Set Landing Page URL (Company Info)</span>
+                        <span>Upload Provider Data</span>
                         <!-- Show tick if landing_page_uri is not null -->
                         @if ($providerData && $providerData->url)
                             <i class="fa-solid fa-check text-check fs-3"></i>
@@ -151,7 +151,11 @@
                     <button type="submit" class="btn btn-primary">Upgrade</button>
                   </form>
                     @else
-                        <a href="{{ route('subscribe', $plan->plan_code) }}" class="btn btn-primary">Subscribe</a>
+                    <form action="{{ route('subscribe.preview') }}" method="POST" style="display: inline;">
+                    @csrf
+                    <input type="hidden" name="plan_code" value="{{ $plan->plan_code }}">
+                    <button type="submit" class="btn btn-primary">Subscribe</button>
+                        </form>
                     @endif
                 @endif
             @endif
