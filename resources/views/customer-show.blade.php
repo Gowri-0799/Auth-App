@@ -4,7 +4,7 @@
 <div id="content" style="box-sizing: border-box; margin-left:300px;" class="p-3">
     <!-- Top Navigation Tabs -->
     <div class="d-flex justify-content-between align-items-center my-3">
-        <h3>{{ $customer->name }}</h3>
+        <h3>{{ $customer->company_name ?? '' }}</h3>
         
     </div>
     <ul class="nav nav-tabs">
@@ -18,7 +18,7 @@
             <a class="nav-link" href="#" onclick="showSection('invoices')">Invoices</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#">Credit Notes</a>
+            <a class="nav-link" href="#" onclick="showSection('creditnote')">Credit Notes</a>
         </li>
         <li class="nav-item">
             <a class="nav-link" href="#">Refunds</a>
@@ -36,11 +36,11 @@
 
      <!-- Overview Section (default) -->
       <div id="overview" class="row mt-4">
-        <!-- Account Details Section -->
+      <h4 class="right-margin">Overview</h4>
         <div class="col-lg-6">
             <div class="card w-100 border-0 bg-clearlink rounded mb-3">
                 <div class="card-body">
-                    <h4 class="right-margin">Account Details</h4>
+                    
                     <p class="m-0">
                         <i class="fa fa-building right-margin text-primary" aria-hidden="true"></i>
                         <strong>{{ $customer->company_name }}</strong>
@@ -85,6 +85,12 @@
 
    <!-- Subscriptions Section -->
    <div id="subscriptions" class="mt-4" style="display: none;">
+
+     <!-- Filter Form -->
+     <form method="GET" action="{{ route('subscriptions.filter.nav') }}" class="row mb-4 align-items-end">
+            @include('partials.filter-form')
+        </form>
+
         @if($subscriptions->count() == 0)
             <p class="text-center">No subscriptions found.</p>
         @else
@@ -113,8 +119,8 @@
                                 <td>{{ $subscription->start_date }}</td>
                                 <td>{{ $subscription->next_billing_at }}</td>
                                 <td>
-                                    @if(strtolower($subscription->status) == 'success')
-                                        <span class="badge bg-success">Success</span>
+                                    @if(strtolower($subscription->status) == 'live')
+                                        <span class="badge bg-success">live</span>
                                     @else
                                         <span class="badge bg-warning">Pending</span>
                                     @endif
@@ -129,6 +135,10 @@
 
  <!-- Invoices Section -->
  <div id="invoices" class="mt-4" style="display: none;">
+     <!-- Filter Form -->
+     <form method="GET" action="" class="row mb-4 align-items-end">
+            @include('partials.filter-form')
+        </form>
         @if($invoices->count() == 0)
             <p class="text-center">No invoices found.</p>
         @else
@@ -155,10 +165,31 @@
                                 <td>{{ $index + 1 }}</td>
                                 <td>{{ \Carbon\Carbon::parse($invoice->invoice_date)->format('d-M-Y') }}</td>
                                 <td>{{ $invoice->invoice_number }}</td>
-                                <td>{{ $payments->payment_mode ?? 'N/A' }}</td>
-                                <td>{{ $customer->company_namee ?? 'N/A' }}</td>
-                                <td>{{ $invoice->plan_name ?? 'N/A' }}</td>
-                                <td>{{ number_format($invoice->plan_price, 2) }}</td>
+                                <td> @php                                    
+                                    $paymentDetailsArray = json_decode($invoice->payment_details, true);                                    
+                                    $paymentMode = $paymentDetailsArray && isset($paymentDetailsArray[0]['payment_mode']) 
+                                        ? $paymentDetailsArray[0]['payment_mode'] 
+                                        : 'N/A';
+                                @endphp
+                                {{ $paymentMode }}</td>
+                                <td>{{ $customer->company_name ?? 'N/A' }}</td>
+                                <td>
+    @php                                    
+        $invoiceItemsArray = json_decode($invoice->invoice_items, true);                                    
+        $planName = $invoiceItemsArray && isset($invoiceItemsArray[0]['code']) 
+            ? $invoiceItemsArray[0]['code'] 
+            : 'N/A';
+    @endphp
+    {{ $planName }}
+</td>
+<td>
+    @php                                    
+        $planPrice = $invoiceItemsArray && isset($invoiceItemsArray[0]['price']) 
+            ? number_format($invoiceItemsArray[0]['price'], 2) 
+            : '0.00';
+    @endphp
+    {{ $planPrice }}
+</td>
                                 <td>{{ number_format($invoice->invoice_price ?? 0, 2) }}</td>
                                 <td>{{ number_format($invoice->credits_applied, 2) }}</td>
                                 <td>{{ number_format($invoice->payment_made, 2) }}</td>
@@ -176,6 +207,61 @@
             </div>
         @endif
     </div>
+
+ <!-- Check for credit notes -->
+
+ <div id="creditnote" class="mt-4" style="display: none;">
+     <!-- Filter Form -->
+     <form method="GET" action="" class="row mb-4 align-items-end">
+            @include('partials.filter-form')
+        </form>
+ @if($creditnotes->count() == 0)
+                    <p class="text-center">No credit notes found.</p>
+                @else
+                  
+                    <div class="table-responsive">
+                        <table class="table table-hover text-center table-bordered" style="background-color:#fff; width: 100%; max-width: 100%;">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="background-color:#EEF3FB;">#</th>
+                                    <th style="background-color:#EEF3FB;"> Date</th>
+                                    <th style="background-color:#EEF3FB;">Credit Note #</th>
+                                    <th style="background-color:#EEF3FB;">Company Name</th>
+                                    <th style="background-color:#EEF3FB;">Invoice Number</th>
+                                    <th style="background-color:#EEF3FB;">Credited Amount (USD)</th>
+                                    <th style="background-color:#EEF3FB;">Balance (USD)</th>
+                                    <th style="background-color:#EEF3FB;">Status</th>
+                                    <th style="background-color:#EEF3FB;">View</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($creditnotes as $index => $creditnote)
+                                <tr>
+                                    <td>{{ (int)$index + 1 }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($creditnote->credited_date)->format('d-M-Y') }}</td>
+                                    <td>{{ $creditnote->creditnote_number }}</td>
+                                    <td>{{ $customer->company_name }}</td>
+                                    <td>{{ $creditnote->invoice_number }}</td>
+                                    <td>{{ number_format($creditnote->credited_amount, 2) }}</td>
+                                    <td>{{ number_format($creditnote->balance, 2) }}</td>
+                                    <td class="p-2 status">
+                                        @if(strtolower($creditnote->status) == 'credited')
+                                        <span class="badge-success">Open</span>
+                                        @else
+                                        <span class="badge-fail">Closed</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                       <a href="{{ route('pdf.download', $creditnote->creditnote_id) }}"  class="btn btn-sm btn-primary">
+                                          Download PDF
+                                         </a>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
 </div>
 </div>
 <script>
@@ -183,6 +269,7 @@
         document.getElementById('overview').style.display = 'none';
         document.getElementById('subscriptions').style.display = 'none';
         document.getElementById('invoices').style.display = 'none';
+        document.getElementById('creditnote').style.display = 'none';
         document.getElementById(sectionId).style.display = 'block';
 
         // Remove active class from all tabs

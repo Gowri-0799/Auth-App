@@ -93,6 +93,8 @@ Route::get('admin/plans', [ZohoController::class, "getAllPlans"])
 
 Route:: get("admin/support-ticket", [ZohoController::class, "supportticket"])
     ->name("Support.Ticket");
+    Route:: get("admin/terms-log", [ZohoController::class, "termslog"])
+    ->name("terms.log");
 
  Route::get('/customer/profile', [ZohoController::class, 'showCustomerDetails'])
      ->name('customer.details');
@@ -170,7 +172,9 @@ Route::post('/downgrade-subscription', [ZohoController::class, 'downgradesub'])-
 Route::get('/upgrade-custsubscription', [ZohoController::class, 'custsupgrade'])->name('custsupgrade');
 
 Route::get('/invoices/filter', [ZohoController::class, 'filterInvoices'])->name('invoices.filter');
-Route::get('/creditnotes/filter', [ZohoController::class, 'filtercredits'])->name('creditnotes.filter'); // Filter credit notes
+Route::get('/creditnotes/filter', [ZohoController::class, 'filtercredits'])->name('creditnotes.filter'); 
+Route::get('/customers/filter', [ZohoController::class, 'customfilter'])->name('customer.filter'); 
+Route::get('/terms-log', [ZohoController::class, 'filterTermsLog'])->name('term.adfilter');
 
 Route::post('/tickets/store', [ZohoController::class, 'ticketstore'])->name('tickets.store');
 Route::get('/support', [ZohoController::class, 'showCustomerSupport'])->name('show.support');
@@ -181,7 +185,7 @@ Route ::get('/subscriptions/filter', [ZohoController::class, 'filterSubscription
 Route ::get('/Invoice/filter', [ZohoController::class, 'filteradInvoices'])->name('invoices.adfilter');
 Route ::get('/support/ticket/filter', [ZohoController::class, 'supportticketfilter'])->name('support.adfilter');
 
-
+Route::get('/subscriptions/filter', [ZohoController::class, 'filter'])->name('subscriptions.filter.nav');
 
 Route ::get('/pdt/{creditnote_id}', [ZohoController::class, 'pdfdownload'])->name('pdf.download');
 

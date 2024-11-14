@@ -141,28 +141,33 @@
                 <ul class="sidebar-nav">
                     <li class="sidebar-item">
                         <a href="{{ route('plandb') }}" class="sidebar-link">
-                            <span>Plans </span>
+                            <span>- Plans </span>
                         </a>
                     </li>
                    
                     <li class="sidebar-item">
                         <a href="{{ route('customerdb') }}" class="sidebar-link">
-                            <span>Partner</span>
+                            <span>- Partner</span>
                         </a>
                     </li>
                     <li class="sidebar-item">
                         <a href="{{ route('subdata') }}" class="sidebar-link">
-                            <span>Subscriptions</span>
+                            <span>- Subscriptions</span>
                         </a>
                     </li>
                     <li class="sidebar-item">
                         <a href="{{ route('invdata') }}" class="sidebar-link">
-                            <span>Invoice</span>
+                            <span>- Invoice</span>
                         </a>
                     </li>
                     <li class="sidebar-item">
                         <a href="{{ route('Support.Ticket') }}" class="sidebar-link">
-                            <span>Support Tickets</span>
+                            <span>- Support Tickets</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="{{ route('terms.log') }}" class="sidebar-link">
+                            <span>- Terms Log</span>
                         </a>
                     </li>
                 </ul>

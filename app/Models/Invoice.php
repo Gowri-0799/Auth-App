@@ -71,4 +71,9 @@ class Invoice extends Model
     {
         return $this->belongsTo(Customer::class, 'zoho_cust_id', 'zoho_cust_id');
     }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class, 'invoice_id', 'id'); // Adjust the foreign and local keys if necessary
+    }
 }

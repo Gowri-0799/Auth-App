@@ -4,7 +4,7 @@
 <div id="content" class="p-3" style="background-color: #f8f9fc; margin-left: 240px; width: calc(100% - 220px);">
 
     <div class="container mt-5">
-        <!-- Button for Inviting Partners -->
+       
         <a href="{{ route('cust.display') }}" class="btn btn-primary position-absolute top-0 end-0 m-3">
             Invite Partner
         </a>
@@ -13,22 +13,19 @@
             Sync with zoho
         </a>
         <h2 class="text-center mb-4">Partners</h2>
-
-        <!-- Filters Section -->
-        <form method="GET" action="" class="row mb-4 align-items-end">
-            <!-- Start Date -->
+       
+        <form method="GET" action="{{ route('customer.filter') }}" class="row mb-4 align-items-end">
+           
             <div class="col-md-2">
                 <label for="start_date" class="form-label fw-bold" style="font-family: Arial, sans-serif; font-size: 14px;">Start Date</label>
                 <input type="date" name="start_date" id="start_date" class="form-control" value="{{ request('start_date') }}" style="font-family: Arial, sans-serif; font-size: 14px;">
             </div>
 
-            <!-- End Date -->
             <div class="col-md-2">
                 <label for="end_date" class="form-label fw-bold" style="font-family: Arial, sans-serif; font-size: 14px;">End Date</label>
                 <input type="date" name="end_date" id="end_date" class="form-control" value="{{ request('end_date') }}" style="font-family: Arial, sans-serif; font-size: 14px;">
             </div>
 
-            <!-- Rows to Show -->
             <div class="col-md-2">
                 <label for="rows_to_show" class="form-label fw-bold" style="font-family: Arial, sans-serif; font-size: 14px;">Show</label>
                 <select name="rows_to_show" id="rows_to_show" class="form-select" style="font-family: Arial, sans-serif; font-size: 14px;">
@@ -38,7 +35,6 @@
                 </select>
             </div>
 
-            <!-- Search -->
             <div class="col-md-3">
                 <label for="search" class="form-label fw-bold" style="font-family: Arial, sans-serif; font-size: 14px;">Search</label>
                 <input type="text" name="search" id="search" class="form-control" placeholder="Search here..." value="{{ request('search') }}" style="font-family: Arial, sans-serif; font-size: 14px;">
@@ -51,12 +47,12 @@
         </form>
 
         <!-- Reset Link -->
-        <a href="{{ route('customers') }}" class="text-decoration-none mb-3 d-inline-block text-primary" style="margin-bottom: 20px;">Reset</a>
+        <a href="{{ route('customerdb') }}" class="text-decoration-none mb-3 d-inline-block text-primary" style="margin-bottom: 20px;">Reset</a>
 
         <!-- Partners Table -->
         @if ($customers->isEmpty())
-            <div class="alert alert-info text-center">
-                No partners available
+            <div class="alert  text-center">
+                No partners available.
             </div>
         @else
             <div class="table-responsive">
@@ -86,9 +82,8 @@
                                         </span>
                                     @endif
                                 </td>
-                                <td>
-                                    <!-- View Details Button -->
-                                    <a href="{{ route('customers.show', $customer->zohocust_id) }}" class="btn btn-warning btn-sm">View Details</a>
+                                <td>                                   
+                                    <a href="{{ route('customers.show', $customer->zohocust_id) }}" class="btn button-clearlink text-primary fw-bold">View Details</a>
                                     </td>
                             </tr>
                         @endforeach

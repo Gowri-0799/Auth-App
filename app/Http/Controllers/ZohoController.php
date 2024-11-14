@@ -1777,7 +1777,7 @@ public function retrievedowntHostedPage()
            'next_billing_at' => $subscriptionData['next_billing_at'],
            'start_date' => $subscriptionData['start_date'],
            'zoho_cust_id' => $subscriptionData['customer_id'],
-           'status' => $data['status'],
+          'status' => $subscriptionData['status'], 
        ]);
    } else {
        $existingSubscription->update([
@@ -1788,7 +1788,7 @@ public function retrievedowntHostedPage()
            'next_billing_at' => $subscriptionData['next_billing_at'],
            'start_date' => $subscriptionData['start_date'],
            'zoho_cust_id' => $subscriptionData['customer_id'],
-           'status' => $data['status'],
+           'status' => $subscriptionData['status'], 
        ]);
    }
 // Check if an invoice record with the same invoice_id already exists
@@ -2343,18 +2343,175 @@ public function show($zohocust_id)
     if (!$customer) {
         return redirect()->back()->with('error', 'Customer not found.');
     }
-    dd($customer->zohocust_id);
+   
     // Retrieve the subscriptions related to this customer
-    $subscriptions = Subscription::where('zoho_cust_id', $customer->zohocust_id)->get();
+    $subscriptions = DB::table('subscriptions')
+    ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
+    ->join('customers', 'subscriptions.zoho_cust_id', '=', 'customers.zohocust_id')
+    ->select(
+        'subscriptions.subscription_id',
+        'subscriptions.subscription_number',
+        'customers.company_name',
+        'plans.plan_name',
+        'plans.plan_price',
+        'subscriptions.start_date',
+        'subscriptions.next_billing_at',
+        'subscriptions.status'
+    )
+    ->get();
     $invoices = Invoice::where('zoho_cust_id', $customer->zohocust_id)->get();
-    dd($invoices );
+
     $creditnotes = Creditnote::where('zoho_cust_id', $customer->zohocust_id)->get();
-    dd($creditnotes);
-    $payments = Payment::where('zoho_cust_id', $customer->zohocust_id)->get();
-    dd($payments);
-    // Pass both customer and subscriptions data to the view
-    return view('customer-show', compact('customer', 'subscriptions','invoices','creditnotes','payments'));
+   
+    // Check if there are any credit notes
+    if ($creditnotes->isEmpty()) {
+        // No credit notes found
+        $customers = null;
+    } else {
+        // Fetch customer details based on the first credit note
+        $customers = Customer::where('zohocust_id', $creditnotes->first()->zoho_cust_id)->first();
+    }
+
+   
+    return view('customer-show', compact('customer', 'subscriptions','invoices','creditnotes'));
 }
+
+public function customfilter(Request $request)
+{
+    // Start building the query for customers
+    $customerQuery = Customer::query();
+
+    // Apply the zohocust_id filter if provided
+    if ($request->filled('zohocust_id')) {
+        $customerQuery->where('zohocust_id', $request->zohocust_id);
+    }
+
+    // Apply date filters if provided
+    if ($request->filled('start_date')) {
+        $customerQuery->whereDate('created_at', '>=', $request->start_date);
+    }
+
+    if ($request->filled('end_date')) {
+        $customerQuery->whereDate('created_at', '<=', $request->end_date);
+    }
+
+    // Apply search filter for company name if provided
+    if ($request->filled('search')) {
+        $customerQuery->where('company_name', 'like', '%' . $request->search . '%');
+    }
+
+    // Paginate results based on user input, default is 10
+    $customers = $customerQuery->paginate($request->input('rows_to_show', 10));
+
+    // Pass the customer data to the view
+    return view('cust', compact('customers'));
+}
+
+public function termslog()
+{
+    $terms = DB::table('terms')
+        ->join('customers', 'terms.zoho_cust_id', '=', 'customers.zohocust_id')
+        ->select(
+            'terms.*',
+            'customers.company_name',
+            'customers.customer_name'
+        )
+        ->get();
+
+    return view('terms-log', compact('terms'));
+}
+public function filterTermsLog(Request $request)
+{
+    // Retrieve the filter inputs
+    $startDate = $request->input('startDate');
+    $endDate = $request->input('endDate');
+    $search = $request->input('search');
+    $showEntries = $request->input('show', 10); // Default to 10 entries per page if not specified
+
+    // Start building the query without calling get() too early
+    $query = DB::table('terms')
+        ->join('customers', 'terms.zoho_cust_id', '=', 'customers.zohocust_id')
+        ->select(
+            'terms.*',
+            'customers.company_name',
+            'customers.customer_name'
+        );
+
+    // Apply start date filter if provided
+    if ($startDate) {
+        $query->whereDate('terms.created_at', '>=', $startDate);
+    }
+
+    // Apply end date filter if provided
+    if ($endDate) {
+        $query->whereDate('terms.created_at', '<=', $endDate);
+    }
+
+    // Apply search filter if provided
+    if ($search) {
+        $query->where(function ($q) use ($search) {
+            $q->where('terms.subscription_number', 'like', '%' . $search . '%')
+              ->orWhere('customers.company_name', 'like', '%' . $search . '%')
+              ->orWhere('customers.customer_name', 'like', '%' . $search . '%')
+              ->orWhere('terms.plan_name', 'like', '%' . $search . '%');
+        });
+    }
+
+    // Paginate the results based on the "show entries" filter
+    $terms = $query->paginate($showEntries);
+
+    // Return the view with the filtered terms data
+    return view('terms-log', compact('terms'));
+}
+public function filter(Request $request)
+{
+    $search = $request->input('search');
+    $startDate = $request->input('startDate');
+    $endDate = $request->input('endDate');
+    $perPage = $request->input('show', 10); 
+
+ 
+    $query = DB::table('subscriptions')
+        ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
+        ->join('customers', 'subscriptions.zoho_cust_id', '=', 'customers.zohocust_id')
+        ->select(
+            'subscriptions.subscription_id',
+            'subscriptions.subscription_number',
+            'customers.company_name',
+            'plans.plan_name',
+            'plans.plan_price',
+            'subscriptions.start_date',
+            'subscriptions.next_billing_at',
+            'subscriptions.status'
+        );
+
+    
+    if ($startDate) {
+        $query->whereDate('subscriptions.start_date', '>=', $startDate);
+    }
+    if ($endDate) {
+        $query->whereDate('subscriptions.start_date', '<=', $endDate);
+    }
+
+   
+    if ($search) {
+        $query->where('plans.plan_name', 'LIKE', "%{$search}%");
+    }
+
+    // Paginate the results
+    $subscriptions = $query->paginate($perPage);
+
+    // Pass the data back to the view
+    return view('customer-show', [
+        'subscriptions' => $subscriptions,
+        'search' => $search,
+        'startDate' => $startDate,
+        'endDate' => $endDate,
+        'activeSection' => 'subscriptions', // Set the active section
+    ]);
+
+}
+
 }
 
 
