@@ -19,7 +19,21 @@
     <input type="text" name="search" id="search" class="form-control" placeholder="Search here..." value="{{ request('search') }}">
 </div>
 <div class="col-md-1">
-    
     <button type="submit" class="btn button-clearlink text-primary fw-bold">Submit</button>
 </div>
+<a href="{{ url()->current() }}" class="text-decoration-none text-primary d-inline-block" onclick="resetFilters(event)">Reset</a>
+<script>
+    function resetFilters(event) {
+        event.preventDefault();  // Prevent the default link behavior
+        
+        // Get the current URL and remove the query parameters
+        let url = new URL(window.location.href);
+        url.searchParams.delete('start_date');
+        url.searchParams.delete('end_date');
+        url.searchParams.delete('rows_to_show');
+        url.searchParams.delete('search');
 
+        // Redirect to the cleaned URL
+        window.location.href = url.toString();
+    }
+</script>
