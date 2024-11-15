@@ -83,8 +83,8 @@
                                     @endif
                                 </td>
                                 <td>                                   
-                                    <a href="{{ route('customers.show', $customer->zohocust_id) }}" class="btn button-clearlink text-primary fw-bold">View Details</a>
-                                    </td>
+                                <a href="{{ route('customers.show', ['zohocust_id' => $customer->zohocust_id, 'section' => request()->query('section', 'overview')]) }}" class="btn button-clearlink text-primary fw-bold">View Details</a>
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>

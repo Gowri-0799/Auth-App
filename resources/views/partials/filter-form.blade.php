@@ -19,6 +19,7 @@
     <input type="text" name="search" id="search" class="form-control" placeholder="Search here..." value="{{ request('search') }}">
 </div>
 <div class="col-md-1">
+    
     <button type="submit" class="btn button-clearlink text-primary fw-bold">Submit</button>
 </div>
-<a href="{{ url()->current() }}" class="text-decoration-none text-primary d-inline-block">Reset</a>
+

@@ -181,11 +181,17 @@ Route::get('/support', [ZohoController::class, 'showCustomerSupport'])->name('sh
 Route::post('/downgrade-plan', [ZohoController::class, 'downgrade'])->name('downgrade_plan');
 Route::get('password/reset', [AuthController::class, 'showLinkRequestForm'])->name('password.request');
 Route::get('admin/password/reset', [AdminController::class, 'adshowLinkRequestForm'])->name('admin.password.request');
-Route ::get('/subscriptions/filter', [ZohoController::class, 'filterSubscriptions'])->name('subscriptions.filter');
+Route ::get('subscriptions/filter', [ZohoController::class, 'filterSubscriptions'])->name('subscriptions.filter');
+
 Route ::get('/Invoice/filter', [ZohoController::class, 'filteradInvoices'])->name('invoices.adfilter');
 Route ::get('/support/ticket/filter', [ZohoController::class, 'supportticketfilter'])->name('support.adfilter');
 
-Route::get('/subscriptions/filter', [ZohoController::class, 'filter'])->name('subscriptions.filter.nav');
+// Route::get('/subscriptions/filter', [ZohoController::class, 'filter'])->name('subscriptions.filter.nav');
+// Route::get('/invoices/filter', [ZohoController::class, 'filterInvoicesnav'])->name('invoice.filter.nav');
+
+Route ::get('nav/subscriptions/filter', [ZohoController::class, 'filterSubscriptionsnav'])->name('nav.subscriptions.filter');
+Route::get('nav/invoices/filter', [ZohoController::class, 'filterInvoicesnav'])->name('nav.invoice.filter');
+Route::get('nav/creditnote/filter', [ZohoController::class, 'filtercreditnav'])->name('nav.creditnote.filter');
 
 Route ::get('/pdt/{creditnote_id}', [ZohoController::class, 'pdfdownload'])->name('pdf.download');
 
