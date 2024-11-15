@@ -64,7 +64,7 @@
                                         <td>{{ $index + 1 }}</td>
                                         <td>{{ \Carbon\Carbon::parse($ticket->date)->format('d-M-Y') }}</td>
                                         <td>{{ $ticket->request_type }}</td>
-                                        <td>{{ $ticket->subscription_number }}</td>
+                                        <td>{{ $ticket->subscription_number ?? '' }}</td>
                                         <td>{{ $ticket->company_name }}</td>
                                         <td>{{ $ticket->message }}</td>
                                         

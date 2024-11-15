@@ -5,11 +5,13 @@
 <div id="content" class="p-3" style="background-color: #f8f9fc; margin-left: 240px; width: calc(100% - 220px);">
     <div class="container-fluid mt-3">
         <div class="card shadow-sm border-0 rounded-lg">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h2 class="mb-0" style="font-size: 30px;">Support Tickets</h2>
-                <button id="createTicketBtn" class="btn btn-primary">Create New Ticket</button>
-            </div>
-
+        <div class="card-header d-flex justify-content-between align-items-center">
+    <h2 class="mb-0" style="font-size: 30px;">Support Tickets</h2>
+    <!-- Add modal trigger attributes to the button -->
+    <button id="createTicketBtn" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTicketForm">
+        Create New Ticket
+    </button>
+</div>
             <div class="card-body p-3">
                 <form class="row mb-4 align-items-end" method="GET" action="{{ route('support.adfilter') }}">
                     <div class="col-md-2">
@@ -87,22 +89,24 @@
 </div>
 
 <!-- Create New Ticket Modal -->
-<div id="overlay" class="overlay" style="display: none;"></div>
-<div id="createTicketForm" class="modal-like-form" style="display: none;">
-    <div class="card shadow-lg">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Enter the request message</h5>
-            <button id="closeFormBtn" class="btn-close"></button>
-        </div>
-        <div class="card-body">
-            <form action="{{ route('tickets.store') }}" method="POST">
-                @csrf
-                <div class="mb-3">
-                    <label for="message" class="form-label fw-bold">Message*</label>
-                    <textarea class="form-control" id="message" name="message" rows="4" required></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary">Submit</button>
-            </form>
+<div class="modal fade" id="createTicketForm" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-dark bg-popup">
+            <div class="modal-header border-0">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Enter the request message</h1>
+                <button type="button" class="close border-0" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="fa-solid fa-xmark fs-3"></i>
+                </button>
+            </div>
+            <div class="modal-body p-0">
+                <form action="{{ route('tickets.store') }}" method="POST">
+                    @csrf
+                    <label class="fw-bold">Message*</label>
+                    <textarea class="w-100 p-3 pe-4 border-0 rounded" name="message" rows="4" required></textarea>
+                    <input type="submit" class="btn btn-primary popup-element mt-3" value="Submit">
+                </form>
+            </div>
+            <div class="modal-footer border-0"></div>
         </div>
     </div>
 </div>

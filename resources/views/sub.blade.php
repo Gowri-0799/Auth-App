@@ -164,10 +164,11 @@
 @endforeach
 
                         <th class=" align-middle position-relative">
-                             <div>  
-                                <h5 class="mb-2"><strong><span class="text-primary">Custom</span><span> Enterprise</span></strong></h5>
-                                <a data-bs-toggle="modal" data-bs-target="#contactModal" id="save" class="btn btn-primary">Contact Us</a>
-                            </div>
+                        <div>
+                        <h5 class="mb-2"><strong><span class="text-primary">Custom</span><span> Enterprise</span></strong></h5>
+                        <a data-bs-toggle="modal" data-bs-target="#contactModal" id="save" class="btn btn-primary">Contact Us</a>
+                    </div>
+                     
                         </th>
                     </tr>
                 </thead>
@@ -232,7 +233,29 @@
 </div>
 
 </div>
-
+ <!-- Modal -->
+ <div class="modal fade" id="contactModal" tabindex="-1" aria-labelledby="contactModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content terms-title bg-popup">
+                <div class="modal-header border-0">
+                    <h3 class="modal-title" id="contactModalLabel">Contact Us</h3>
+                    <button type="button" class="close border-0" data-bs-dismiss="modal" aria-label="Close">
+                        <i class="fa-solid fa-xmark fs-3"></i>
+                    </button>
+                </div>
+                <div class="modal-body p-0">
+                    <form action="{{ route('custom.enterprise') }}" method="post">
+                    @csrf
+                    <textarea class="w-100 p-3 pe-4 border-0 rounded" name="message" rows="5">I am interested in learning more about the Enterprise plan. Please contact me with more information.</textarea>
+                        <input type="submit" class="btn btn-primary popup-element " value="Send">
+                      
+                    </form>
+                </div>
+                <div class="modal-footer border-0"></div>
+            </div>
+        </div>
+    </div>
+    
  <!-- FAQ Section -->
 <div class="tableTerms p-0 border-0 mb-5 margin-default">
     <p class="fw-bold ms-3">

@@ -177,6 +177,7 @@ Route::get('/customers/filter', [ZohoController::class, 'customfilter'])->name('
 Route::get('/terms-log', [ZohoController::class, 'filterTermsLog'])->name('term.adfilter');
 
 Route::post('/tickets/store', [ZohoController::class, 'ticketstore'])->name('tickets.store');
+Route::post('/ustom/enterprise', [ZohoController::class, 'customenterprise'])->name('custom.enterprise');
 Route::get('/support', [ZohoController::class, 'showCustomerSupport'])->name('show.support');
 Route::post('/downgrade-plan', [ZohoController::class, 'downgrade'])->name('downgrade_plan');
 Route::get('password/reset', [AuthController::class, 'showLinkRequestForm'])->name('password.request');

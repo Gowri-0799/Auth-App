@@ -1546,17 +1546,11 @@ public function ticketstore(Request $request)
     if (!$customer) {
         return back()->withErrors('Customer not found.');
     }
-
-    $subscription = Subscription::where('zoho_cust_id', $customer->zohocust_id)->first();
     $zohoCustId =  $customer->zohocust_id;
-    
-    $subscriptionNumber =  $subscription->subscription_number;
-
- 
     Support::create([
         'date' => now(),
-        'request_type' => 'Custom', 
-        'subscription_number' => $subscriptionNumber,
+        'request_type' => 'Custom Support', 
+       
         'message' => $request->input('message'),
         'status' => 'open',
         'zoho_cust_id' => $zohoCustId,
@@ -1564,7 +1558,6 @@ public function ticketstore(Request $request)
      
     ]);
 
-  
     return redirect()->route('show.support')->with('success', 'Support ticket created successfully.');
 }
 
@@ -1622,39 +1615,54 @@ public function downgrade(Request $request)
 }
 public function supportticket()
 {
-    // Join the supports table with the customers table to get company name
-    // Step 1: Fetch all supports along with relevant customer and subscription details
-$supports = DB::table('supports')
-->join('customers', 'supports.zoho_cust_id', '=', 'customers.zohocust_id')
-->join('subscriptions', 'supports.subscription_number', '=', 'subscriptions.subscription_number')
-->select('supports.*', 'customers.company_name', 'customers.customer_name', 'customers.customer_email', 'subscriptions.plan_id', 'subscriptions.subscription_id')
-->get();
+    // Fetch support tickets with customers and optional subscriptions
+    $supports = DB::table('supports')
+        ->join('customers', 'supports.zoho_cust_id', '=', 'customers.zohocust_id')
+        ->leftJoin('subscriptions', 'supports.subscription_number', '=', 'subscriptions.subscription_number') // Use left join
+        ->select(
+            'supports.*',
+            'customers.company_name',
+            'customers.customer_name',
+            'customers.customer_email',
+            'subscriptions.plan_id',
+            'subscriptions.subscription_id',
+            DB::raw('CASE WHEN subscriptions.subscription_number IS NULL THEN "No Subscription" ELSE subscriptions.subscription_number END as subscription_status') // Handle empty subscription_number
+        )
+        ->get();
 
-// Step 2: Prepare an array to hold plan codes based on plan names
-$planCodes = DB::table('plans')->pluck('plan_code', 'plan_name')->toArray(); // Keyed by plan_name
+    // Step 2: Prepare an array to hold plan codes based on plan names
+    $planCodes = DB::table('plans')->pluck('plan_code', 'plan_name')->toArray(); // Keyed by plan_name
 
-// Step 3: Iterate through supports and extract plan name
-foreach ($supports as $support) {
-$message = $support->message;
+    // Step 3: Iterate through supports and extract plan name
+    foreach ($supports as $support) {
+        $message = $support->message;
 
-// Extract the plan name from the message
-$start = strpos($message, 'the') + strlen('the');
-$end = strpos($message, '.', $start);
+        // Extract the plan name from the message
+        $start = strpos($message, 'the') + strlen('the');
+        $end = strpos($message, '.', $start);
 
-if ($start !== false && $end !== false) {
-    $planName = trim(substr($message, $start, $end - $start));
-    
-    // Fetch the plan code based on the extracted plan name
-    $planCode = $planCodes[$planName] ?? null; // Get plan code or null if not found
-    
-    // Add plan code to support object for further use
-    $support->plan_code = $planCode;
-} else {
-    $support->plan_code = null; // Handle cases where extraction fails
+        if ($start !== false && $end !== false) {
+            $planName = trim(substr($message, $start, $end - $start));
+
+            // Fetch the plan code based on the extracted plan name
+            $planCode = $planCodes[$planName] ?? null; // Get plan code or null if not found
+
+            // Add plan code to support object for further use
+            $support->plan_code = $planCode;
+        } else {
+            $support->plan_code = null; // Handle cases where extraction fails
+        }
+
+        // Handle cases where subscription number is missing
+        if (empty($support->subscription_status) || $support->subscription_status === "No Subscription") {
+            $support->plan_code = "No Plan"; // Or any default value
+        }
+    }
+
+    // Return view with the data
+    return view('supportticket', compact('supports'));
 }
-}
-  return view('supportticket', compact('supports'));
-}
+
 public function supportticketfilter(Request $request)
 {
    
@@ -1719,8 +1727,17 @@ public function downgradesub(Request $request)
 
         // Store the hostedpage_id in the session for retrieval
         Session::put('hostedpage_id', $hostedPageId);
-        
-        DB::table('supports')
+
+        $subscriptionNumber = DB::table('supports')
+            ->where('zoho_cust_id', $request->input('zoho_cust_id'))
+            ->value('subscription_number');
+dd($subscriptionNumber);
+        if (!empty($subscriptionNumber)) {
+            DB::table('supports')
+                ->where('zoho_cust_id', $request->input('zoho_cust_id'))
+                ->update(['status' => 'Completed']);
+        }
+   DB::table('supports')
             ->where('zoho_cust_id', $request->input('zoho_cust_id'))
             ->update(['status' => 'Completed']);
 
@@ -1746,7 +1763,7 @@ public function retrievedowntHostedPage()
             'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
             'Content-Type'  => 'application/json'
         ])->get("https://www.zohoapis.com/billing/v1/hostedpages/{$hostedPageId}");
-       
+ 
         if ($response->successful()) {
             $hostedPageData = $response->json();
          
@@ -2656,7 +2673,30 @@ public function filtercreditnav(Request $request)
     // Pass data to the view
     return view('customer-show', compact('customer', 'subscriptions', 'selectedSection','invoices', 'search', 'startDate', 'endDate', 'creditnotes'));
 }
+public function customenterprise(Request $request)
+{
+    $request->validate([
+        'message' => 'required|string|max:1000',
+    ]);
 
+    $customer = Customer::where('customer_email', Session::get('user_email'))->first();
+    if (!$customer) {
+        return back()->withErrors('Customer not found.');
+    }
+    $zohoCustId =  $customer->zohocust_id;
+
+    Support::create([
+        'date' => now(),
+        'request_type' => 'Custom Enterprise', 
+        'message' => $request->input('message'),
+        'status' => 'open',
+        'zoho_cust_id' => $zohoCustId,
+        'zoho_cpid' => $zohoCustId, 
+     
+    ]);
+
+    return redirect()->route('show.support')->with('success', 'Support ticket created successfully.');
+}
 
 }
 

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->date('date');
             $table->string('request_type');
-            $table->string('subscription_number');
+            $table->string('subscription_number')->nullable();
             $table->text('message');
             $table->string('status');
             $table->string('zoho_cust_id');
