@@ -170,6 +170,39 @@
                             <span>- Terms Log</span>
                         </a>
                     </li>
+                    <li class="sidebar-item">
+                        <!-- Plan Management Link -->
+                        <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse" data-bs-target="#planManagement" aria-expanded="true" aria-controls="planManagement">
+                            <span>Settings</span>
+                            <span class="ms-1">
+                                <i class="fa-solid fa-angle-down"></i>
+                            </span>
+                        </a>
+
+                        <ul id="planManagement" class="ms-5 sidebar-dropdown list-unstyled collapse show" data-bs-parent="#sidebar">
+                            <li class="sidebar-item">
+                                <a href="{{ route('plandb') }}" class="sidebar-link">
+                                - Plans
+                                </a>
+                            </li>
+                            <li class="sidebar-item">
+                                <a href="{{ route('affiliates.index') }}" class="sidebar-link">
+                                - Affiliate
+                                </a>
+                            </li>
+                            <li class="sidebar-item">
+                                <a href="#" class="sidebar-link">
+                                - Admins
+                                </a>
+                            </li>
+                            <li class="sidebar-item">
+                                <a href="#" class="sidebar-link">
+                                - Profile
+                                </a>
+                            </li>
+                            
+                        </ul>
+                    </li>
                 </ul>
                 
                 <div class="bottom-footer mt-auto">
@@ -207,47 +240,26 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- JavaScript to handle submenu -->
+
     <script>
-       document.addEventListener('DOMContentLoaded', function() {
-            // Handle the collapse for the "Plan Management" toggle
-            var planManagementToggle = document.querySelector('[data-bs-target="#planManagement"]');
-            
-            planManagementToggle.addEventListener('click', function(e) {
-                var submenu = document.querySelector('#planManagement');
-                if (submenu.classList.contains('show')) {
-                    submenu.classList.remove('show');
-                } else {
-                    submenu.classList.add('show');
-                }
-                e.preventDefault();
-            });
+    document.addEventListener('DOMContentLoaded', function() {
+    // Highlight active sidebar links
+    const sidebarLinks = document.querySelectorAll('.sidebar-link'); // Use dot for class selector
 
-            // Ensure submenu items don't close the submenu when clicked
-            const submenuLinks = document.querySelectorAll('#plan-management-submenu .sidebar-link');
-            submenuLinks.forEach(function (link) {
-                link.addEventListener('click', function (e) {
-                    e.stopPropagation(); // Prevent submenu from closing
-                });
-            });
-
-            // Highlight active sidebar links
-            const sidebarLinks = document.querySelectorAll('.sidebar-link');
-
-            function removeActiveClass() {
-                sidebarLinks.forEach(function (link) {
-                    link.classList.remove('active');
-                });
-            }
-
-            sidebarLinks.forEach(function (link) {
-                link.addEventListener('click', function (e) {
-                    removeActiveClass();
-                    this.classList.add('active');
-                });
-            });
+    function removeActiveClass() {
+        sidebarLinks.forEach(function(link) {
+            link.classList.remove('active');
         });
-    </script>
+    }
 
+    sidebarLinks.forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            removeActiveClass();
+            this.classList.add('active');
+        });
+    });
+});
+    </script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script type="text/javascript" src="/assets/js/plan.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>

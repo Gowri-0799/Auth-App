@@ -10,20 +10,18 @@
                 <!-- Title with margin-bottom -->
                 <h2 class="mb-5" style="font-size: 30px;">Available Plans</h2>
 
-                <!-- Button in the top-right corner -->
                 <a href="{{ route('plans') }}" class="btn btn-primary" style="background-color: #007bff; border-color: #007bff;">Sync Plans with Zoho Billing</a>
             </div>
             
             <div class="card-body p-3">
-              
-                <!-- Check for invoices -->
+
                 @if($plans->count() == 0)
-                    <!-- Centered Add Plan Button -->
+                  
                     <div class="d-flex justify-content-center">
                         <a href="{{ route('plans') }}" class="btn btn-primary" style="background-color: #007bff; border-color: #007bff;">Add Plan</a>
                     </div>
                 @else
-                    <!-- Styled Bootstrap Table -->
+               
                     <div class="table-responsive">
                         <div class="col-md-8 mx-auto"> <!-- Centered and limited width -->
                             <table class="table table-hover text-center table-bordered" style="background-color: #fff;">

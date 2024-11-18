@@ -6,6 +6,7 @@ use App\Http\Controllers\ZohoController;
 use App\Http\Controllers\PlanController;
 use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\CompanyinfoController;
+use App\Http\Controllers\AffiliateController;
 use Illuminate\Support\Facades\Route;
 
 // Route::view(uri: "/", view: "auth.login")->name("login");
@@ -214,4 +215,5 @@ Route::get('/provider-info', [ZohoController::class, 'ProviderDatafilter'])->nam
 
 Route::get('/customers/{zohocust_id}/view', [ZohoController::class, 'show'])->name('customers.show');
 
-
+Route::get('/affiliates', [AffiliateController::class, 'affiliate'])->name('affiliates.index');
+Route::post('/affiliates', [AffiliateController::class, 'affiliatestore'])->name('affiliates.store');
