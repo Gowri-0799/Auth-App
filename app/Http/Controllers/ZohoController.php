@@ -7,6 +7,7 @@ use App\Models\Addon;
 use App\Models\Term;
 use App\Models\CompanyInfo;
 use App\Models\ProviderData;
+use App\Models\Affiliate;
 use Illuminate\Support\Facades\Hash;  
 use Illuminate\Support\Facades\Route;
 use App\Models\Customer;
@@ -45,7 +46,7 @@ class ZohoController extends Controller
     protected $term;
     protected $companyinfo;
     protected $providerdata;
-
+    protected $affiliate;
 
     public function __construct(ZohoService $zohoService)
     {
@@ -61,6 +62,7 @@ class ZohoController extends Controller
         $this->term=new Term();
         $this->companyinfo=new CompanyInfo();
         $this->providerdata=new ProviderData();
+        $this->affiliate=new Affiliate();
     }
 
     public function getAllPlans()
@@ -395,7 +397,9 @@ class ZohoController extends Controller
     }
 
     public function display(){
-        return view("custdetail");
+        $affiliates = Affiliate::all();
+        $selectedAffiliateIds = [1, 2, 3];
+    return view("custdetail", compact('affiliates','selectedAffiliateIds'));
     }
 
     public function store(Request $request)
