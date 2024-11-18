@@ -1665,7 +1665,7 @@ public function supportticket()
 
 public function supportticketfilter(Request $request)
 {
-   
+     
     $startDate = $request->input('startDate');
     $endDate = $request->input('endDate');
     $search = $request->input('search');
@@ -1704,6 +1704,7 @@ public function downgradesub(Request $request)
     $accessToken = $this->zohoService->getAccessToken();
     
     $subscription_id = $request->input('subscription_id');
+    $subscription_number=$request->input('subscription_number');
     $planId = $request->input('plan_code');
     $customerName = $request->input('customer_name'); 
     $customerEmail = $request->input('customer_email'); 
@@ -1727,22 +1728,6 @@ public function downgradesub(Request $request)
 
         // Store the hostedpage_id in the session for retrieval
         Session::put('hostedpage_id', $hostedPageId);
-
-        $subscriptionNumber = DB::table('supports')
-            ->where('zoho_cust_id', $request->input('zoho_cust_id'))
-            ->value('subscription_number');
-dd($subscriptionNumber);
-        if (!empty($subscriptionNumber)) {
-            DB::table('supports')
-                ->where('zoho_cust_id', $request->input('zoho_cust_id'))
-                ->update(['status' => 'Completed']);
-        }
-   DB::table('supports')
-            ->where('zoho_cust_id', $request->input('zoho_cust_id'))
-            ->update(['status' => 'Completed']);
-
-        // Send the email using Mailgun
-        Mail::to($customerEmail)->send(new SubscriptionDowngrade($customerName, $planId));
 
         return redirect()->to($hostedPageUrl);
     } else {
@@ -1783,8 +1768,6 @@ public function retrievedowntHostedPage()
     
         // Fetch the existing subscription by Zoho subscription ID
         $existingSubscription = Subscription::where('subscription_id', $subscriptionData['subscription_id'])->first();
-        
-      
 
         if (!$existingSubscription) {
             $subscription = Subscription::create([
@@ -1915,6 +1898,17 @@ if (!$existingInvoice) {
                     ]);
                 }
             }
+        }
+        DB::table('supports')
+        ->where('subscription_number', $subscriptionData['subscription_number'])
+        ->update(['status' => 'Completed']);
+
+        $customerName = $subscriptionData['customer']['display_name'] ?? 'Customer'; // Adjust as per your data
+        $customerEmail = $subscriptionData['customer']['email'] ?? null;            // Adjust as per your data
+        $planId = $subscriptionData['plan']['plan_id'];
+
+        if ($customerEmail) {
+            Mail::to($customerEmail)->send(new SubscriptionDowngrade($customerName, $planId));
         }
 
         return redirect()->route('Support.Ticket')->with('success', 'Subscription successfully completed!');
@@ -2209,49 +2203,7 @@ public function updatecompanyinfo(Request $request)
     // Redirect back with success message
     return redirect()->back()->with('success', 'Company information updated successfully.');
 }
-public function providerdatastore(Request $request)
-{
-    // Validate the file input and other fields
-    $request->validate([
-        'uploaded_by' => 'required|string',
-        'file_name' => 'required|file|mimes:csv,txt|max:2048', // Accepts only CSV format
-        'zip_count' => 'required|integer',
-        'url' => 'nullable|string',
-    ]);
 
-    // Find the customer based on the session email
-    $customer = Customer::where('customer_email', Session::get('user_email'))->first();
-    if (!$customer) {
-        return redirect()->back()->withErrors('Customer not found.');
-    }
-
-    // Process the file upload
-    if ($request->hasFile('file_name')) {
-        $file = $request->file('file_name');
-        
-        // Retrieve the original file name and file size
-        $originalName = $file->getClientOriginalName();
-        $fileSize = $file->getSize();
-        
-        // Store the file and get the path
-        $path = $file->storeAs('uploads/provider_data', $originalName, 'public');
-
-        // Create a new record in the provider_data table
-        ProviderData::create([
-            'zoho_cust_id' => $customer->zohocust_id,
-            'uploaded_by' => $request->uploaded_by,
-            'file_name' => $originalName,
-            'file_size' => $fileSize,
-            'zip_count' => $request->zip_count,
-            'url' => $path,
-        ]);
-
-        // Return success response
-        return response()->json(['success' => 'Data stored successfully!']);
-    }
-
-    return response()->json(['error' => 'File upload failed.'], 400);
-}
 public function ProviderData()
 {
     $customer = Customer::where('customer_email', Session::get('user_email'))->first();
@@ -2315,8 +2267,16 @@ public function uploadCsv(Request $request)
         
         $customer->first_login = false;
         $customer->save();
-        return redirect()->route('customer.provider', ['customer' => $customer->id])
-        ->with('success', 'File uploaded successfully!');
+
+        // Fetch updated data
+        $updatedData = ProviderData::where('zoho_cust_id', $customer->zohocust_id)->get();
+        $totalCount = ProviderData::where('uploaded_by', $customer->customer_name)->count();
+
+        return response()->json([
+            'success' => 'File uploaded successfully!',
+            'providerData' => $updatedData,
+            'totalCount' => $totalCount,
+        ]);
     } catch (\Exception $e) {
         Log::error('CSV Upload Error', ['error' => $e->getMessage()]);
         return response()->json(['error' => 'An unexpected error occurred.'], 500);
@@ -2353,51 +2313,6 @@ public function ProviderDatafilter(Request $request)
 
      return view('provider', compact('providerData'));
 }
-
-/*public function show(Request $request)
-{
-    $zohocust_id = $request->zohocust_id;
-    $selectedSection = $request->query('section', 'overview');
-
-    // Retrieve the customer by zoho_cust_id
-    $customer = Customer::where('zohocust_id', $zohocust_id)->first();
-    
-    // Check if customer exists
-    if (!$customer) {
-        return redirect()->back()->with('error', 'Customer not found.');
-    }
-   
-    // Retrieve the subscriptions related to this customer
-    $subscriptions = DB::table('subscriptions')
-    ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
-    ->join('customers', 'subscriptions.zoho_cust_id', '=', 'customers.zohocust_id')
-    ->select(
-        'subscriptions.subscription_id',
-        'subscriptions.subscription_number',
-        'customers.company_name',
-        'plans.plan_name',
-        'plans.plan_price',
-        'subscriptions.start_date',
-        'subscriptions.next_billing_at',
-        'subscriptions.status'
-    )
-    ->get();
-    $invoices = Invoice::where('zoho_cust_id', $customer->zohocust_id)->get();
-
-    $creditnotes = Creditnote::where('zoho_cust_id', $customer->zohocust_id)->get();
-    
-    // Check if there are any credit notes
-    if ($creditnotes->isEmpty()) {
-        // No credit notes found
-        //$customer = null;
-    } else {
-        // Fetch customer details based on the first credit note
-        $customer = Customer::where('zohocust_id', $creditnotes->first()->zoho_cust_id)->first();
-    }
-
-    //dd($customer);
-    return view('customer-show', compact('selectedSection', 'customer', 'subscriptions','invoices','creditnotes'));
-}*/
 
     public function show($zohocust_id, Request $request)
     {

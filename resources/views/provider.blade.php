@@ -276,45 +276,62 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Handle form submission upon confirmation
     agreeButton.addEventListener('click', function () {
-        console.log('Agree button clicked');
-        
-        // Get the form data
-        const formData = new FormData(document.getElementById('providerDataForm'));
 
-        // Send the form data to the backend via a fetch POST request
-        fetch("{{ route('provider-data.upload') }}", {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': csrfToken  // CSRF token for security
-            },
-            body: formData
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok: ' + response.statusText);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                alert(data.success);
-                location.reload();
-            } else if (data.error) {
-                alert(data.error);
-            } else {
-                alert('An unexpected error occurred.');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert("An error occurred: " + error.message);
-        })
-        .finally(() => {
-            // Close the confirmation modal after processing
-            const confirmModal = bootstrap.Modal.getInstance(confirmModalElement);
-            confirmModal.hide();
-        });
+const formData = new FormData(document.getElementById('providerDataForm'));
+
+// Send the form data to the backend via a fetch POST request
+fetch("{{ route('provider-data.upload') }}", {
+    method: 'POST',
+    headers: {
+        'X-CSRF-TOKEN': csrfToken  
+    },
+    body: formData
+})
+.then(response => {
+    if (!response.ok) {
+        throw new Error('Network response was not ok: ' + response.statusText);
+    }
+    return response.json();
+})
+.then(data => {
+    if (data.success) {
+         // Clear existing table rows
+    const tbody = document.querySelector("table.table tbody");
+    tbody.innerHTML = "";
+
+    // Append updated data to the table
+    data.providerData.forEach(row => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${new Date(row.created_at).toLocaleDateString()}</td>
+            <td>${row.file_name}</td>
+            <td>${row.file_size} KB</td>
+            <td>${row.zip_count ?? 0}</td>
+            <td>
+                <a class="btn btn-primary btn-sm" href="{{ Storage::url('') }}${row.url}" download>Download</a>
+            </td>
+        `;
+        tbody.appendChild(tr);
     });
+
+    // Update total count
+    document.querySelector(".mt-2.mb-5 strong").textContent = data.totalCount;
+    } else if (data.error) {
+        alert(data.error);
+    } else {
+        alert('An unexpected error occurred.');
+    }
+})
+.catch(error => {
+    console.error('Error:', error);
+    alert("An error occurred: " + error.message);
+})
+.finally(() => {
+    // Close the confirmation modal after processing
+    const confirmModal = bootstrap.Modal.getInstance(confirmModalElement);
+    confirmModal.hide();
+});
+});
 });
 </script>
 

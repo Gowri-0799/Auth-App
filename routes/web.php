@@ -179,6 +179,7 @@ Route::get('/terms-log', [ZohoController::class, 'filterTermsLog'])->name('term.
 Route::post('/tickets/store', [ZohoController::class, 'ticketstore'])->name('tickets.store');
 Route::post('/ustom/enterprise', [ZohoController::class, 'customenterprise'])->name('custom.enterprise');
 Route::get('/support', [ZohoController::class, 'showCustomerSupport'])->name('show.support');
+
 Route::post('/downgrade-plan', [ZohoController::class, 'downgrade'])->name('downgrade_plan');
 Route::get('password/reset', [AuthController::class, 'showLinkRequestForm'])->name('password.request');
 Route::get('admin/password/reset', [AdminController::class, 'adshowLinkRequestForm'])->name('admin.password.request');
@@ -206,8 +207,6 @@ Route::post('/store-terms', [ZohoController::class, 'storeTerms'])->name('storeT
 Route::post('/addon-preview', [ZohoController::class, 'showAddonPreview'])->name('addon.preview');
 
 Route::post('/company-info/update', [ZohoController::class, 'updatecompanyinfo'])->name('company-info.update');
-
-Route::post('/store-provider-data', [ZohoController::class, 'providerdatastore'])->name('provider-data.store');
 
 Route::post('/upload-csv', [ZohoController::class, 'uploadCsv'])->name('provider-data.upload');
 

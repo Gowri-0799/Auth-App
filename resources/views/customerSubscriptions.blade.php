@@ -3,6 +3,28 @@
 @section('content')
 <div id="content" style="box-sizing: border-box; margin-left:300px;" class="p-3">
    <div class="d-flex justify-content-center align-items-center">
+   {{-- Alert Messages --}}
+    <div id="alert-container" style="position: fixed; top: 20px; right: 20px; z-index: 999; width: 300px;">
+        @if($errors->any())
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <strong>Error!</strong> 
+                <ul class="mb-0">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <strong>Success!</strong> {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+    </div>
+
       <div style="width:100%;" class="row mb-0 border shadow">
          @if(!$subscriptions || !$plans)
          {{-- Display a message if no subscription is found --}}
@@ -204,4 +226,14 @@
       </div>
    </div>
 </div>
+<script>
+    // Automatically hide the alert after 5 seconds
+    setTimeout(() => {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            alert.classList.remove('show');
+            alert.classList.add('fade');
+        });
+    }, 5000);
+</script>
 @endsection

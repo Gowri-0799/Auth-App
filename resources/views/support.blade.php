@@ -13,7 +13,7 @@
     </button>
 </div>
             <div class="card-body p-3">
-                <form class="row mb-4 align-items-end" method="GET" action="{{ route('support.adfilter') }}">
+                <form class="row mb-4 align-items-end" method="GET" action="{{ route('customer.support') }}">
                     <div class="col-md-2">
                         <label for="startDate" class="fw-bold">Start Date</label>
                         <input type="date" id="startDate" name="startDate" class="form-control" value="{{ request('startDate') }}">
