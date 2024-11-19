@@ -398,8 +398,8 @@ class ZohoController extends Controller
 
     public function display(){
         $affiliates = Affiliate::all();
-        $selectedAffiliateIds = [1, 2, 3];
-    return view("custdetail", compact('affiliates','selectedAffiliateIds'));
+       
+    return view("custdetail", compact('affiliates'));
     }
 
     public function store(Request $request)
@@ -414,12 +414,14 @@ class ZohoController extends Controller
             'billing_state' => 'nullable|string',
             'billing_country' => 'nullable|string',
             'billing_zip' => 'nullable|string',
+            'affiliate_ids' => 'nullable|array', // Adding validation for affiliate_ids
+            'affiliate_ids.*' => 'exists:affiliates,id', // Ensuring the affiliate ids are valid
         ], [
             'customer_email.unique' => 'The email ID already exists.',
         ]);
     
         $fullName = trim($validatedData['first_name'] . ' ' . $validatedData['last_name']);
-
+    
         $exists = Customer::where('customer_name', $fullName)->exists();
     
         if ($exists) {
@@ -427,6 +429,7 @@ class ZohoController extends Controller
                 'name_combination' => 'The combination of first name and last name already exists.',
             ])->withInput();
         }
+    
         $defaultPassword = Str::random(16);
         try {
             $customerData = [
@@ -446,13 +449,13 @@ class ZohoController extends Controller
                 'shipping_zip' => $validatedData['billing_zip'],
                 'customer_name' => $fullName,  
             ];
-       
+    
             $zohoResponse = $this->createCustomerInZoho($customerData); 
-
+    
             if (!isset($zohoResponse['customer']['customer_id'])) {
                 throw new \Exception('Failed to create a customer in Zoho. No customer ID returned.');
             }
-            
+    
             $zohoCustomerId = $zohoResponse['customer']['customer_id'];
             $customer = Customer::create([
                 'customer_name' => $fullName,
@@ -473,9 +476,22 @@ class ZohoController extends Controller
                 'shipping_state' => $validatedData['billing_state'],
                 'shipping_country' => $validatedData['billing_country'],
                 'shipping_zip' => $validatedData['billing_zip'],
-               'zohocust_id' => $zohoCustomerId,  // Save Zoho customer ID locally
+                'zohocust_id' => $zohoCustomerId,  // Save Zoho customer ID locally
             ]);
-      
+    
+            // Save selected affiliate IDs in the partner_affiliates table
+            if ($request->has('affiliate_ids')) {
+                $affiliateIds = $request->input('affiliate_ids');
+                foreach ($affiliateIds as $affiliateId) {
+                    \DB::table('partner_affiliates')->insert([
+                        'partner_id' => $zohoCustomerId,  // Using Zoho customer ID as partner_id
+                        'affiliate_id' => $affiliateId,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
+    
             $loginUrl = route('login');
             try {
                 Mail::to($customer->customer_email)->send(new CustomerInvitation($customer, $defaultPassword, $loginUrl));
@@ -483,14 +499,14 @@ class ZohoController extends Controller
                 \Log::error('Failed to send email: ' . $e->getMessage());
                 return redirect()->back()->withErrors('Partner created successfully; but unable to send email.')->withInput();
             }
-        
+    
             return redirect(route('cust'))->with('success', 'Customer added successfully!');
         } catch (\Exception $e) {
-            \Log::error('Failed to create a partner  in Zoho: ' . $e->getMessage());
+            \Log::error('Failed to create a partner in Zoho: ' . $e->getMessage());
             return redirect()->back()->withErrors('Failed to create a partner in Zoho.')->withInput();
         }
     }
-  
+    
 
     private function createCustomerInZoho($customer)
     {

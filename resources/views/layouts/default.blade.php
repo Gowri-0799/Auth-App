@@ -11,6 +11,16 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.jquery.min.js"></script>
+<!-- Chosen CSS (from CDN) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.min.css">
+
+<!-- jQuery (required for Chosen and other functionality) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Chosen JS (from CDN) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.jquery.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&amp;display=swap" rel="stylesheet">
@@ -125,7 +135,14 @@
         .p-2 {
             padding: .5rem !important;
         }
-        
+        .chosen-container .chosen-choices li.search-choice {
+    color: black !important; 
+}
+
+.chosen-container .chosen-choices input {
+    color: black !important;
+}
+
     </style>
 
 </head>
@@ -239,12 +256,13 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
+    
     <!-- JavaScript to handle submenu -->
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
     // Highlight active sidebar links
-    const sidebarLinks = document.querySelectorAll('.sidebar-link'); // Use dot for class selector
+    const sidebarLinks = document.querySelectorAll('.sidebar-link'); 
 
     function removeActiveClass() {
         sidebarLinks.forEach(function(link) {
@@ -260,7 +278,11 @@
     });
 });
     </script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.jquery.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.jquery.min.js"></script>
+
     <script type="text/javascript" src="/assets/js/plan.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
 </body>
