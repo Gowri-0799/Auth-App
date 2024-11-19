@@ -2361,12 +2361,22 @@ public function ProviderDatafilter(Request $request)
 
         $creditnotes = Creditnote::where('zoho_cust_id', $customer->zohocust_id)->get();
 
-        // Pass data to the view
+        $affiliates = DB::table('partner_affiliates')
+        ->join('affiliates', 'partner_affiliates.affiliate_id', '=', 'affiliates.id')  
+        ->where('partner_affiliates.partner_id', $customer->zohocust_id)  
+        ->select(
+            'affiliates.isp_affiliate_id',
+            'affiliates.domain_name'
+        )
+        ->get();
+
+
         return view('customer-show', compact(
             'customer',
             'subscriptions',
             'invoices',
             'creditnotes',
+            'affiliates',
             'selectedSection'
         ));
     }    
@@ -2505,11 +2515,19 @@ public function filterTermsLog(Request $request)
 
         $creditnotes = Creditnote::where('zoho_cust_id', $customer->zohocust_id)->get();
 
+        $affiliates = DB::table('partner_affiliates')
+        ->join('affiliates', 'partner_affiliates.affiliate_id', '=', 'affiliates.id')  
+        ->where('partner_affiliates.partner_id', $customer->zohocust_id)  
+        ->select(
+            'affiliates.isp_affiliate_id',
+            'affiliates.domain_name'
+        )
+        ->get();
         $selectedSection = 'subscriptions'; 
     
         // Pass the data back to the view
         //return view('subscription', compact('subscriptions', 'search', 'startDate', 'endDate'));
-        return view('customer-show', compact('customer', 'subscriptions','selectedSection', 'search', 'startDate', 'endDate', 'invoices','creditnotes'));
+        return view('customer-show', compact('customer', 'subscriptions','selectedSection', 'affiliates', 'search', 'startDate', 'endDate', 'invoices','creditnotes'));
     }   
 
     
@@ -2557,8 +2575,16 @@ public function filterInvoicesnav(Request $request)
         $creditnotes = Creditnote::where('zoho_cust_id', $customer->zohocust_id)->get();
     $selectedSection = 'invoices'; 
 
+    $affiliates = DB::table('partner_affiliates')
+    ->join('affiliates', 'partner_affiliates.affiliate_id', '=', 'affiliates.id')  
+    ->where('partner_affiliates.partner_id', $customer->zohocust_id)  
+    ->select(
+        'affiliates.isp_affiliate_id',
+        'affiliates.domain_name'
+    )
+    ->get();
     // Pass the data back to the view
-    return view('customer-show', compact('customer', 'subscriptions','selectedSection', 'search', 'startDate', 'endDate', 'invoices','creditnotes'));
+    return view('customer-show', compact('customer', 'subscriptions','selectedSection', 'affiliates', 'search', 'startDate', 'endDate', 'invoices','creditnotes'));
 }
 
 public function filtercreditnav(Request $request)
@@ -2603,10 +2629,18 @@ public function filtercreditnav(Request $request)
     $subscriptions = Subscription::where('zoho_cust_id', $zohocust_id)->get();
     $invoices = Invoice::where('zoho_cust_id', $customer->zohocust_id)->get();
    
+    $affiliates = DB::table('partner_affiliates')
+    ->join('affiliates', 'partner_affiliates.affiliate_id', '=', 'affiliates.id')  
+    ->where('partner_affiliates.partner_id', $customer->zohocust_id)  
+    ->select(
+        'affiliates.isp_affiliate_id',
+        'affiliates.domain_name'
+    )
+    ->get();
     $selectedSection = 'creditnote';  // Update the section to reflect credit notes
 
     // Pass data to the view
-    return view('customer-show', compact('customer', 'subscriptions', 'selectedSection','invoices', 'search', 'startDate', 'endDate', 'creditnotes'));
+    return view('customer-show', compact('customer', 'subscriptions', 'selectedSection', 'affiliates','invoices', 'search', 'startDate', 'endDate', 'creditnotes'));
 }
 public function customenterprise(Request $request)
 {

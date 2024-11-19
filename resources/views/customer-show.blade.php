@@ -46,7 +46,13 @@
                   <i class="fa fa-user right-margin text-primary" aria-hidden="true"></i>
                   <strong>{{ $customer->customer_name }}</strong>
                </p>
-               <h5 class="right-margin">Address Details</h5>
+               <h5 class="right-margin mt-4"> <strong>Affiliate IDs:</strong></h5>
+                <ul>
+                    @foreach($affiliates as $affiliate)
+                        <li>{{ $affiliate->isp_affiliate_id }} ({{ $affiliate->domain_name }})</li>
+                    @endforeach
+                </ul>
+               <h5 class="right-margin"> <strong>Address Details</strong></h5>
                <div class="d-flex flex-row mb-3">
                   <div class="m-0">
                      <i class="fa fa-address-card right-margin text-primary" aria-hidden="true"></i>
