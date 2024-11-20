@@ -118,8 +118,13 @@
                            <div style="margin-top: 25px; display: flex; justify-content: space-between;">
                               @if($subscriptions->addon == 1)
                               <p class="mt-3 w-50 text-dark">You have also Subscribed to: <span>{{$plans->addon_code}}</span> for the current month</p>
-                              @else
-                              <a style="cursor: pointer;" href="{{ route('addon', $plans->plan_code) }}" class="btn btn-primary my-3 me-5 justify-content-center d-flex align-items-center rounded w-50">Monthly Click Add-On</a>
+                              @else  
+                              <form action="{{ route('addon.preview') }}" method="POST" style="display: inline; margin-top: 20px;">
+                                @csrf
+                                <input type="hidden" name="plan_code" value="{{  $plans->plan_code }}">
+                                 <button type="submit" class="btn btn-primary">Monthly Click Add-On</button>
+                              </form>
+                              <!-- <a style="cursor: pointer;" href="{{ route('addon.preview', $plans->plan_code) }}" class="btn btn-primary my-3 me-5 justify-content-center d-flex align-items-center rounded w-50">Monthly Click Add-On</a> -->
                               @endif
                               <a id="upgrade-button" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#upgradeModal" class="btn btn-primary m-3 d-flex align-items-center w-50 justify-content-center rounded p-2">Upgrade</a>
                            </div>
