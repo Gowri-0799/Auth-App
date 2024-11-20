@@ -34,55 +34,57 @@
    </ul>
    <!-- Overview Section (default) -->
    <div id="overview" class="row mt-4" style="{{ $selectedSection !== 'overview' ? 'display: none;' : '' }}">
-      <h4 class="right-margin">Overview</h4>
-      <div class="col-lg-6">
-         <div class="card w-100 border-0 bg-clearlink rounded mb-3">
+    <h4 class="mb-4">Overview</h4>
+
+    <!-- customer Section -->
+    <div class="col-lg-6">
+        <div class="card w-100 border-0 bg-clearlink rounded mb-3">
             <div class="card-body">
-               <p class="m-0">
-                  <i class="fa fa-building right-margin text-primary" aria-hidden="true"></i>
-                  <strong>{{ $customer->company_name }}</strong>
-               </p>
-               <p class="m-0">
-                  <i class="fa fa-user right-margin text-primary" aria-hidden="true"></i>
-                  <strong>{{ $customer->customer_name }}</strong>
-               </p>
-               <h5 class="right-margin mt-4"> <strong>Affiliate IDs:</strong></h5>
+                <p class="m-0">
+                    <i class="fa fa-building right-margin text-primary" aria-hidden="true"></i>
+                    <strong>{{ $customer->company_name }}</strong>
+                </p>
+                <p class="m-0">
+                    <i class="fa fa-user right-margin text-primary" aria-hidden="true"></i>
+                    <strong>{{ $customer->customer_name }}</strong>
+                </p>
+                <h5 class="mt-4"><strong>Affiliate IDs:</strong></h5>
                 <ul>
                     @foreach($affiliates as $affiliate)
                         <li>{{ $affiliate->isp_affiliate_id }} ({{ $affiliate->domain_name }})</li>
                     @endforeach
                 </ul>
-               <h5 class="right-margin"> <strong>Address Details</strong></h5>
-               <div class="d-flex flex-row mb-3">
-                  <div class="m-0">
-                     <i class="fa fa-address-card right-margin text-primary" aria-hidden="true"></i>
-                  </div>
-                  <div>
-                     {{ $customer->billing_street }}, <br>
-                     {{ $customer->billing_city }}, <br>
-                     {{ $customer->billing_state }}, <br>
-                     {{ $customer->billing_country }}<br>
-                     {{ $customer->billing_zip }}
-                  </div>
-               </div>
+                <h5 class="mt-4"><strong>Address Details:</strong></h5>
+                <div class="d-flex flex-row mb-3">
+                    <div class="m-0">
+                        <i class="fa fa-address-card right-margin text-primary" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                        {{ $customer->billing_street }}, <br>
+                        {{ $customer->billing_city }}, <br>
+                        {{ $customer->billing_state }}, <br>
+                        {{ $customer->billing_country }}<br>
+                        {{ $customer->billing_zip }}
+                    </div>
+                </div>
             </div>
-         </div>
-      </div>
-      <!-- Users Section -->
-      <div class="col-lg-6">
-         <div class="card w-100 border-0 bg-clearlink rounded mb-3">
+        </div>
+    </div>
+    <!-- user Section -->
+    <div class="col-lg-6">
+        <div class="card w-100 border-0 bg-clearlink rounded mb-3">
             <div class="card-body">
-               <div class="d-flex flex-row mb-5 justify-content-between">
-                  <h4 class="ms-3">Users</h4>
-                  <a data-bs-toggle="modal" data-bs-target="#addUserModal" class="btn btn-primary btn-sm me-3">Invite User</a>
-               </div>
-               <div class="d-flex justify-content-center align-items-center">
-                  No secondary users found
-               </div>
+                <div class="d-flex flex-row mb-5 justify-content-between">
+                    <h4 class="ms-3">Users</h4>
+                    <a data-bs-toggle="modal" data-bs-target="#addUserModal" class="btn btn-primary btn-sm me-3">Invite User</a>
+                </div>
+                <div class="d-flex justify-content-center align-items-center">
+                    No secondary users found
+                </div>
             </div>
-         </div>
-      </div>
-   </div>
+        </div>
+    </div>
+</div>
    <!-- Subscriptions Section -->
    <div id="subscriptions" class="section mt-4" style="{{ $selectedSection !== 'subscriptions' ? 'display: none;' : '' }}">
       <!-- Filter Form -->

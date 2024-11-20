@@ -414,10 +414,11 @@ class ZohoController extends Controller
             'billing_state' => 'nullable|string',
             'billing_country' => 'nullable|string',
             'billing_zip' => 'nullable|string',
-            'affiliate_ids' => 'nullable|array', // Adding validation for affiliate_ids
-            'affiliate_ids.*' => 'exists:affiliates,id', // Ensuring the affiliate ids are valid
+            'affiliate_ids' => 'required|array', 
+            'affiliate_ids.*' => 'exists:affiliates,id', 
         ], [
             'customer_email.unique' => 'The email ID already exists.',
+            'affiliate_ids.required' => 'Please select the affiliate ID.',
         ]);
     
         $fullName = trim($validatedData['first_name'] . ' ' . $validatedData['last_name']);
@@ -2345,6 +2346,7 @@ public function ProviderDatafilter(Request $request)
         $subscriptions = DB::table('subscriptions')
         ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
         ->join('customers', 'subscriptions.zoho_cust_id', '=', 'customers.zohocust_id')
+        ->where ('subscriptions.zoho_cust_id', $customer->zohocust_id)
         ->select(
             'subscriptions.subscription_id',
             'subscriptions.subscription_number',
@@ -2353,10 +2355,11 @@ public function ProviderDatafilter(Request $request)
             'plans.plan_price',
             'subscriptions.start_date',
             'subscriptions.next_billing_at',
-            'subscriptions.status'
+            'subscriptions.status',
+            'customers.zohocust_id'
         )
         ->get();
-        
+     
         $invoices = Invoice::where('zoho_cust_id', $customer->zohocust_id)->get();
 
         $creditnotes = Creditnote::where('zoho_cust_id', $customer->zohocust_id)->get();
