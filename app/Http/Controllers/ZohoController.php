@@ -2217,11 +2217,11 @@ public function updatecompanyinfo(Request $request)
         ['zoho_cust_id' => $customer->zohocust_id], 
         $data
     );
-
+    if (ProviderData::where('zoho_cust_id', $customer->zohocust_id)->exists()) {
+        $customer->first_login = false;
+        $customer->save();
+    }
     
-    $customer->save();
-
-    // Redirect back with success message
     return redirect()->back()->with('success', 'Company information updated successfully.');
 }
 
@@ -2286,8 +2286,10 @@ public function uploadCsv(Request $request)
         $providerData->save();
 
         
-        $customer->first_login = false;
-        $customer->save();
+        if (CompanyInfo::where('zoho_cust_id', $customer->zohocust_id)->exists()) {
+            $customer->first_login = false;
+            $customer->save();
+        }
 
         // Fetch updated data
         $updatedData = ProviderData::where('zoho_cust_id', $customer->zohocust_id)->get();

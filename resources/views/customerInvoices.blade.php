@@ -44,7 +44,9 @@
 
                 <!-- Check for invoices -->
                 @if($invoices->count() == 0)
-                    <p class="text-center">No invoices found.</p>
+                <div class="d-flex justify-content-center align-items-center mt-5">
+                <h3>No invoices found.</h3>
+                  
                 @else
                     <!-- Styled Bootstrap Table -->
                     <div class="table-responsive">

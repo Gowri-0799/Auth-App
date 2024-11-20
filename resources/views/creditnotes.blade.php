@@ -44,7 +44,8 @@
 
                 <!-- Check for credit notes -->
                 @if($creditnotes->count() == 0)
-                    <p class="text-center">No credit notes found.</p>
+                    <div class="d-flex justify-content-center align-items-center mt-5">
+                    <h3>No credit notes found.</h3>
                 @else
                     <!-- Styled Bootstrap Table -->
                     <div class="table-responsive">

@@ -42,7 +42,9 @@
                 <a href="{{ route('show.support') }}" class="btn text-primary text-decoration-underline fw-bold p-0 mb-3">Reset</a>
 
                 @if($supports->count() == 0)
-                    <p class="text-center">No support tickets found.</p>
+                    
+                    <div class="d-flex justify-content-center align-items-center mt-5">
+                    <h3>No support tickets found.</h3>
                 @else
                     <div class="table-responsive">
                         <table class="table table-hover text-center table-bordered">

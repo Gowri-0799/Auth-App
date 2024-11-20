@@ -154,9 +154,10 @@
                     <form action="{{ route('subscribe.preview') }}" method="POST" style="display: inline;">
                     @csrf
                     <input type="hidden" name="plan_code" value="{{ $plan->plan_code }}">
-                    <button type="submit" class="btn btn-primary">Subscribe</button>
+                    <button type="submit" class="btn btn-primary"id="subscribeButton" >Subscribe</button>
                         </form>
                     @endif
+                 
                 @endif
             @endif
         </div>
@@ -332,7 +333,48 @@
   </div>
 </div>
    
+<script>
+    function updatePlanCode(selectElement) {
+        /
+        const selectedOption = selectElement.options[selectElement.selectedIndex];
+    
+        const planCode = selectedOption.getAttribute('data-plan-code');
+     
+        document.getElementById('hiddenPlanCode').value = planCode || '';
+    }
+    document.addEventListener("DOMContentLoaded", function () {
+      
+        var subscribeButtons = document.querySelectorAll("button#subscribeButton");
+
+        function checkConditions() {
+            const logoUploaded = {{ $companyInfo && $companyInfo->logo_image ? 'true' : 'false' }};
+            const companyNameSet = {{ $companyInfo && $companyInfo->company_name ? 'true' : 'false' }};
+            const landingPageSet = {{ $companyInfo && $companyInfo->landing_page_uri ? 'true' : 'false' }};
+            const providerDataUploaded = {{ $providerData && $providerData->url ? 'true' : 'false' }};
+            const firstLogin = {{ $firstLogin ? 'true' : 'false' }};
+
+            const allConditionsMet =
+                logoUploaded &&
+                companyNameSet &&
+                landingPageSet &&
+                providerDataUploaded &&
+                !firstLogin;
+
+            subscribeButtons.forEach((button) => {
+                if (allConditionsMet) {
+                    button.style.pointerEvents = "auto"; 
+                    button.style.opacity = "1";         
+                } else {
+                    button.style.pointerEvents = "none"; 
+                    button.style.opacity = "0.6";        
+                }
+            });
+        }
+
    
+        checkConditions();
+    });
+</script>
 
 @endsection
 
