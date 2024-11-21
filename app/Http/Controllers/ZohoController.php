@@ -1407,32 +1407,29 @@ if (!$existingInvoice) {
     
     public function filterInvoices(Request $request)
 {
-    // Get the search term and dates
+   
     $search = $request->input('search');
     $startDate = $request->input('startDate');
     $endDate = $request->input('endDate');
-    $perPage = $request->input('show', 10); // Number of entries to show
+    $perPage = $request->input('show', 10); 
 
-    // Start the query for filtering invoices
     $query = DB::table('invoices');
 
-    // Apply the date filters if they exist
     if ($startDate) {
         $query->whereDate('invoice_date', '>=', $startDate);
     }
     if ($endDate) {
         $query->whereDate('invoice_date', '<=', $endDate);
     }
-
-    // Apply the search filter on the plan name within the JSON field 'invoice_items'
     if ($search) {
-        $query->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(invoice_items, '$[0].code')) LIKE ?", ["%{$search}%"]);
+        $query->where(function ($query) use ($search) {
+            $query->orWhere('invoice_number', 'LIKE', "%{$search}%")
+                  ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(invoice_items, '$[0].code')) LIKE ?", ["%{$search}%"]);
+        });
     }
-
-    // Paginate the results
+   
     $invoices = $query->paginate($perPage);
 
-    // Pass the data back to the view
     return view('customerinvoices', compact('invoices', 'search', 'startDate', 'endDate'));
 }
 
@@ -2293,6 +2290,9 @@ public function uploadCsv(Request $request)
 
         // Fetch updated data
         $updatedData = ProviderData::where('zoho_cust_id', $customer->zohocust_id)->get();
+
+        Log::info('Updated Data:', $updatedData->toArray());
+
         $totalCount = ProviderData::where('uploaded_by', $customer->customer_name)->count();
 
         return response()->json([
@@ -2327,6 +2327,11 @@ public function ProviderDatafilter(Request $request)
 
      $providerData = $query->paginate($perPage);
 
+     $customer = Customer::where('customer_email', Session::get('user_email'))->first();
+        if (!$customer) {
+            return response()->json(['error' => 'Customer not found.'], 404);
+        }
+     $totalCount = ProviderData::where('uploaded_by', $customer->customer_name)->count();  
      $providerData->appends([
          'search' => $request->get('search'),
          'start_date' => $request->get('start_date'),
@@ -2334,7 +2339,7 @@ public function ProviderDatafilter(Request $request)
          'per_page' => $request->get('per_page')
      ]);
 
-     return view('provider', compact('providerData'));
+     return view('provider', compact('providerData','totalCount'));
 }
 
     public function show($zohocust_id, Request $request)

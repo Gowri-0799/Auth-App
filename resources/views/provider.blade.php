@@ -123,7 +123,7 @@
 </div>
 
 <div class="row">
-    <form action="/provider-info" method="GET" class="row align-items-center w-100">
+    <form action="{{ route('customer.provider') }}" method="GET" class="row align-items-center w-100"> 
         <div class="col-md-1">
             <div class="input-group">
                 <button class="btn text-primary text-decoration-underline fw-bold p-0 pt-2" type="submit">Reset</button>
@@ -133,7 +133,7 @@
 </div>
 
     </div>
-    @if($providerData->isEmpty())
+    @if($providerData->count() == 0)
     <!-- Show message if no data found -->
     <div class=" text-center">
         No data found for this Partner.
@@ -141,29 +141,29 @@
 @else
     <!-- Show table if data exists -->
     <table class="table table-bordered">
-        <thead>
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>File Name</th>
+            <th>File Size</th>
+            <th>ZIP Count</th>
+            <th>CSV File URL</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach($providerData as $data)
             <tr>
-                <th>Date</th>
-                <th>File Name</th>
-                <th>File Size</th>
-                <th>ZIP Count</th>
-                <th>CSV File URL</th>
+                <td>{{ \Carbon\Carbon::parse($data->created_at)->format('Y-m-d') }}</td>
+                <td>{{ $data->file_name }}</td>
+                <td>{{ $data->file_size }} KB</td>
+                <td>{{ $data->zip_count ?? 0 }}</td>
+                <td>
+                    <a class="btn btn-primary btn-sm" href="{{ Storage::url($data->url) }}" download>Download</a>
+                </td>
             </tr>
-        </thead>
-        <tbody>
-            @foreach($providerData as $data)
-                <tr>
-                    <td>{{ \Carbon\Carbon::parse($data->created_at)->format('Y-m-d') }}</td>
-                    <td>{{ $data->file_name }}</td>
-                    <td>{{ $data->file_size }} KB</td> <!-- Assuming file_size is in KB -->
-                    <td>{{ $data->zip_count ?? 0 }}</td>
-                    <td>
-                        <a class="btn btn-primary btn-sm" href="{{ Storage::url($data->url) }}" download>Download</a>
-                    </td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
+        @endforeach
+    </tbody>
+</table>
 @endif
     
     <div class="mt-2 mb-5 paginate">
@@ -245,94 +245,110 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // Get the necessary DOM elements
+    // DOM Elements
     const uploadButton = document.getElementById('uploadButton');
     const fileInput = document.getElementById('csvFileInput');
     const errorText = document.getElementById('errorText');
     const confirmModalElement = document.getElementById('confirmModal');
     const agreeButton = document.getElementById('agreeButton');
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    
-    // Handle file selection and show confirmation modal
+
+    // Display confirmation modal when Upload button is clicked
     uploadButton.addEventListener('click', function () {
-        // Check if a file is selected
         if (!fileInput.files.length) {
-            errorText.textContent = "Please select the CSV file first.";  // Show error message
-            return;  // Stop form submission
+            errorText.textContent = "Please select a CSV file first.";
+            return;
         }
 
-        // Clear previous error message
-        errorText.textContent = "";
-
-        // Display the selected file name in modal
+        errorText.textContent = ""; // Clear any existing error messages
         const fileName = fileInput.files[0].name;
-        const fileNameDisplay = document.getElementById('fileName');
-        fileNameDisplay.textContent = fileName;
+        document.getElementById('fileName').textContent = fileName;
 
         // Show the confirmation modal
         const confirmModal = new bootstrap.Modal(confirmModalElement);
         confirmModal.show();
     });
 
-    // Handle form submission upon confirmation
+    // Handle the actual file upload
     agreeButton.addEventListener('click', function () {
+        const formData = new FormData(document.getElementById('providerDataForm'));
 
-const formData = new FormData(document.getElementById('providerDataForm'));
+        // Disable the upload button and show a spinner
+        uploadButton.disabled = true;
+        uploadButton.textContent = "Uploading...";
 
-// Send the form data to the backend via a fetch POST request
-fetch("{{ route('provider-data.upload') }}", {
-    method: 'POST',
-    headers: {
-        'X-CSRF-TOKEN': csrfToken  
-    },
-    body: formData
-})
-.then(response => {
-    if (!response.ok) {
-        throw new Error('Network response was not ok: ' + response.statusText);
-    }
-    return response.json();
-})
-.then(data => {
-    if (data.success) {
-         // Clear existing table rows
-    const tbody = document.querySelector("table.table tbody");
-    tbody.innerHTML = "";
+        // Submit the form data using Fetch API
+        fetch("{{ route('provider-data.upload') }}", {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken 
+            },
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Network response was not ok: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Update the table with new data dynamically
+                const tbody = document.querySelector("table.table tbody");
+                if (!tbody) {
+                    console.error("Table body (tbody) not found.");
+                    return;
+                }
 
-    // Append updated data to the table
-    data.providerData.forEach(row => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td>${new Date(row.created_at).toLocaleDateString()}</td>
-            <td>${row.file_name}</td>
-            <td>${row.file_size} KB</td>
-            <td>${row.zip_count ?? 0}</td>
-            <td>
-                <a class="btn btn-primary btn-sm" href="{{ Storage::url('') }}${row.url}" download>Download</a>
-            </td>
-        `;
-        tbody.appendChild(tr);
+                // Clear existing table rows
+                tbody.innerHTML = "";
+
+                // Populate the table with new data
+                if (data.providerData.length === 0) {
+                    tbody.innerHTML = "<tr><td colspan='5' class='text-center'>No data found.</td></tr>";
+                } else {
+                    data.providerData.forEach(row => {
+                        const tr = document.createElement("tr");
+                        tr.innerHTML = `
+                            <td>${new Date(row.created_at).toLocaleDateString()}</td>
+                            <td>${row.file_name}</td>
+                            <td>${row.file_size} KB</td>
+                            <td>${row.zip_count ?? 0}</td>
+                            <td>
+                                <a class="btn btn-primary btn-sm" href="{{ Storage::url('') }}${row.url}" download>Download</a>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+
+                // Update the total count
+                document.querySelector(".mt-2.mb-5 strong").textContent = data.totalCount;
+
+                // Reset the file input field
+                fileInput.value = "";
+            } else if (data.error) {
+                alert(data.error);
+            } else {
+                alert("An unexpected error occurred.");
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            errorText.textContent = "An error occurred during the upload. Please try again.";
+        })
+        .finally(() => {
+            // Re-enable the upload button and hide the modal
+            uploadButton.disabled = false;
+            uploadButton.textContent = "Upload Availability Info";
+
+            const confirmModal = bootstrap.Modal.getInstance(confirmModalElement);
+            confirmModal.hide();
+        });
     });
+});
 
-    // Update total count
-    document.querySelector(".mt-2.mb-5 strong").textContent = data.totalCount;
-    } else if (data.error) {
-        alert(data.error);
-    } else {
-        alert('An unexpected error occurred.');
-    }
-})
-.catch(error => {
-    console.error('Error:', error);
-    alert("An error occurred: " + error.message);
-})
-.finally(() => {
-    // Close the confirmation modal after processing
-    const confirmModal = bootstrap.Modal.getInstance(confirmModalElement);
-    confirmModal.hide();
-});
-});
-});
 </script>
+
 
 @endsection

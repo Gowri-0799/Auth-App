@@ -54,7 +54,7 @@
     <div class="dropdown-with-icon">
         <select class="select2-multiple form-control" name="affiliate_ids[]" multiple id="affiliate-ids">
             @foreach($affiliates as $affiliate)
-                <option value="{{ $affiliate->id }}">
+                <option value="{{ $affiliate->id }}" selected>
                     {{ $affiliate->isp_affiliate_id }} - {{ $affiliate->domain_name }}
                 </option>
             @endforeach

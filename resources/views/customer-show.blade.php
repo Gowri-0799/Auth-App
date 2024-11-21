@@ -7,18 +7,22 @@
    </div>
    <!-- Navigation Tabs with Active Class based on Section -->
    <ul class="nav nav-tabs">
-      <li class="nav-item">
-         <a class="nav-link {{ request('section') == 'overview' ? 'active' : '' }}" href="{{ route('customers.show', $customer->zohocust_id) }}?section=overview" onclick="showSection('overview')">Overview</a>
-      </li>
-      <li class="nav-item">
-         <a class="nav-link {{ request('section') == 'subscriptions' ? 'active' : '' }}" href="#" onclick="showSection('subscriptions')">Subscriptions</a>
-      </li>
-      <li class="nav-item">
-         <a class="nav-link {{ request('section') == 'invoices' ? 'active' : '' }}" href="#" onclick="showSection('invoices')">Invoices</a>
-      </li>
-      <li class="nav-item">
-         <a class="nav-link {{ request('section') == 'creditnote' ? 'active' : '' }}" href="#" onclick="showSection('creditnote')">Credit Notes</a>
-      </li>
+    <li class="nav-item">
+        <a class="nav-link {{ $selectedSection === 'overview' ? 'active' : '' }}" 
+           href="{{ route('customers.show', $customer->zohocust_id) }}?section=overview">Overview</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {{ $selectedSection === 'subscriptions' ? 'active' : '' }}" 
+           href="{{ route('customers.show', $customer->zohocust_id) }}?section=subscriptions">Subscriptions</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {{ $selectedSection === 'invoices' ? 'active' : '' }}" 
+           href="{{ route('customers.show', $customer->zohocust_id) }}?section=invoices">Invoices</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {{ $selectedSection === 'creditnote' ? 'active' : '' }}" 
+           href="{{ route('customers.show', $customer->zohocust_id) }}?section=creditnote">Credit Notes</a>
+    </li>
       <li class="nav-item">
          <a class="nav-link" href="#">Refunds</a>
       </li>
