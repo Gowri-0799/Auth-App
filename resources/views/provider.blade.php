@@ -344,6 +344,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const confirmModal = bootstrap.Modal.getInstance(confirmModalElement);
             confirmModal.hide();
+
+             // Reload the page
+            location.reload();
         });
     });
 });

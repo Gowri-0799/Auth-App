@@ -1413,7 +1413,14 @@ if (!$existingInvoice) {
     $endDate = $request->input('endDate');
     $perPage = $request->input('show', 10); 
 
-    $query = DB::table('invoices');
+    $customer = Customer::where('customer_email', Session::get('user_email'))->first();
+
+    if (!$customer) {
+        return redirect()->back()->with('error', 'Customer not found.');
+    }
+
+    $query = DB::table('invoices')->where('zoho_cust_id', $customer->zohocust_id);
+
 
     if ($startDate) {
         $query->whereDate('invoice_date', '>=', $startDate);
@@ -1427,6 +1434,7 @@ if (!$existingInvoice) {
                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(invoice_items, '$[0].code')) LIKE ?", ["%{$search}%"]);
         });
     }
+
    
     $invoices = $query->paginate($perPage);
 
