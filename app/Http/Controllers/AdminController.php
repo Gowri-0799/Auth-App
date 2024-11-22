@@ -196,5 +196,28 @@ class AdminController extends Controller
         return redirect()->route('adminlogin')->with('success', 'Your password has been successfully updated.');
     }
 
+    public function adminview(Request $request)
+    {
+       
+        $query = Admin::query();
+    
+        if ($request->filled('startDate')) {
+            $query->whereDate('created_at', '>=', $request->startDate);
+        }
+    
+        if ($request->filled('endDate')) {
+            $query->whereDate('created_at', '<=', $request->endDate);
+        }
+    
+        if ($request->filled('search')) {
+            $query->where('admin_name', 'like', '%' . $request->search . '%')
+                  ->orWhere('email', 'like', '%' . $request->search . '%');
+        }
    
+        $perPage = $request->input('show', 10); 
+        $admins = $query->orderBy('id', 'desc')->paginate($perPage);
+
+        return view('adminview', compact('admins'));
+    }
+
 }

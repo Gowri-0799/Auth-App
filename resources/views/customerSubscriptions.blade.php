@@ -37,20 +37,20 @@
             <div class="modal-dialog modal-dialog-centered">
                <div class="modal-content bg-popup">
                   <div class="modal-header">
-                     <h3 class="modal-title" id="downgradeModalLabel">Downgrade Plans</h3>
+                     <h3 class="modal-title" id="downgradeModalLabel">Select a plan to downgrade</h3>
                      <button type="button" class="close border-0" data-bs-dismiss="modal" aria-label="Close"><i class="fa-solid fa-xmark fs-3"></i></button>
                   </div>
                   <div class="modal-body">
                      <form id="downgradeForm" action="{{ route('downgrade_plan') }}" method="POST">
                         @csrf
                         <div class="mb-3">
-                           <label for="downgradeSelect" class="form-label">Select a Downgrade Plan</label>
+                          
                            <div class="d-flex flex-column">
                               <select id="downgradeSelect" name="plan_id" class="mt-4 form-select-lg border-dark shadow-none" required="" style="width:300px;">
                                  <option class="py-3" value="" disabled selected>Select a Plan</option>
                                  @foreach($downgradePlans as $downgradePlan)
                                  <option class="py-3" value="{{ $downgradePlan->plan_id }}">
-                                    {{ $downgradePlan->plan_code }} 
+                                    {{ $downgradePlan->plan_name }} 
                                  </option>
                                  @endforeach
                               </select>
@@ -79,12 +79,12 @@
                               <select id="upgradeSelect" name="plan_id" class="mt-4 form-select-lg border-dark shadow-none" required style="width:300px;">
                                  <option class="py-3" value="" disabled selected>Select a Plan</option>
                                  @foreach($upgradePlans as $upgradePlan)
-                                 <option class="py-3" value="{{ $upgradePlan->plan_id }}">
+                                 <option class="py-3" value="{{ $upgradePlan->plan_id ?? '' }}">
                                     {{ $upgradePlan->plan_code }} 
                                  </option>
                                  @endforeach
                               </select>
-                              <input type="hidden" name="plan_code" value="{{$upgradePlan->plan_code}}">
+                              <input type="hidden" name="plan_code" value="{{$upgradePlan->plan_code ?? ''}}">
                               <input type="submit" class="mt-5 w-25 btn btn-primary rounded" value="Submit">
                            </div>
                         </div>
@@ -107,7 +107,7 @@
                            <strong>{{ $subscriptions->status }}</strong>
                            </span>
                            <h3 style="font-size: 24px; font-weight: bold; color: #004085; margin-bottom: 15px;">
-                              {{ $plans->plan_code }}
+                              {{ $plans->plan_name }}
                            </h3>
                            <span style="display: block; font-size: 16px; color: #555; margin-bottom: 10px;">
                            {{ $subscriptions->subscription_number }}

@@ -67,7 +67,7 @@
                                         <td>{{ $term->customer_name }}</td>
                                         <td>{{ $term->ip_address }}</td>
                                         <td>{{ $term->browser_agent }}</td>
-                                        <td>{{ $term->consent }}</td>
+                                        <td>{{ $term->consent == 1 ? 'Yes' : 'No' }}</td>
                                         <td>{{ $term->plan_name }}</td>
                                     </tr>
                                 @endforeach

@@ -78,13 +78,28 @@
                                            @endif
                                         </td>
                                         <td>
-                              <!-- Revoke button, disable if status is closed -->
-                              @if(strtolower($ticket->status) == 'completed')
-    <span class="text-muted">Unable to Revoke</span>
-@else
-    <a href="#" class="btn btn-sm btn-primary">Revoke</a>
-@endif
-    </td>
+    @if(strtolower($ticket->status) == 'completed')
+        <span class="text-muted">Unable to Revoke</span>
+    @elseif(strtolower($ticket->request_type) == 'Custom Support')
+        <button 
+            type="button" 
+            class="btn btn-sm btn-primary add-comment" 
+            data-id="{{ $ticket->Zoho_cust_id }}" 
+            data-bs-toggle="modal" 
+            data-bs-target="#commentModal">
+            Revoke
+        </button>
+    @else
+    <button 
+            type="button" 
+            class="btn btn-sm btn-primary add-comment" 
+            data-id="{{ $ticket->id }}" 
+            data-bs-toggle="modal" 
+            data-bs-target="#commentModal">
+            Revoke
+        </button>
+    @endif
+</td>
     <td>
         <!-- Close button, disable if status is closed -->
         @if(strtolower($ticket->status) == 'completed')
@@ -113,6 +128,30 @@
         </div>
     </div>
 </div>
+<!--Add Comment-->
+<div class="modal fade" id="commentModal" tabindex="-1" aria-labelledby="commentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-dark bg-popup">
+            <div class="modal-header border-0">
+                <h1 class="modal-title fs-5" id="commentModalLabel">Add Comment</h1>
+                <button type="button" class="close border-0" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="fa-solid fa-xmark fs-3"></i>
+                </button>
+            </div>
+            <div class="modal-body p-0">
+                <form action="{{ route('revoke_ticket') }}" method="POST">
+                    @csrf
+                    <!-- Ensure name matches the controller validation field 'zoho_cust_id' -->
+                    <input type="hidden" name="zoho_cust_id" value="{{ $ticket->zoho_cust_id ?? ''}}">
+                    <label class="fw-bold">Comment*</label>
+                    <textarea class="w-100 p-3 pe-4 border-0 rounded" name="comment" rows="4" required></textarea>
+                    <input type="submit" class="btn btn-primary popup-element mt-3" value="Submit">
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <style>
     .overlay {
@@ -137,4 +176,18 @@
         box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
     }
 </style>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Attach event listener to all elements with the "add-comment" class
+    document.querySelectorAll('.add-comment').forEach(button => {
+        button.addEventListener('click', function () {
+            // Get the ticket ID from the data-id attribute
+            const zohoCustId = this.getAttribute('data-id');
+            // Set the zoho_cust_id in the hidden input inside the modal
+            document.getElementById('zoho_cust_id').value = zohoCustId;
+        });
+    });
+});
+</script>
+
 @endsection

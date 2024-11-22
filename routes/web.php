@@ -217,3 +217,7 @@ Route::get('/customers/{zohocust_id}/view', [ZohoController::class, 'show'])->na
 
 Route::get('/affiliates', [AffiliateController::class, 'affiliate'])->name('affiliates.index');
 Route::post('/affiliates', [AffiliateController::class, 'affiliatestore'])->name('affiliates.store');
+
+Route::get('/admins', [AdminController::class, 'adminview'])->name('admin.index');
+
+Route::post('/revoke-ticket', [ZohoController::class, 'revokeTicket'])->name('revoke_ticket');

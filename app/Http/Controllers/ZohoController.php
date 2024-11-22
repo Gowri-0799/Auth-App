@@ -1527,18 +1527,15 @@ public function filtercredits(Request $request)
 }
 public function showCustomerSupport(Request $request)
 {
-    // Get the logged-in customer's email from the session
+   
     $customer = Customer::where('customer_email', Session::get('user_email'))->first();
 
-    // Check if the customer exists
     if (!$customer) {
         return back()->withErrors('Customer not found.');
     }
 
-    // Start building the query for support tickets
     $supportsQuery = Support::where('zoho_cust_id', $customer->zohocust_id);
 
-    // Apply date filters if provided
     if ($request->filled('startDate')) {
         $supportsQuery->whereDate('date', '>=', $request->startDate);
     }
@@ -1547,46 +1544,53 @@ public function showCustomerSupport(Request $request)
         $supportsQuery->whereDate('date', '<=', $request->endDate);
     }
 
-    // Apply search filter for request_type if provided
     if ($request->filled('search')) {
         $supportsQuery->where('request_type', 'like', '%' . $request->search . '%');
     }
 
-    // Paginate results based on user input, default is 10
     $supports = $supportsQuery->paginate($request->input('show', 10));
 
-    // Pass the customer and supports data to the view
     return view('support', compact('supports', 'customer'));
 }
 
 
 
-
 public function ticketstore(Request $request)
 {
+
     $request->validate([
         'message' => 'required|string|max:1000',
     ]);
 
     $customer = Customer::where('customer_email', Session::get('user_email'))->first();
+    
     if (!$customer) {
         return back()->withErrors('Customer not found.');
     }
-    $zohoCustId =  $customer->zohocust_id;
+
+    $zohoCustId = $customer->zohocust_id;
+
+    $existingTicket = Support::where('zoho_cust_id', $zohoCustId)
+                             ->where('request_type', 'Custom Support')
+                             ->where('status', 'open')
+                             ->first();
+
+    if ($existingTicket) {
+        return back()->withErrors('You already raised a support ticket');
+    }
+
     Support::create([
         'date' => now(),
         'request_type' => 'Custom Support', 
-       
         'message' => $request->input('message'),
         'status' => 'open',
         'zoho_cust_id' => $zohoCustId,
-        'zoho_cpid' => $zohoCustId, 
-     
+        'zoho_cpid' => $zohoCustId,
     ]);
 
+    // Redirect back with a success message
     return redirect()->route('show.support')->with('success', 'Support ticket created successfully.');
 }
-
 public function downgrade(Request $request)
 {
     // Validate the request to ensure a plan is selected
@@ -1952,11 +1956,11 @@ if (!$existingInvoice) {
 
     Term::create([
         'zoho_cust_id' => $validated['zoho_cust_id'],
-        'zoho_cpid' => null,  // Set Zoho CPID as null for now
+        'zoho_cpid' => null,  
         'subscription_number' => $validated['subscription_number'],
-        'ip_address' => $request->ip(),  // Get the IP address of the user
-        'browser_agent' => $request->header('User-Agent'),  // Get the browser agent
-        'consent' => $validated['consent'],  // Store the consent value
+        'ip_address' => $request->ip(), 
+        'browser_agent' => $request->header('User-Agent'), 
+        'consent' => $validated['consent'], 
         'plan_name' => $validated['plan_name'],
         'amount' => $validated['amount'],
     ]);
@@ -1972,7 +1976,7 @@ if (!$existingInvoice) {
         }
 
         $subscriptions = Subscription::where('zoho_cust_id', $customer->zohocust_id)->first();
-  
+
         if (!$subscriptions) {
             return back()->withErrors('Subscription not found.');
         }
@@ -1993,7 +1997,7 @@ if (!$existingInvoice) {
             ],
             'redirect_url' => url('addonthanks')
         ]);
-       
+    
         if ($response->successful()) {
             $hostedPageData = $response->json();
 
@@ -2684,6 +2688,39 @@ public function customenterprise(Request $request)
 
     return redirect()->route('show.support')->with('success', 'Support ticket created successfully.');
 }
+
+public function revokeTicket(Request $request)
+{
+
+    $validated = $request->validate([
+        'zoho_cust_id' => 'required|integer|exists:supports,zoho_cust_id', 
+        'comment' => 'required|string|max:1000',
+    ]);
+
+    $support = Support::where('zoho_cust_id', $validated['zoho_cust_id'])
+                      ->where('request_type', 'Custom Support') 
+                      ->where('status', 'open') 
+                      ->first();
+
+    if ($support) {
+        
+        $support->comments = $validated['comment'];
+        $support->status = 'Completed'; 
+        $support->save();
+    } else {
+        
+        Support::create([
+            'zoho_cust_id' => $validated['zoho_cust_id'],
+            'comments' => $validated['comment'],
+            'status' => 'Completed', 
+            'request_type' => 'Customer Support', 
+            'date' => now()
+        ]);
+    }
+
+    return redirect()->back()->with('success', 'Ticket has been updated/revoked successfully.');
+}
+
 
 }
 
