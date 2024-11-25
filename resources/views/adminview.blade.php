@@ -77,7 +77,7 @@
                                  
                                
                                     <td>
-    <button type="button" class="btn btn-sm btn-danger delete-btn" data-id="{{ $admin->id }}" data-name="{{ $admin->admin_name }}">Delete</button>
+    <button type="button" class="btn button-clearlink text-primary fw-bold" data-id="{{ $admin->id }}" data-name="{{ $admin->admin_name }}">Delete</button>
 </td>
                                   
                                 
