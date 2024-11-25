@@ -420,11 +420,11 @@ class ZohoController extends Controller
             'customer_email.unique' => 'The email ID already exists.',
             'affiliate_ids.required' => 'Please select the affiliate ID.',
         ]);
-    
+  
         $fullName = trim($validatedData['first_name'] . ' ' . $validatedData['last_name']);
     
         $exists = Customer::where('customer_name', $fullName)->exists();
-    
+   
         if ($exists) {
             return redirect()->back()->withErrors([
                 'name_combination' => 'The combination of first name and last name already exists.',
@@ -452,7 +452,7 @@ class ZohoController extends Controller
             ];
     
             $zohoResponse = $this->createCustomerInZoho($customerData); 
-    
+
             if (!isset($zohoResponse['customer']['customer_id'])) {
                 throw new \Exception('Failed to create a customer in Zoho. No customer ID returned.');
             }
@@ -512,7 +512,7 @@ class ZohoController extends Controller
     private function createCustomerInZoho($customer)
     {
         $accessToken = $this->zohoService->getAccessToken();
-    
+  
         \Log::info('Customer data:', ['customer' => $customer]);
         $response = Http::withHeaders([
             'Authorization' => 'Zoho-oauthtoken ' . $accessToken
