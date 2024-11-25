@@ -19,7 +19,9 @@ class Admin extends Authenticatable
         'admin_name',
         'email',
         'password',
-        'first_login'
+        'first_login',
+        'role',
+        'receive_mail_notifications',
     ];
 
     /**

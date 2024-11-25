@@ -8,7 +8,7 @@
         <div class="card shadow-sm border-0 rounded-lg">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h2 class="mb-0" style="font-size: 30px;">Admins</h2>
-                <a href="" class="btn btn-primary" style="font-family: Arial, sans-serif; font-size: 14px;">Invite an Admin</a>
+                <a href="{{ route('admin.invite') }}" class="btn btn-primary" style="font-family: Arial, sans-serif; font-size: 14px;">Invite an Admin</a>
             </div>
 
             <div class="card-body p-3">
@@ -68,19 +68,19 @@
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ $admin->admin_name }}</td>
                                     <td>{{ $admin->email }}</td>
-                                    <td> </td>
-                                    <td>{{ $admin->mail_notifications ? 'Yes' : 'No' }}</td>
+                                    <td>{{ $admin->role }} </td>
+                                    <td>{{ $admin->receive_mail_notifications ? 'Yes' : 'No' }}</td>
                                     <td>
-                                        <a href="" class="btn btn-sm btn-primary">Edit</a>
+                                    <a href="{{ route('admin.edit', $admin->id) }}" class="btn btn-sm btn-primary">Edit</a>
                                         
                                     </td>
+                                 
+                               
                                     <td>
-                                    <form action="" method="POST" class="d-inline-block">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn button-clearlink text-primary fw-bold">Delete</button>
-                                        </form>
-                                    </td>
+    <button type="button" class="btn btn-sm btn-danger delete-btn" data-id="{{ $admin->id }}" data-name="{{ $admin->admin_name }}">Delete</button>
+</td>
+                                  
+                                
                                 </tr>
                                 @endforeach
                             </tbody>
@@ -91,4 +91,48 @@
         </div>
     </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete <strong id="adminName"></strong>? This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <form id="deleteForm" method="POST" action="">
+                    @csrf
+                    @method('DELETE')
+                   
+                    <button type="submit" class="btn btn-danger">OK</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+       
+        const deleteButtons = document.querySelectorAll('.delete-btn');
+
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const adminId = this.getAttribute('data-id');
+                const adminName = this.getAttribute('data-name');
+            
+                document.getElementById('adminName').innerText = adminName;
+
+                const deleteForm = document.getElementById('deleteForm');
+                deleteForm.action = '/admin/' + adminId;  
+
+                new bootstrap.Modal(document.getElementById('deleteModal')).show();
+            });
+        });
+    });
+</script>
 @endsection

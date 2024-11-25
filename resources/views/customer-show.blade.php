@@ -131,9 +131,9 @@
                   <td>{{ $subscription->next_billing_at }}</td>
                   <td>
                      @if(strtolower($subscription->status) == 'live')
-                     <span class="badge bg-success">Live</span>
+                     <span class="badge-success">Live</span>
                      @else
-                     <span class="badge bg-warning">Pending</span>
+                     <span class="badge-fail">Pending</span>
                      @endif
                   </td>
                </tr>
@@ -208,9 +208,9 @@
                   <td>{{ number_format($invoice->payment_made, 2) }}</td>
                   <td>
                      @if(strtolower($invoice->status) == 'paid')
-                     <span class="badge bg-success">Paid</span>
+                     <span class="badge-success">Paid</span>
                      @else
-                     <span class="badge bg-warning">Pending</span>
+                     <span class="badge-fail">Pending</span>
                      @endif
                   </td>
                </tr>
@@ -259,6 +259,7 @@
                   <td>{{ number_format($creditnote->balance, 2) }}</td>
                   <td class="p-2 status">
                      @if(strtolower($creditnote->status) == 'credited')
+                     
                      <span class="badge-success">Open</span>
                      @else
                      <span class="badge-fail">Closed</span>

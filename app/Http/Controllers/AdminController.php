@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use App\Mail\ResetPasswordMail;
+use App\Mail\AdminInvitation;
 
 class AdminController extends Controller
 {
@@ -220,4 +221,84 @@ class AdminController extends Controller
         return view('adminview', compact('admins'));
     }
 
+
+    public function addadmin(){
+        return view('createadmin');
+    }
+
+    public function store(Request $request)
+    {
+       
+        $request->validate([
+            'admin_name' => 'required|string|max:255',
+            'admin_email' => 'required|email|unique:admins,email',
+            'admin_role' => 'required|string',
+        ]);
+        $randomPassword = Str::random(16);
+        $admin = Admin::create([
+            'admin_name' => $request->input('admin_name'),
+            'email' => $request->input('admin_email'),
+            'role' => $request->input('admin_role'),
+            'receive_mail_notifications' => $request->has('receive_notifications') ? 1 : 0,
+            'password' => bcrypt($randomPassword),
+        ]);
+        
+        if ($admin->receive_mail_notifications) {
+       
+            $loginUrl = route('adminlogin'); 
+            
+            // Send the invitation email to the admin
+            Mail::to($admin->email)->send(new AdminInvitation($admin,  $randomPassword, $loginUrl));
+        }
+
+        return redirect()->route('admin.index')->with('success', 'Admin added successfully.');
+    }
+
+    public function edit($id)
+{
+
+    $admin = Admin::findOrFail($id);
+    
+
+    return view('admin-edit', compact('admin'));
 }
+
+public function update(Request $request, $id)
+{
+    $request->validate([
+        'admin_name' => 'required|string|max:255',
+        'admin_email' => 'required|email|unique:admins,email,' . $id,
+        'admin_role' => 'required|string',
+    ]);
+
+  
+    $admin = Admin::findOrFail($id);
+
+    $randomPassword = Str::random(16);
+
+    $admin->update([
+        'admin_name' => $request->input('admin_name'),
+        'email' => $request->input('admin_email'),
+        'role' => $request->input('admin_role'),
+        'receive_mail_notifications' => $request->has('receive_notifications') ? 1 : 0,
+        'password' => bcrypt($randomPassword),
+    ]);
+if ($admin->receive_mail_notifications) {
+        $loginUrl = route('adminlogin'); 
+        
+        // Send the invitation email with the new password
+        Mail::to($admin->email)->send(new AdminInvitation($admin, $randomPassword, $loginUrl));
+    }
+    return redirect()->route('admin.index')->with('success', 'Admin updated successfully.');
+}
+
+public function destroy($id)
+{
+    $admin = Admin::findOrFail($id);
+    $admin->delete();
+
+    return redirect()->route('admin.index')->with('success', 'Admin deleted successfully.');
+}
+
+    }
+

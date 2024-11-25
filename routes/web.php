@@ -221,3 +221,11 @@ Route::post('/affiliates', [AffiliateController::class, 'affiliatestore'])->name
 Route::get('/admins', [AdminController::class, 'adminview'])->name('admin.index');
 
 Route::post('/revoke-ticket', [ZohoController::class, 'revokeTicket'])->name('revoke_ticket');
+
+Route::get('/admin/create', [AdminController::class, 'addadmin'])->name('admin.invite');
+Route::post('/invite-admin', [AdminController::class, 'store'])->name('admin.store');
+
+Route::get('admin/{id}/edit', [AdminController::class, 'edit'])->name('admin.edit');
+Route::put('admin/{id}', [AdminController::class, 'update'])->name('admin.update');
+
+Route::delete('/admin/{id}', [AdminController::class, 'destroy'])->name('admin.destroy');

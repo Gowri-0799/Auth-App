@@ -16,8 +16,10 @@ return new class extends Migration
             $table->string('admin_name');
             $table->string('email')->unique();
             $table->string('password');
-            $table->timestamp('timestamp')->nullable();
+            $table->string('role')->nullable();
             $table->boolean('first_login')->default(true);
+            $table->boolean('receive_mail_notifications')->default(false); 
+            $table->timestamp('timestamp')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
