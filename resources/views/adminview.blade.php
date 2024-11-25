@@ -107,7 +107,7 @@
                 <form id="deleteForm" method="POST" action="">
                     @csrf
                     @method('DELETE')
-                   
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-danger">OK</button>
                 </form>
             </div>
@@ -117,18 +117,19 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-       
+   
         const deleteButtons = document.querySelectorAll('.delete-btn');
 
+     
         deleteButtons.forEach(button => {
             button.addEventListener('click', function () {
                 const adminId = this.getAttribute('data-id');
                 const adminName = this.getAttribute('data-name');
-            
+ 
                 document.getElementById('adminName').innerText = adminName;
 
                 const deleteForm = document.getElementById('deleteForm');
-                deleteForm.action = '/admin/' + adminId;  
+                deleteForm.action = '/admin/' + adminId; 
 
                 new bootstrap.Modal(document.getElementById('deleteModal')).show();
             });
