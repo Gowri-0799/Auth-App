@@ -130,8 +130,8 @@
                   <td>{{ $subscription->start_date }}</td>
                   <td>{{ $subscription->next_billing_at }}</td>
                   <td>
-                     @if(strtolower($subscription->status) == 'success')
-                     <span class="badge bg-success">Success</span>
+                     @if(strtolower($subscription->status) == 'live')
+                     <span class="badge bg-success">Live</span>
                      @else
                      <span class="badge bg-warning">Pending</span>
                      @endif
