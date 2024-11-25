@@ -23,7 +23,7 @@ class AdminInvitation extends Mailable
 
     public function build()
     {
-        return $this->subject('Invitation to join Admin Panel')
+        return $this->subject('Invitation to join Admin portal')
                     ->view('emails.admin-invitation');
     }
 }

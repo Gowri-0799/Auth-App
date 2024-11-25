@@ -8,7 +8,7 @@
         <div class="card shadow-sm border-0 rounded-lg">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h2 class="mb-0" style="font-size: 30px;">Admins</h2>
-                <a href="{{ route('admin.invite') }}" class="btn btn-primary" style="font-family: Arial, sans-serif; font-size: 14px;">Invite an Admin</a>
+                <a href="{{ route('admin.invite') }}" class="btn btn-primary" >Invite an Admin</a>
             </div>
 
             <div class="card-body p-3">
@@ -35,7 +35,7 @@
                         <input type="text" id="search" name="search" class="form-control" placeholder="Search here..." value="{{ request('search') }}" style="font-family: Arial, sans-serif; font-size: 14px;">
                     </div>
                     <div class="col-md-1">
-                        <button class="btn button-clearlink text-primary fw-bold" type="submit" style="font-family: Arial, sans-serif; font-size: 14px;">Submit</button>
+                        <button class="btn button-clearlink text-primary fw-bold" type="submit" >Submit</button>
                     </div>
                 </form>
 
