@@ -152,10 +152,10 @@
                   </form>
                     @else
                     <form action="{{ route('subscribe.preview') }}" method="POST" style="display: inline;">
-                    @csrf
-                    <input type="hidden" name="plan_code" value="{{ $plan->plan_code }}">
-                    <button type="submit" class="btn btn-primary"id="subscribeButton" >Subscribe</button>
-                        </form>
+    @csrf
+    <input type="hidden" name="plan_code" value="{{ $plan->plan_code }}">
+    <button type="submit" class="btn btn-primary" id="subscribeButton">Subscribe</button>
+</form>
                     @endif
                  
                 @endif
@@ -334,18 +334,18 @@
 </div>
    
 <script>
+    // Function to update the plan code in the hidden input field
     function updatePlanCode(selectElement) {
-        /
         const selectedOption = selectElement.options[selectElement.selectedIndex];
-    
         const planCode = selectedOption.getAttribute('data-plan-code');
-     
         document.getElementById('hiddenPlanCode').value = planCode || '';
     }
+
     document.addEventListener("DOMContentLoaded", function () {
-      
+        // Select all subscribe buttons
         var subscribeButtons = document.querySelectorAll("button#subscribeButton");
 
+        // Function to check all required conditions
         function checkConditions() {
             const logoUploaded = {{ $companyInfo && $companyInfo->logo_image ? 'true' : 'false' }};
             const companyNameSet = {{ $companyInfo && $companyInfo->company_name ? 'true' : 'false' }};
@@ -353,26 +353,37 @@
             const providerDataUploaded = {{ $providerData && $providerData->url ? 'true' : 'false' }};
             const firstLogin = {{ $firstLogin ? 'true' : 'false' }};
 
-            const allConditionsMet =
+            // All conditions must be true to proceed
+            return (
                 logoUploaded &&
                 companyNameSet &&
                 landingPageSet &&
                 providerDataUploaded &&
-                !firstLogin;
-
-            subscribeButtons.forEach((button) => {
-                if (allConditionsMet) {
-                    button.style.pointerEvents = "auto"; 
-                    button.style.opacity = "1";         
-                } else {
-                    button.style.pointerEvents = "none"; 
-                    button.style.opacity = "0.6";        
-                }
-            });
+                !firstLogin
+            );
         }
 
-   
-        checkConditions();
+        // Attach event listeners to subscribe buttons
+        subscribeButtons.forEach((button) => {
+            button.addEventListener("click", function (event) {
+                if (!checkConditions()) {
+                    event.preventDefault(); // Prevent default action (form submission)
+                    var showAlertModal = new bootstrap.Modal(
+                        document.getElementById("showAlertModal"),
+                        {}
+                    );
+                    showAlertModal.show(); // Show the modal to alert the user
+                }
+            });
+        });
+
+        // Function to recheck conditions when modal is hidden (optional)
+        const modal = document.getElementById("showAlertModal");
+        if (modal) {
+            modal.addEventListener("hidden.bs.modal", function () {
+                checkConditions(); // Recheck conditions when the modal is closed
+            });
+        }
     });
 </script>
 

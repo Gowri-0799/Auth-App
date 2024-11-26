@@ -186,22 +186,22 @@
                   </td>
                 </tr> 
                 @endforeach
-              </tbody>
+              </tbody>                                 
             </table> 
             @else 
-            <p>No payment methods found for this customer.</p> 
-            @endif
+            <p>No payment methods found for this partner.</p> 
+            @endif                                        
           </div>
         </div>
-      </div>
-    </div>
+      </div>                                  
+    </div>                                                  
 
-<!-- Update Password Modal -->
+<!-- Update Password Modal -->                      
 
         <div class="modal fade" id="updatePasswordModal" tabindex="-1" aria-labelledby="updatePasswordModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-md modal-dialog-centered ">
             <div class="modal-content bg-popup">
-            <div class="modal-header">
+            <div class="modal-he        ader">
                     <h3 class="modal-title" id="passwordUpdateModalLabel">Change Password</h3>
                     <button type="button" class="close border-0" data-bs-dismiss="modal" aria-label="Close"><i class="fa-solid fa-xmark fs-3"></i></button>
                 </div>
