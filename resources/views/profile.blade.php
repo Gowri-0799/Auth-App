@@ -58,43 +58,46 @@
       </div>
     </div>
     
-    <!-- Invite User Modal -->
-    <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;"> <!-- Modal width adjusted -->
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="addUserModalLabel">Invite User</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<!-- Invite User Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 500px;"> <!-- Increased width -->
+    <div class="modal-content">
+      <div class="modal-header">
+      <h3 class="modal-title" id="exampleModalLabel">Invite User </h3>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form action="/invite-user" method="POST">
+          @csrf
+          <input type="hidden" name="_token" value="NT953Co8Ux2nRqyiUFNUpRsAktkhsmmj3tEpUao5" autocomplete="off">
+          
+          <div class="mb-3 row">
+            <div class="col-lg">
+              <input name="first_name" class="ms-2 form-control" placeholder="First Name*" required>
+            </div>
+            <div class="col-lg">
+              <input name="last_name" class="ms-2 form-control" placeholder="Last Name*" required>
+            </div>
           </div>
-          <div class="modal-body">
-            <!-- Form with action, hidden token, and updated fields -->
-            <form action="/invite-user" method="POST">
-              @csrf
-              <input type="hidden" name="zoho_cust_id" value="4631236000001671132">
-              <div class="mb-3 row">
-                <div class="col-lg">
-                  <input name="first_name" class="ms-2 form-control" placeholder="First Name*" required>
-                </div>
-                <div class="col-lg">
-                  <input name="last_name" class="ms-2 form-control" placeholder="Last Name*" required>
-                </div>
-              </div>
-              <div class="mb-3 row">
-                <div class="col-lg">
-                  <input name="email" class="ms-2 form-control" placeholder="Email*" required>
-                </div>
-                <div class="col-lg">
-                  <input name="phone_number" class="ms-2 form-control" placeholder="Phone Number*" required>
-                </div>
-              </div>
-              <div class="modal-footer">
-                <input type="submit" class="btn btn-primary text-white w-100 px-3 py-2 rounded" value="Save Changes"> <!-- Full width button -->
-              </div>
-            </form>
+
+          <div class="mb-3 row">
+            <div class="col-lg">
+              <input name="email" class="ms-2 form-control" placeholder="Email*" required>
+            </div>
+            <div class="col-lg">
+              <input name="phone_number" class="ms-2 form-control" placeholder="Phone Number*" required>
+            </div>
           </div>
-        </div>
+
+          <input name="zoho_cust_id" value="4631236000001954290" type="hidden" />
+          <input type="submit" class="btn btn-primary text-white px-3 py-2 rounded" value="Save Changes">
+        </form>
       </div>
     </div>
+  </div>
+</div>
+
+
     <!-- Address Update Modal -->
     <div class="modal fade" id="updateAddressModal" tabindex="-1" aria-labelledby="updateAddressModalLabel" aria-hidden="true">
         <div class="modal-dialog">
