@@ -54,7 +54,7 @@
                 </p>
                 <p class="m-0">
                     <!-- <i class="fa fa-user right-margin text-primary" aria-hidden="true"></i> -->
-                    <strong>{{ $customer->customer_email }}</strong>
+                    <strong>{{ $partnerUser->email }}</strong>
                 </p>
 
                 <h5 class="mt-4"><strong>Affiliate IDs:</strong></h5>

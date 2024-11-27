@@ -13,15 +13,15 @@ use Illuminate\Support\Facades\Route;
 
     
 Route::middleware(['auth:web'])->group(function () {
-    // Route::view(uri: "/", view: "auth.login")->name("login");
-    Route::get('/verify-otp', [AuthController::class, 'otppage'])->name('otppage');
+  
 });
+Route::get('/verify-otp', [AuthController::class, 'otppage'])->name('otppage');
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->name('verify.otp');
 
 Route::get('/customer/plan-subscriptions', [ZohoController::class, 'showplan'])->name('showplan');
 
 
-Route::get('/customer/provider-data', [AuthController::class, 'provider'])->name('provider');
+// Route::get('/customer/provider-data', [AuthController::class, 'provider'])->name('provider');
 
 Route::middleware(['auth:admin'])->group(function () {
     Route::get('/admin/verify-otp', [AdminController::class, 'adminotppage'])->name('adminotppage');
@@ -128,7 +128,7 @@ Route::post('/generate-access-token', [ZohoController::class, 'generateAccessTok
 Route::get('/custdetail', [AuthController::class, 'customerdetail'])
 ->name('custdetail'); 
 
-Route::post('/customerdetail', [ZohoController::class, 'store'])->name('customers.store');
+Route::post('/customerdetail', [ZohoController::class, 'storepartner'])->name('customers.store');
 
 Route::get('/customer',[ZohoController::class,'display']) ->name('cust.display');
 
@@ -229,3 +229,5 @@ Route::get('admin/{id}/edit', [AdminController::class, 'edit'])->name('admin.edi
 Route::put('admin/{id}', [AdminController::class, 'update'])->name('admin.update');
 
 Route::delete('/admin/{id}', [AdminController::class, 'destroy'])->name('admin.destroy');
+
+Route::post('/invite-user', [ZohoController::class, 'inviteUser'])->name('invite-user');

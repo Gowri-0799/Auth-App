@@ -71,16 +71,11 @@
                                     <td>{{ $admin->role }} </td>
                                     <td>{{ $admin->receive_mail_notifications ? 'Yes' : 'No' }}</td>
                                     <td>
-                                    <a href="{{ route('admin.edit', $admin->id) }}" class="btn btn-sm btn-primary">Edit</a>
-                                        
+                                    <a href="{{ route('admin.edit', $admin->id) }}" class="btn btn-sm btn-primary">Edit</a>    
                                     </td>
-                                 
-                               
                                     <td>
-    <button type="button" class="btn button-clearlink text-primary fw-bold delete-btn" data-id="{{ $admin->id }}" data-name="{{ $admin->admin_name }}">Delete</button>
-</td>
-                                  
-                                
+                                     <button type="button" class="btn button-clearlink text-primary fw-bold delete-btn" data-id="{{ $admin->id }}" data-name="{{ $admin->admin_name }}">Delete</button>
+                                    </td> 
                                 </tr>
                                 @endforeach
                             </tbody>

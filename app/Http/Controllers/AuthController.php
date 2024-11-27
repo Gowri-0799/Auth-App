@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Customer;
 use Illuminate\Http\Request;
 use App\Models\Admin;
+use App\Models\PartnerUser;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
@@ -36,39 +37,46 @@ class AuthController extends Controller
 
     public function loginPost(Request $request)
     {
-        $request->validate(["email" => "required", "password" => "required_if:resend_otp,0"]);
+        $request->validate([
+            "email" => "required", 
+            "password" => "required_if:resend_otp,0"
+        ]);
     
         $credentials = $request->only("email", "password");
-        $customer = Customer::where("Customer_email", $credentials["email"])->first();
-    
+        $partnerUser = PartnerUser::where("email", $credentials["email"])->first();
+   
         if ($request->input('resend_otp') == '1') {
-            
-            if ($customer) {
+            if ($partnerUser) {
                 $otp = rand(100000, 999999); 
                 Session::put('otp', $otp);
-                Mail::to($customer->customer_email)->send(new OtpMail($otp, $customer->first_name));
+                Mail::to($partnerUser->email)->send(new OtpMail($otp, $partnerUser->first_name));
     
                 return redirect()->back()->with('success', 'A new OTP has been sent to your email.');
             } else {
                 return redirect()->back()->withErrors(['email' => 'Email not found']);
             }
         }
-        if ($customer && Hash::check($credentials['password'], $customer->password)) {
-            Auth::guard('web')->login($customer);
-            $email = $credentials["email"];
+    
+        if ($partnerUser && Hash::check($credentials['password'], $partnerUser->password)) {
+            Auth::guard('web')->login($partnerUser);
             Session::put('user_email', $credentials["email"]);
-            
-            if($customer ->first_login){
 
-                 return redirect()->route('password.reset', compact('email'));
+            $customer = Customer::where('zohocust_id', $partnerUser->zoho_cust_id)->first();
+    
+            if ($customer && $customer->first_login) {
+               
+                $email = $credentials["email"];
+                return redirect()->route('password.reset', compact('email'));
             }
             $otp = rand(100000, 999999); 
             Session::put('otp', $otp);
-            Mail::to($customer->customer_email)->send(new OtpMail($otp, $customer->first_name));
+            Mail::to($partnerUser->email)->send(new OtpMail($otp, $partnerUser->first_name));
             return redirect()->route('otppage');
         }
+
         return redirect()->back()->withErrors(['email' => 'Invalid credentials']);
     }
+    
 
     function otppage(){
         return view("auth.otp");
@@ -94,14 +102,14 @@ class AuthController extends Controller
 public function resendOtp(Request $request)
 {
     $email = Session::get('user_email');
-    $customer = Customer::where('customer_email', $email)->first();
+    $customer = PartnerUser::where('email', $email)->first();
 
     if ($customer) {
         $otp = rand(100000, 999999); // Generate a new OTP
         Session::put('otp', $otp); // Store the new OTP
 
         // Resend OTP email
-        Mail::to($customer->customer_email)->send(new OtpMail($otp, $customer->first_name));
+        Mail::to($customer->email)->send(new OtpMail($otp, $customer->first_name));
         
         return redirect()->back()->with('success', 'A new OTP has been sent to your email.');
     } else {
@@ -152,14 +160,15 @@ public function resendOtp(Request $request)
     $request->validate(['email' => 'required|email']);
    
     $credentials = $request->only("email");
-        $customer = Customer::where("Customer_email", $credentials["email"])->first();
- 
+        $customer = PartnerUser::where("email", $credentials["email"])->first();
+
+        
     if ( $customer) {
         
         $token = Str::random(60); 
-        $resetUrl = route('password.reset', ['token' => $token, 'email' => $customer->customer_email]);
+        $resetUrl = route('password.reset', ['token' => $token, 'email' => $customer->email]);
 
-        Mail::to( $customer->customer_email)->send(new ResetPasswordMail($customer->first_name,$resetUrl));
+        Mail::to( $customer->email)->send(new ResetPasswordMail($customer->first_name,$resetUrl));
 
         return redirect(route("emailsend"))->with("success", "Register successfully");
     } else {
@@ -186,15 +195,15 @@ public function updatePassword(Request $request)
         'password' => 'required|confirmed|min:6',
     ]);
 
-    $customer = Customer::where('customer_email', $request->email)->first();
+    $partnerUser = PartnerUser::where('email', $request->email)->first();
 
-    if (!$customer) {
+    if (!$partnerUser) {
         return redirect()->back()->withErrors(['email' => 'Invalid email or token.']);
     }
 
-    $customer->password = Hash::make($request->password);
+    $partnerUser->password = Hash::make($request->password);
     
-    if($customer->save()){
+    if( $partnerUser->save()){
        
             return redirect()->route('showplan')->with('success', 'Your password has been successfully updated.');
     }
