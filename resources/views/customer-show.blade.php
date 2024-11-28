@@ -7,22 +7,22 @@
    </div>
    <!-- Navigation Tabs with Active Class based on Section -->
    <ul class="nav nav-tabs">
-    <li class="nav-item">
-        <a class="nav-link {{ $selectedSection === 'overview' ? 'active' : '' }}" 
-           href="{{ route('customers.show', $customer->zohocust_id) }}?section=overview">Overview</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link {{ $selectedSection === 'subscriptions' ? 'active' : '' }}" 
-           href="{{ route('customers.show', $customer->zohocust_id) }}?section=subscriptions">Subscriptions</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link {{ $selectedSection === 'invoices' ? 'active' : '' }}" 
-           href="{{ route('customers.show', $customer->zohocust_id) }}?section=invoices">Invoices</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link {{ $selectedSection === 'creditnote' ? 'active' : '' }}" 
-           href="{{ route('customers.show', $customer->zohocust_id) }}?section=creditnote">Credit Notes</a>
-    </li>
+      <li class="nav-item">
+         <a class="nav-link {{ $selectedSection === 'overview' ? 'active' : '' }}" 
+            href="{{ route('customers.show', $customer->zohocust_id) }}?section=overview">Overview</a>
+      </li>
+      <li class="nav-item">
+         <a class="nav-link {{ $selectedSection === 'subscriptions' ? 'active' : '' }}" 
+            href="{{ route('customers.show', $customer->zohocust_id) }}?section=subscriptions">Subscriptions</a>
+      </li>
+      <li class="nav-item">
+         <a class="nav-link {{ $selectedSection === 'invoices' ? 'active' : '' }}" 
+            href="{{ route('customers.show', $customer->zohocust_id) }}?section=invoices">Invoices</a>
+      </li>
+      <li class="nav-item">
+         <a class="nav-link {{ $selectedSection === 'creditnote' ? 'active' : '' }}" 
+            href="{{ route('customers.show', $customer->zohocust_id) }}?section=creditnote">Credit Notes</a>
+      </li>
       <li class="nav-item">
          <a class="nav-link" href="#">Refunds</a>
       </li>
@@ -38,62 +38,78 @@
    </ul>
    <!-- Overview Section (default) -->
    <div id="overview" class="row mt-4" style="{{ $selectedSection !== 'overview' ? 'display: none;' : '' }}">
-    <h4 class="mb-4">Overview</h4>
-
-    <!-- customer Section -->
-    <div class="col-lg-6">
-        <div class="card w-100 border-0 bg-clearlink rounded mb-3">
+      <h4 class="mb-4">Overview</h4>
+      <!-- customer Section -->
+      <div class="col-lg-6">
+         <div class="card w-100 border-0 bg-clearlink rounded mb-3">
             <div class="card-body">
-                <p class="m-0">
-                    <i class="fa fa-building right-margin text-primary" aria-hidden="true"></i>
-                    <strong>{{ $customer->company_name }}</strong>
-                </p>
-                <p class="m-0">
-                    <i class="fa fa-user right-margin text-primary" aria-hidden="true"></i>
-                    <strong>{{ $customer->customer_name }}</strong>
-                </p>
-                <p class="m-0">
-                    <!-- <i class="fa fa-user right-margin text-primary" aria-hidden="true"></i> -->
-                    <strong>{{ $partnerUser->email }}</strong>
-                </p>
-
-                <h5 class="mt-4"><strong>Affiliate IDs:</strong></h5>
-                <ul>
-                    @foreach($affiliates as $affiliate)
-                        <li>{{ $affiliate->isp_affiliate_id }} ({{ $affiliate->domain_name }})</li>
-                    @endforeach
-                </ul>
-                <h5 class="mt-4"><strong>Address Details:</strong></h5>
-                <div class="d-flex flex-row mb-3">
-                    <div class="m-0">
-                        <i class="fa fa-address-card right-margin text-primary" aria-hidden="true"></i>
-                    </div>
-                    <div>
-                        {{ $customer->billing_street }}, <br>
-                        {{ $customer->billing_city }}, <br>
-                        {{ $customer->billing_state }}, <br>
-                        {{ $customer->billing_country }}<br>
-                        {{ $customer->billing_zip }}
-                    </div>
-                </div>
+               <p class="m-0">
+                  <i class="fa fa-building right-margin text-primary" aria-hidden="true"></i>
+                  <strong>{{ $customer->company_name }}</strong>
+               </p>
+               <p class="m-0">
+                  <i class="fa fa-user right-margin text-primary" aria-hidden="true"></i>
+                  <strong>{{ $customer->customer_name }}</strong>
+               </p>
+               <p class="m-0">
+                  <!-- <i class="fa fa-user right-margin text-primary" aria-hidden="true"></i> -->
+                  <strong>{{ $customer->email }}</strong>
+               </p>
+               <h5 class="mt-4"><strong>Affiliate IDs:</strong></h5>
+               <ul>
+                  @foreach($affiliates as $affiliate)
+                  <li>{{ $affiliate->isp_affiliate_id }} ({{ $affiliate->domain_name }})</li>
+                  @endforeach
+               </ul>
+               <h5 class="mt-4"><strong>Address Details:</strong></h5>
+               <div class="d-flex flex-row mb-3">
+                  <div class="m-0">
+                     <i class="fa fa-address-card right-margin text-primary" aria-hidden="true"></i>
+                  </div>
+                  <div>
+                     {{ $customer->billing_street }}, <br>
+                     {{ $customer->billing_city }}, <br>
+                     {{ $customer->billing_state }}, <br>
+                     {{ $customer->billing_country }}<br>
+                     {{ $customer->billing_zip }}
+                  </div>
+               </div>
             </div>
-        </div>
-    </div>
-    <!-- user Section -->
-    <div class="col-lg-6">
-        <div class="card w-100 border-0 bg-clearlink rounded mb-3">
-            <div class="card-body">
-                <div class="d-flex flex-row mb-5 justify-content-between">
-                    <h4 class="ms-3">Users</h4>
-                    <a data-bs-toggle="modal" data-bs-target="#addUserModal" class="btn btn-primary btn-sm me-3">Invite User</a>
-                </div>
-                <div class="d-flex justify-content-center align-items-center">
-                    No secondary users found
-                </div>
+         </div>
+      </div>
+      <!-- Users Section -->
+      <div class="col-lg-6">
+         <div class="card w-100 border-0 bg-clearlink rounded mb-3">
+            <div class="card-body right-margin">
+               <div class="d-flex flex-row mb-5 justify-content-between">
+                  <h4 class="ms-3">Users</h4>
+                  <a data-bs-toggle="modal" data-bs-target="#addUserModal" class="btn btn-primary btn-sm me-3">Invite User</a>
+               </div>
+               @if($partnerUser->count() == 0)
+               <div class="d-flex justify-content-center align-items-center"> No secondary users found </div>
+               @else
+               @foreach($partnerUser as $user)
+               <div class="d-flex flex-row mb-4">
+                  <div class="col-lg-1 user-icon">
+                     <i style="font-size: 44px;" class="fa-solid fa-circle-user text-primary"></i>
+                  </div>
+                  <div class="col-lg-9 ms-3">
+                     <p class="p-0 m-0">
+                        <strong>
+                        {{ $user->first_name }}&nbsp;{{ $user->last_name }}
+                        
+                        </strong>
+                     </p>
+                     <p class="p-0 m-0">{{ $user->email ??'' }}</p>
+                  </div>
+               </div>
+               <hr class="borders-clearlink">
+               @endforeach
+               @endif
             </div>
-        </div>
-    </div>
-</div>
+         </div>
+      </div>
+   </div>
    <!-- Subscriptions Section -->
    <div id="subscriptions" class="section mt-4" style="{{ $selectedSection !== 'subscriptions' ? 'display: none;' : '' }}">
       <!-- Filter Form -->
@@ -225,7 +241,6 @@
       <!-- Filter Form for Credit Notes -->
       <form method="GET" action="{{ route('nav.creditnote.filter') }}" class="row mb-4 align-items-end">
          @include('partials.filter-form')
-
          <input type="hidden" name="zohocust_id" value="{{ $customer->zohocust_id }}">
          <input type="hidden" name="section" value="creditnote">
       </form>
@@ -259,7 +274,6 @@
                   <td>{{ number_format($creditnote->balance, 2) }}</td>
                   <td class="p-2 status">
                      @if(strtolower($creditnote->status) == 'credited')
-                     
                      <span class="badge-success">Open</span>
                      @else
                      <span class="badge-fail">Closed</span>
@@ -276,6 +290,41 @@
          </table>
       </div>
       @endif
+   </div>
+</div>
+<!-- Invite User Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+   <div class="modal-dialog modal-dialog-centered" style="max-width: 500px;">
+      <div class="modal-content">
+         <div class="modal-header">
+            <h3 class="modal-title" id="exampleModalLabel">Invite User </h3>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+         </div>
+         <div class="modal-body">
+            <form action="{{ route('invite-user') }}" method="POST">
+               @csrf
+               <input type="hidden" name="_token" value="{{ csrf_token() }}">
+               <div class="mb-3 row">
+                  <div class="col-lg">
+                     <input name="first_name" class="ms-2 form-control" placeholder="First Name*" required>
+                  </div>
+                  <div class="col-lg">
+                     <input name="last_name" class="ms-2 form-control" placeholder="Last Name*" required>
+                  </div>
+               </div>
+               <div class="mb-3 row">
+                  <div class="col-lg">
+                     <input name="email" class="ms-2 form-control" placeholder="Email*" required>
+                  </div>
+                  <div class="col-lg">
+                     <input name="phone_number" class="ms-2 form-control" placeholder="Phone Number*" required>
+                  </div>
+               </div>
+               <input name="zoho_cust_id" value="{{ $customer->zohocust_id }}" type="hidden" />
+               <input type="submit" class="btn btn-primary text-white px-3 py-2 rounded" value="Save Changes">
+            </form>
+         </div>
+      </div>
    </div>
 </div>
 <script>
@@ -298,6 +347,6 @@
         const url = window.location.href.split('?')[0]; // Get the base URL without query parameters
         window.location.href = url; // Redirect to the base URL to reset filters
     }
-
+   
 </script>
 @endsection

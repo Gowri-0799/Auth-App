@@ -21,7 +21,7 @@
               <strong>{{ $customer->customer_name }}</strong>
             </p>
             <p class="m-0">
-              <i class="fa fa-envelope right-margin text-primary" aria-hidden="true"></i>{{ $partneruser->email }}
+              <i class="fa fa-envelope right-margin text-primary" aria-hidden="true"></i>{{ $partnerUser->email }}
             </p>
             <p class="m-0">
               <i class="fa-solid fa-phone right-margin text-primary"></i>
@@ -44,19 +44,40 @@
         </div>
       </div>
       
+     
       <!-- Users Section -->
-      <div class="col-lg-6">
-        <div class="card w-100 border-0 bg-clearlink rounded mb-3">
-          <div class="card-body right-margin">
+<div class="col-lg-6">
+    <div class="card w-100 border-0 bg-clearlink rounded mb-3">
+        <div class="card-body right-margin">
             <div class="d-flex flex-row mb-5 justify-content-between">
-              <h4 class="ms-3">Users</h4>
-              <a data-bs-toggle="modal" data-bs-target="#addUserModal" class="btn btn-primary btn-sm me-3">Invite User</a>
+                <h4 class="ms-3">Users</h4>
+                <a data-bs-toggle="modal" data-bs-target="#addUserModal" class="btn btn-primary btn-sm me-3">Invite User</a>
             </div>
-            <div class="d-flex justify-content-center align-items-center"> No secondary users found </div>
-          </div>
+
+            @if($invitedUsers->isEmpty())
+              
+                <div class="d-flex justify-content-center align-items-center"> No secondary users found </div>
+            @else
+              
+                @foreach($invitedUsers as $user)
+                    <div class="d-flex flex-row mb-4">
+                        <div class="col-lg-1 user-icon">
+                            <i style="font-size: 44px;" class="fa-solid fa-circle-user text-primary"></i>
+                        </div>
+                        <div class="col-lg-9 ms-3">
+                            <p class="p-0 m-0"><strong>{{ $user->first_name }}&nbsp;{{ $user->last_name }}
+                            @if($user->zoho_cpid == NULL)
+                        <span>(Primary)</span>
+                        @endif
+                            <p class="p-0 m-0">{{ $user->email }}</p>
+                        </div>
+                    </div>
+                    <hr class="borders-clearlink">
+                @endforeach
+            @endif
         </div>
-      </div>
     </div>
+</div>
     
 <!-- Invite User Modal -->
 <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
@@ -210,7 +231,7 @@
             <div class="modal-body">
             <form id="passwordUpdateForm" action="{{ route('profile.password.update') }}" method="post">
     @csrf
-    <input type="hidden" name="email" value="{{ $partneruser->email }}">
+    <input type="hidden" name="email" value="{{ $partnerUser->email }}">
 
     <label class="fw-bold">Current Password</label>
     <input type="password" name="current_password" class="form-control" required />

@@ -38,13 +38,14 @@ class AuthController extends Controller
     public function loginPost(Request $request)
     {
         $request->validate([
-            "email" => "required", 
+            "email" => "required",
             "password" => "required_if:resend_otp,0"
         ]);
     
         $credentials = $request->only("email", "password");
         $partnerUser = PartnerUser::where("email", $credentials["email"])->first();
-   
+    
+        // Handle resend OTP case
         if ($request->input('resend_otp') == '1') {
             if ($partnerUser) {
                 $otp = rand(100000, 999999); 
@@ -57,23 +58,23 @@ class AuthController extends Controller
             }
         }
     
+        // Check credentials
         if ($partnerUser && Hash::check($credentials['password'], $partnerUser->password)) {
             Auth::guard('web')->login($partnerUser);
             Session::put('user_email', $credentials["email"]);
-
-            $customer = Customer::where('zohocust_id', $partnerUser->zoho_cust_id)->first();
     
-            if ($customer && $customer->first_login) {
-               
+            // Redirect based on userlastloggedin status
+            if (is_null($partnerUser->userlastloggedin)) {
                 $email = $credentials["email"];
                 return redirect()->route('password.reset', compact('email'));
+            } else {
+                $otp = rand(100000, 999999); 
+                Session::put('otp', $otp);
+                Mail::to($partnerUser->email)->send(new OtpMail($otp, $partnerUser->first_name));
+                return redirect()->route('otppage');
             }
-            $otp = rand(100000, 999999); 
-            Session::put('otp', $otp);
-            Mail::to($partnerUser->email)->send(new OtpMail($otp, $partnerUser->first_name));
-            return redirect()->route('otppage');
         }
-
+    
         return redirect()->back()->withErrors(['email' => 'Invalid credentials']);
     }
     
@@ -202,7 +203,7 @@ public function updatePassword(Request $request)
     }
 
     $partnerUser->password = Hash::make($request->password);
-    
+    $partnerUser->userlastloggedin = now();
     if( $partnerUser->save()){
        
             return redirect()->route('showplan')->with('success', 'Your password has been successfully updated.');
