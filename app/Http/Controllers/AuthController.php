@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\OtpMail;
 use Illuminate\Support\Str;
 use App\Mail\ResetPasswordMail;
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
@@ -44,8 +45,7 @@ class AuthController extends Controller
     
         $credentials = $request->only("email", "password");
         $partnerUser = PartnerUser::where("email", $credentials["email"])->first();
-    
-        // Handle resend OTP case
+   
         if ($request->input('resend_otp') == '1') {
             if ($partnerUser) {
                 $otp = rand(100000, 999999); 
@@ -58,17 +58,16 @@ class AuthController extends Controller
             }
         }
     
-        // Check credentials
         if ($partnerUser && Hash::check($credentials['password'], $partnerUser->password)) {
             Auth::guard('web')->login($partnerUser);
             Session::put('user_email', $credentials["email"]);
-    
-            // Redirect based on userlastloggedin status
-            if (is_null($partnerUser->userlastloggedin)) {
+            
+        
+            if (empty($partnerUser->userLastLoggedin) || $partnerUser->userLastLoggedin == '0000-00-00 00:00:00') {
                 $email = $credentials["email"];
                 return redirect()->route('password.reset', compact('email'));
             } else {
-                $otp = rand(100000, 999999); 
+                $otp = rand(100000, 999999);
                 Session::put('otp', $otp);
                 Mail::to($partnerUser->email)->send(new OtpMail($otp, $partnerUser->first_name));
                 return redirect()->route('otppage');

@@ -13,9 +13,10 @@ use Illuminate\Support\Facades\Route;
 
     
 Route::middleware(['auth:web'])->group(function () {
-  
+
 });
 Route::get('/verify-otp', [AuthController::class, 'otppage'])->name('otppage');
+
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->name('verify.otp');
 
 Route::get('/customer/plan-subscriptions', [ZohoController::class, 'showplan'])->name('showplan');
