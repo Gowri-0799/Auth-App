@@ -1674,7 +1674,7 @@ public function downgrade(Request $request)
         'message' => 'I would like to downgrade my subscription to the ' . $selectedPlan->plan_name . '. Please contact me with steps to downgrade.',
         'status' => 'open',
         'zoho_cust_id' => $customer->zohocust_id,
-        'zoho_cpid' =>  $customer->zohocust_id, 
+        'zoho_cpid' =>  $partneruser->zoho_cpid, 
     ]);
 
     // Redirect with a success message
@@ -1682,24 +1682,27 @@ public function downgrade(Request $request)
 }
 public function supportticket()
 {
-
     $supports = DB::table('supports')
     ->join('customers', 'supports.zoho_cust_id', '=', 'customers.zohocust_id')
-    ->join('partner_users', 'customers.zohocust_id', '=', 'partner_users.zoho_cust_id')
-    ->leftJoin('subscriptions', 'supports.subscription_number', '=', 'subscriptions.subscription_number')
+    ->join('partner_users', 'customers.zohocust_id', '=', 'partner_users.zoho_cust_id') 
+    ->leftJoin('subscriptions', 'supports.subscription_number', '=', 'subscriptions.subscription_number') 
     ->select(
         'supports.*',
         'customers.company_name',
         'customers.customer_name',
-        'partner_users.email as partner_user_email',
+        'partner_users.email as customer_email', 
         'subscriptions.plan_id',
         'subscriptions.subscription_id',
-        DB::raw('CASE WHEN subscriptions.subscription_number IS NULL THEN "No Subscription" ELSE subscriptions.subscription_number END as subscription_status')
+        DB::raw('CASE WHEN subscriptions.subscription_number IS NULL THEN "No Subscription" ELSE subscriptions.subscription_number END as subscription_status') // Handle empty subscription_number
     )
+    ->where(function ($query) {
+        $query->whereNull('partner_users.zoho_cpid') // No zoho_cpid in partner_users
+            ->orWhere('supports.zoho_cpid', '=', 'partner_users.zoho_cpid'); // zoho_cpid matches
+    })
     ->get();
 
     $planCodes = DB::table('plans')->pluck('plan_code', 'plan_name')->toArray(); 
-
+  
     foreach ($supports as $support) {
         $message = $support->message;
 
@@ -1709,16 +1712,14 @@ public function supportticket()
         if ($start !== false && $end !== false) {
             $planName = trim(substr($message, $start, $end - $start));
 
-       
+           
             $planCode = $planCodes[$planName] ?? null; 
 
-     
             $support->plan_code = $planCode;
         } else {
             $support->plan_code = null; 
         }
 
-      
         if (empty($support->subscription_status) || $support->subscription_status === "No Subscription") {
             $support->plan_code = "No Plan"; 
         }
@@ -1726,7 +1727,6 @@ public function supportticket()
 
     return view('supportticket', compact('supports'));
 }
-
 
 public function supportticketfilter(Request $request)
 {
@@ -1956,8 +1956,8 @@ if (!$existingInvoice) {
                         'expiry_month' => $cardData['expiry_month'] ?? null,
                         'payment_gateway' => $cardData['payment_gateway'] ?? null,
                         'status' => $invoiceData['status'],
-                        'payment_mode' => $paymentDetails['payment_mode'] ?? null,  // Extract payment mode from payments array
-                        'amount' => $paymentDetails['amount'] ?? null,              // Extract amount from payments array
+                        'payment_mode' => $paymentDetails['payment_mode'] ?? null,  
+                        'amount' => $paymentDetails['amount'] ?? null, 
                         'invoice_id' => $invoiceData['invoice_id'],    
                          'payment_id' =>$paymentDetails['payment_id']
                     ]);
@@ -1968,8 +1968,8 @@ if (!$existingInvoice) {
         ->where('subscription_number', $subscriptionData['subscription_number'])
         ->update(['status' => 'Completed']);
 
-        $customerName = $subscriptionData['customer']['display_name'] ?? 'Customer'; // Adjust as per your data
-        $customerEmail = $subscriptionData['customer']['email'] ?? null;            // Adjust as per your data
+        $customerName = $subscriptionData['customer']['display_name'] ?? 'Customer'; 
+        $customerEmail = $subscriptionData['customer']['email'] ?? null;  
         $planId = $subscriptionData['plan']['plan_id'];
 
         if ($customerEmail) {
@@ -2218,7 +2218,7 @@ public function companyinfo()
     
     $customer = Customer::where('zohocust_id', $partneruser->zoho_cust_id)->first(); 
     
-    $company = CompanyInfo::where('zoho_cust_id', $customer->zoho_cust_id)->firstOrNew(['zoho_cust_id' => $customer->zoho_cust_id]);
+    $company = CompanyInfo::where('zoho_cust_id', $partneruser->zoho_cust_id)->firstOrNew(['zoho_cust_id' => $partneruser->zoho_cust_id]);
 
     return view('companyinfo', compact('company', 'customer'));
 }
@@ -2266,11 +2266,11 @@ public function updatecompanyinfo(Request $request)
         $data['logo_image'] = $logoPath;
     }
 
-    
     $companyInfo = CompanyInfo::updateOrCreate(
         ['zoho_cust_id' => $customer->zohocust_id], 
         $data
     );
+    dd($companyInfo);
     if (ProviderData::where('zoho_cust_id', $customer->zohocust_id)->exists()) {
         $customer->first_login = false;
         $customer->save();
@@ -2844,6 +2844,81 @@ public function inviteUser(Request $request)
         return redirect()->back()->withErrors(['error' => $errorMessage]);
     }
 }
+public function Cancellation(Request $request)
+{
+    $partneruser = PartnerUser::where('email', Session::get('user_email'))->first();
+
+    if (!$partneruser) {
+        return back()->withErrors('Customer not found.');
+    }
+     
+    $customer = Customer::where('zohocust_id', $partneruser->zoho_cust_id)->first();
+
+    if (!$customer) {
+        return back()->withErrors('Customer details not found.');
+    }
+
+    $subscription = Subscription::where('zoho_cust_id', $customer->zohocust_id)->first();
+
+    if (!$subscription) {
+        return back()->withErrors('Subscription not found.');
+    }
+
+    $openTicket = Support::where('zoho_cust_id', $customer->zohocust_id)
+        ->where('request_type', 'Cancellation')
+        ->where('status', 'open')
+        ->first();
+
+    if ($openTicket) {
+
+        return back()->withErrors('An open cancellation request already exists.');
+    }
+
+    Support::create([
+        'date' => now(),
+        'request_type' => 'Cancellation', 
+        'subscription_number' => $subscription->subscription_number,
+        'message' => 'I would like to cancel my existing subscription (' . $subscription->subscription_number . '). Please contact me with next steps for cancellation.',
+        'status' => 'open',
+        'zoho_cust_id' => $customer->zohocust_id,
+        'zoho_cpid' => $partneruser->zoho_cpid,
+    ]);
+
+    return redirect()->route('show.support')->with('success', 'Cancellation request submitted successfully.');
+}
+public function cancelSubscription(Request $request)
+{
+   
+        $accessToken = $this->zohoService->getAccessToken();
+
+      
+        $subscriptionId = $request->input('subscription_id');
+        $subscriptionNumber = $request->input('subscription_number');
+        
+        $response = Http::withHeaders([
+            'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
+            'X-com-zoho-subscriptions-organizationid' => config('services.zoho.zoho_org_id'),
+        ])->post("https://www.zohoapis.com/billing/v1/subscriptions/{$subscriptionId}/cancel", [
+            'organization_id' => config('services.zoho.zoho_org_id'),
+        ]);
+    
+        if ($response->failed()) {
+            return back()->withErrors('Failed to cancel the subscription. Please try again.');
+        }
+
+        DB::table('supports')
+            ->where('subscription_number', $subscriptionNumber)
+            ->update(['status' => 'Completed']);
+
+        DB::table('subscriptions')
+            ->where('subscription_number', $subscriptionNumber)
+            ->update(['status' => 'Cancelled']);
+
+
+        return redirect()->route('Support.Ticket')->with('success', 'Subscription successfully canceled!');
+ 
+    }
+
 
 }
 

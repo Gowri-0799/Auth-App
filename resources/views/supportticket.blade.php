@@ -38,7 +38,6 @@
 
                 <a href="{{ route('Support.Ticket') }}" class="btn text-primary text-decoration-underline fw-bold p-0 mb-3">Reset</a>
 
-                <!-- Display the table or message if no tickets are found -->
                 @if($supports->count() == 0)
                  
                     <div class="d-flex justify-content-center align-items-center mt-5">
@@ -92,32 +91,43 @@
     @else
     <button 
             type="button" 
-            class="btn btn-sm btn-primary add-comment" 
-            data-id="{{ $ticket->id }}" 
-            data-bs-toggle="modal" 
-            data-bs-target="#commentModal">
+            class="btn btn-sm btn-primary add-comment" >
             Revoke
         </button>
     @endif
 </td>
-    <td>
-        <!-- Close button, disable if status is closed -->
-        @if(strtolower($ticket->status) == 'completed')
-        <span class="text-muted">Closed</span>
-           
-        @else
-            <form action="{{ route('downgrade.subscription') }}" method="POST" style="display: inline;">
-                @csrf
-                <input type="hidden" name="plan_code" value="{{ $ticket->plan_code ?? '' }}">
-                <input type="hidden" name="subscription_number" value="{{ $ticket->subscription_number }}">
-                <input type="hidden" name="subscription_id" value="{{ $ticket->subscription_id ?? ''}}">
-                <input type="hidden" name="zoho_cust_id" value="{{ $ticket->zoho_cust_id ?? ''}}">
-                <input type="hidden" name="customer_name" value="{{ $ticket->customer_name ?? '' }}">
-                <input type="hidden" name="customer_email" value="{{ $ticket->customer_email ?? ''}}">
+<td>   
+    @if(strtolower($ticket->status) == 'completed')
+        <span class="text-muted">Closed</span>  
+    @else
+        @php
+            // Set the route dynamically based on request_type
+            $route = strtolower($ticket->request_type) == 'downgrade' 
+                ? route('downgrade.subscription') 
+                : (strtolower($ticket->request_type) == 'cancellation' 
+                    ? route('support.Subscription') 
+                    : '#');
+        @endphp
+        
+        <form action="{{ $route }}" method="POST" style="display: inline;">
+            @csrf
+            <input type="hidden" name="plan_code" value="{{ $ticket->plan_code ?? '' }}">
+            <input type="hidden" name="subscription_number" value="{{ $ticket->subscription_number }}">
+            <input type="hidden" name="subscription_id" value="{{ $ticket->subscription_id ?? ''}}">
+            <input type="hidden" name="zoho_cust_id" value="{{ $ticket->zoho_cust_id ?? ''}}">
+            <input type="hidden" name="customer_name" value="{{ $ticket->customer_name ?? '' }}">
+            <input type="hidden" name="customer_email" value="{{ $ticket->customer_email ?? ''}}">
+            
+            @if(strtolower($ticket->request_type) == 'downgrade')
                 <button type="submit" class="btn btn-primary">Close</button>
-            </form>
-        @endif
-    </td>
+            @elseif(strtolower($ticket->request_type) == 'cancellation')
+                <button type="submit" class="btn btn-primary">Close</button>
+            @else
+                <button type="submit" class="btn btn-primary">Close</button>
+            @endif
+        </form>
+    @endif
+</td>
                                     </tr>
                                 @endforeach
                             </tbody>

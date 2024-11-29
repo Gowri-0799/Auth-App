@@ -72,7 +72,9 @@
                                         <td>{{ $subscription->next_billing_at }}</td>
                                         <td>
                                             @if(strtolower($subscription->status) == 'live')
-                                                <span class="badge badge-success">live</span>
+                                                <span class="badge badge-success">Live</span>
+                                             @elseif(strtolower($subscription->status) == 'cancelled')
+                                                <span class="badge badge-fail">Cancelled</span>  
                                             @else
                                                 <span class="badge badge-fail">Pending</span>
                                             @endif

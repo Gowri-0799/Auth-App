@@ -232,3 +232,8 @@ Route::put('admin/{id}', [AdminController::class, 'update'])->name('admin.update
 Route::delete('/admin/{id}', [AdminController::class, 'destroy'])->name('admin.destroy');
 
 Route::post('/invite-user', [ZohoController::class, 'inviteUser'])->name('invite-user');
+
+
+Route::post('/cancel-subscription', [ZohoController::class, 'cancelSubscription'])->name('support.Subscription');
+
+Route::post('/cancel-subscription/alert', [ZohoController::class, 'Cancellation'])->name('cancel.subscription');

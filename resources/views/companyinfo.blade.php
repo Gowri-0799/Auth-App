@@ -19,7 +19,7 @@
     @else
         <!-- Once first login is 0 and logo is saved, show the 'Logo*' label and the current logo -->
         <label for="logo" class="form-label fw-bold">Logo*</label>
-        <img src="{{ asset('storage/' . $company->logo_image ?? '') }}" alt="logo" style="width:125px;" id="logoPreview" />
+        <img src="{{ asset('storage/' . $company->	logo_image ?? '') }}" alt="logo" style="width:125px;" id="logoPreview">
     @endif
 </div>
 

@@ -19,7 +19,7 @@ return new class extends Migration
             $table->text('message');
             $table->string('status');
             $table->string('zoho_cust_id');
-            $table->string('zoho_cpid');
+            $table->string('zoho_cpid')->nullable();
             $table->text('comments')->nullable();
             $table->string('attributes')->nullable();
             $table->timestamps();

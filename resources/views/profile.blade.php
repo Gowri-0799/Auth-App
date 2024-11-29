@@ -190,7 +190,7 @@
                   <td class="pt-4">
                     {{ $payment->type }}
                   </td>
-                  <td class="pt-4"> ** ** ** {{ substr($payment->payment_method_id, -4) }}
+                  <td class="pt-4"> ** ** ** {{ substr($payment->last_four_digits, -4) }}
                   </td>
                   <td class="pt-4">
                     {{ $payment->expiry_month }}/{{ $payment->expiry_year }}
@@ -224,10 +224,11 @@
         <div class="modal fade" id="updatePasswordModal" tabindex="-1" aria-labelledby="updatePasswordModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-md modal-dialog-centered ">
             <div class="modal-content bg-popup">
-            <div class="modal-he        ader">
+            <div class="modal-header">
                     <h3 class="modal-title" id="passwordUpdateModalLabel">Change Password</h3>
                     <button type="button" class="close border-0" data-bs-dismiss="modal" aria-label="Close"><i class="fa-solid fa-xmark fs-3"></i></button>
                 </div>
+                
             <div class="modal-body">
             <form id="passwordUpdateForm" action="{{ route('profile.password.update') }}" method="post">
     @csrf

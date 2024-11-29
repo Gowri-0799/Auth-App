@@ -102,10 +102,11 @@
                         {{-- Left Card with Subscription Details --}}
                         <div style="flex: 1; padding: 20px; background-color: #eaf1fc; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); margin-right: 20px; position: relative;">
                            {{-- Live Badge Positioned on the Top Right --}}
-                           <span class="sub-status p-1 px-3 badge-success mt-3 fs-5"
-                              style="display: inline-block; float: right; margin-right: 15px; margin-top: -10px;">
-                           <strong>{{ $subscriptions->status }}</strong>
-                           </span>
+                           <span class="sub-status p-1 badge-success mt-3 fs-5"
+    id="status-span"
+    style="display: inline-block; float: right; margin-right: 15px; margin-top: -10px;">
+    <strong>{{ $subscriptions->status }}</strong>
+</span>
                            <h3 style="font-size: 24px; font-weight: bold; color: #004085; margin-bottom: 15px;">
                               {{ $plans->plan_name }}
                            </h3>
@@ -131,8 +132,10 @@
                            </div>
                            {{-- Downgrade and Cancellation Links --}}
                            <div style="margin-top: 20px; display: flex; justify-content: space-between;">
-                              <a href="#" style="color: #007bff; text-decoration: underline; font-size: 16px;">Cancellation</a>
-                              <a href="#" data-bs-toggle="modal" data-bs-target="#downgradeModal" style="color: #007bff; text-decoration: underline; font-size: 16px;"> Downgrade</a>
+                             <a href="#" data-bs-toggle="modal" data-bs-target="#cancelSubscription" style="color: #007bff; text-decoration: underline; font-size: 16px;">
+                             Cancellation
+                              </a>                            
+                       <a href="#" data-bs-toggle="modal" data-bs-target="#downgradeModal" style="color: #007bff; text-decoration: underline; font-size: 16px;"> Downgrade</a>
                            </div>
                            {{-- Next Renewal Date --}}
                            <div style="margin-top: 20px;">
@@ -155,7 +158,8 @@
                            </div>
                            {{-- Update Payment Method --}}
                            <div style="margin-top: 20px;">
-                              <a href="#" style="color: #0066ff; text-decoration: none; font-size: 16px;">Update Payment Method</a>
+                          
+                              <a href="/payments/{{$subscriptions->zoho_cust_id}}"  style="color: #0066ff; text-decoration: none; font-size: 16px;">Update Payment Method</a>
                            </div>
                         </div>
                      </div>
@@ -232,6 +236,28 @@
       </div>
    </div>
 </div>
+<!-- Modal -->
+<div class="modal fade" id="cancelSubscription" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-popup">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Do you really want to cancel the subscription?</h1>
+        <button type="button" class="close border-0 mb-4" data-bs-dismiss="modal" aria-label="Close">
+          <i class="fa-solid fa-xmark fs-3"></i>
+        </button>
+      </div>
+     
+      <div class="modal-footer">
+      <form action="{{ route('cancel.subscription') }}" method="POST">
+        @csrf
+        <button type="submit" class="btn btn-primary">Proceed</button>
+    </form>
+    <button type="button" data-bs-dismiss="modal" class="btn button-clearlink text-primary fw-bold">Cancel</button>
+</div>
+      
+    </div>
+  </div>
+</div>
 <script>
     // Automatically hide the alert after 5 seconds
     setTimeout(() => {
@@ -241,5 +267,11 @@
             alert.classList.add('fade');
         });
     }, 5000);
+
+    var statusSpan = document.getElementById('status-span');
+    var textLength = statusSpan.textContent.trim().length;
+    
+    statusSpan.style.width = (textLength * 12) + 'px';
+
 </script>
 @endsection

@@ -146,12 +146,14 @@
                   <td>{{ $subscription->start_date }}</td>
                   <td>{{ $subscription->next_billing_at }}</td>
                   <td>
-                     @if(strtolower($subscription->status) == 'live')
-                     <span class="badge-success">Live</span>
-                     @else
-                     <span class="badge-fail">Pending</span>
-                     @endif
-                  </td>
+                                            @if(strtolower($subscription->status) == 'live')
+                                                <span class="badge badge-success">Live</span>
+                                             @elseif(strtolower($subscription->status) == 'cancelled')
+                                                <span class="badge badge-fail">Cancelled</span>  
+                                            @else
+                                                <span class="badge badge-fail">Pending</span>
+                                            @endif
+                                        </td>
                </tr>
                @endforeach
             </tbody>
