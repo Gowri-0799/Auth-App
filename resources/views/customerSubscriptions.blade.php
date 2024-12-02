@@ -128,7 +128,23 @@
                               </form>
                               <!-- <a style="cursor: pointer;" href="{{ route('addon.preview', $plans->plan_code) }}" class="btn btn-primary my-3 me-5 justify-content-center d-flex align-items-center rounded w-50">Monthly Click Add-On</a> -->
                               @endif
-                              <a id="upgrade-button" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#upgradeModal" class="btn btn-primary m-3 d-flex align-items-center w-50 justify-content-center rounded p-2">Upgrade</a>
+                              @if($upgradePlans->isEmpty())
+        {{-- No upgrade plans available, show Contact Us button --}}
+        <a  data-bs-toggle="modal" data-bs-target="#contactModal" id="save"
+           class="btn btn-primary m-3 d-flex align-items-center w-50 justify-content-center rounded p-2">
+            Contact Us
+        </a>
+    @else
+        {{-- Upgrade plans available, show Upgrade button --}}
+        <a id="upgrade-button" 
+           style="cursor: pointer;" 
+           data-bs-toggle="modal" 
+           data-bs-target="#upgradeModal" 
+           class="btn btn-primary m-3 d-flex align-items-center w-50 justify-content-center rounded p-2">
+            Upgrade
+        </a>
+    @endif
+                              <!-- <a id="upgrade-button" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#upgradeModal" class="btn btn-primary m-3 d-flex align-items-center w-50 justify-content-center rounded p-2">Upgrade</a> -->
                            </div>
                            {{-- Downgrade and Cancellation Links --}}
                            <div style="margin-top: 20px; display: flex; justify-content: space-between;">
@@ -236,6 +252,29 @@
       </div>
    </div>
 </div>
+ <!-- Modal contact us -->
+ <div class="modal fade" id="contactModal" tabindex="-1" aria-labelledby="contactModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content terms-title bg-popup">
+                <div class="modal-header border-0">
+                    <h3 class="modal-title" id="contactModalLabel">Contact Us</h3>
+                    <button type="button" class="close border-0" data-bs-dismiss="modal" aria-label="Close">
+                        <i class="fa-solid fa-xmark fs-3"></i>
+                    </button>
+                </div>
+                <div class="modal-body p-0">
+                    <form action="{{ route('custom.enterprise') }}" method="post">
+                    @csrf
+                    <textarea class="w-100 p-3 pe-4 border-0 rounded" name="message" rows="5">I am interested in learning more about the Enterprise plan. Please contact me with more information.</textarea>
+                        <input type="submit" class="btn btn-primary popup-element " value="Send">
+                      
+                    </form>
+                </div>
+                <div class="modal-footer border-0"></div>
+            </div>
+        </div>
+    </div>
+    
 <!-- Modal -->
 <div class="modal fade" id="cancelSubscription" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">

@@ -63,7 +63,7 @@ class AdminController extends Controller
         Session::put('otp', $otp);
         Mail::to($admin->email)->send(new OtpMail($otp, $admin->name));
         
-        return redirect()->route('adminotppage'); 
+        return redirect()->route('adminotppage')->with('success', 'A one-time password (OTP) verification code has been sent to your email. Please check your email and enter the code.');; 
     }
 
    

@@ -1605,7 +1605,7 @@ public function ticketstore(Request $request)
     if (!$partneruser) {
         return back()->withErrors('Customer not found.');
     }
-    
+    $zohocpid = $partneruser->zoho_cpid;
     $customer = Customer::where('zohocust_id', $partneruser->zoho_cust_id)->first();  
 
     $zohoCustId = $customer->zohocust_id;
@@ -1625,7 +1625,7 @@ public function ticketstore(Request $request)
         'message' => $request->input('message'),
         'status' => 'open',
         'zoho_cust_id' => $zohoCustId,
-        'zoho_cpid' => $zohoCustId,
+        'zoho_cpid' =>  $zohocpid ,
     ]);
 
     return redirect()->route('show.support')->with('success', 'Support ticket created successfully.');
@@ -1966,6 +1966,7 @@ if (!$existingInvoice) {
         }
         DB::table('supports')
         ->where('subscription_number', $subscriptionData['subscription_number'])
+        ->where('request_type', 'Downgrade') 
         ->update(['status' => 'Completed']);
 
         $customerName = $subscriptionData['customer']['display_name'] ?? 'Customer'; 
@@ -2270,7 +2271,7 @@ public function updatecompanyinfo(Request $request)
         ['zoho_cust_id' => $customer->zohocust_id], 
         $data
     );
-    dd($companyInfo);
+  
     if (ProviderData::where('zoho_cust_id', $customer->zohocust_id)->exists()) {
         $customer->first_login = false;
         $customer->save();
@@ -2734,9 +2735,23 @@ public function customenterprise(Request $request)
     if (!$partneruser) {
         return back()->withErrors('Customer not found.');
     }
-    
+    $zohocpid = $partneruser->zoho_cpid;
     $customer = Customer::where('zohocust_id', $partneruser->zoho_cust_id)->first(); 
+
     $zohoCustId =  $customer->zohocust_id;
+
+    $subscription = Subscription::where('zoho_cust_id', $zohoCustId)->first();
+    $subscriptionNumber = $subscription ? $subscription->subscription_number : null;
+
+    $openTicket = Support::where('zoho_cust_id', $zohoCustId)
+    ->where('request_type', 'Custom Enterprise')
+    ->where('status', 'open')
+    ->first();
+
+if ($openTicket) {
+    // Return with an error message if an open ticket exists
+    return back()->withErrors('You already raised a support ticket');
+}
 
     Support::create([
         'date' => now(),
@@ -2744,7 +2759,8 @@ public function customenterprise(Request $request)
         'message' => $request->input('message'),
         'status' => 'open',
         'zoho_cust_id' => $zohoCustId,
-        'zoho_cpid' => $zohoCustId, 
+        'zoho_cpid' => $zohocpid, 
+        'subscription_number' => $subscriptionNumber,
      
     ]);
 

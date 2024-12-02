@@ -70,7 +70,7 @@ class AuthController extends Controller
                 $otp = rand(100000, 999999);
                 Session::put('otp', $otp);
                 Mail::to($partnerUser->email)->send(new OtpMail($otp, $partnerUser->first_name));
-                return redirect()->route('otppage');
+                return redirect()->route('otppage')->with('success', 'A one-time password (OTP) verification code has been sent to your email. Please check your email and enter the code.');
             }
         }
     

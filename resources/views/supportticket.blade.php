@@ -38,6 +38,7 @@
 
                 <a href="{{ route('Support.Ticket') }}" class="btn text-primary text-decoration-underline fw-bold p-0 mb-3">Reset</a>
 
+                <!-- Display the table or message if no tickets are found -->
                 @if($supports->count() == 0)
                  
                     <div class="d-flex justify-content-center align-items-center mt-5">
@@ -79,7 +80,7 @@
                                         <td>
     @if(strtolower($ticket->status) == 'completed')
         <span class="text-muted">Unable to Revoke</span>
-    @elseif(strtolower($ticket->request_type) == 'Custom Support')
+        @elseif(strtolower($ticket->request_type) == 'Custom Support')
         <button 
             type="button" 
             class="btn btn-sm btn-primary add-comment" 
@@ -88,10 +89,13 @@
             data-bs-target="#commentModal">
             Revoke
         </button>
-    @else
+        @else
     <button 
             type="button" 
-            class="btn btn-sm btn-primary add-comment" >
+            class="btn btn-sm btn-primary add-comment" 
+            data-id="{{ $ticket->id }}" 
+            data-bs-toggle="modal" 
+            data-bs-target="#commentModal">
             Revoke
         </button>
     @endif
@@ -199,5 +203,6 @@
     });
 });
 </script>
+
 
 @endsection

@@ -65,7 +65,7 @@
          @ Testlink Technologies 2024
       </footer>
    </div>
-
+   
    <!-- Ensure jQuery is included -->
    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
    <script>

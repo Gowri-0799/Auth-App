@@ -13,9 +13,7 @@
          <div class="container d-flex justify-content-center align-items-center flex-column mt-5">
             <h3 class="text-primary mt-5 mb-3">Testlink ISP Admin Program OTP Verification</h3>
             
-            @if(session()->has("success"))
-            <div class="alert alert-success">{{ session()->get("success") }}</div>
-            @endif
+          
             
             @if(session()->has("error"))
             <div class="alert alert-danger">{{ session()->get("error") }}</div>
@@ -54,14 +52,19 @@
          @ Testlink Technologies 2024
       </footer>
    </div>
-
+   @if(session('success'))
+   <div id="notification" class="alert alert-success position-fixed" style="top: 70px; right: 20px; z-index: 1050;">
+      {{ session('success') }}
+      <button type="button" id="alert-close" class="close btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+   </div>
+   @endif
    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
    <script>
       function resendOtp() {
-         // Create a form for resending OTP and submit it to a different route
+        
          const form = document.createElement('form');
          form.method = 'POST';
-         form.action = '{{ route("adminresend.otp") }}';  // Route for resending OTP
+         form.action = '{{ route("adminresend.otp") }}';  
          form.style.display = 'none';
 
          // Add CSRF token
