@@ -15,7 +15,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.jquery.min.js"></script>
 <!-- Chosen CSS (from CDN) -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.min.css">
-
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
 <!-- jQuery (required for Chosen and other functionality) -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
@@ -213,7 +213,7 @@
                                 </a>
                             </li>
                             <li class="sidebar-item">
-                                <a href="#" class="sidebar-link">
+                                <a href="{{ route('admin.profile') }}" class="sidebar-link">
                                 - Profile
                                 </a>
                             </li>

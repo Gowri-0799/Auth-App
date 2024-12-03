@@ -80,22 +80,10 @@
                                         <td>
     @if(strtolower($ticket->status) == 'completed')
         <span class="text-muted">Unable to Revoke</span>
-        @elseif(strtolower($ticket->request_type) == 'Custom Support')
+    @else
         <button 
             type="button" 
-            class="btn btn-sm btn-primary add-comment" 
-            data-id="{{ $ticket->Zoho_cust_id }}" 
-            data-bs-toggle="modal" 
-            data-bs-target="#commentModal">
-            Revoke
-        </button>
-        @else
-    <button 
-            type="button" 
-            class="btn btn-sm btn-primary add-comment" 
-            data-id="{{ $ticket->id }}" 
-            data-bs-toggle="modal" 
-            data-bs-target="#commentModal">
+            class="btn btn-sm btn-primary add-comment" >
             Revoke
         </button>
     @endif
@@ -103,6 +91,15 @@
 <td>   
     @if(strtolower($ticket->status) == 'completed')
         <span class="text-muted">Closed</span>  
+    @elseif(strtolower($ticket->request_type) == 'custom support' || strtolower($ticket->request_type) == 'custom enterprise')
+        <button 
+            type="button" 
+            class="btn btn-sm btn-primary add-comment" 
+            data-id="{{ $ticket->zoho_cust_id }}" 
+            data-bs-toggle="modal" 
+            data-bs-target="#commentModal">
+           Close
+        </button>
     @else
         @php
             // Set the route dynamically based on request_type
@@ -117,21 +114,16 @@
             @csrf
             <input type="hidden" name="plan_code" value="{{ $ticket->plan_code ?? '' }}">
             <input type="hidden" name="subscription_number" value="{{ $ticket->subscription_number }}">
-            <input type="hidden" name="subscription_id" value="{{ $ticket->subscription_id ?? ''}}">
-            <input type="hidden" name="zoho_cust_id" value="{{ $ticket->zoho_cust_id ?? ''}}">
+            <input type="hidden" name="subscription_id" value="{{ $ticket->subscription_id ?? '' }}">
+            <input type="hidden" name="zoho_cust_id" value="{{ $ticket->zoho_cust_id ?? '' }}">
             <input type="hidden" name="customer_name" value="{{ $ticket->customer_name ?? '' }}">
-            <input type="hidden" name="customer_email" value="{{ $ticket->customer_email ?? ''}}">
+            <input type="hidden" name="customer_email" value="{{ $ticket->customer_email ?? '' }}">
             
-            @if(strtolower($ticket->request_type) == 'downgrade')
-                <button type="submit" class="btn btn-primary">Close</button>
-            @elseif(strtolower($ticket->request_type) == 'cancellation')
-                <button type="submit" class="btn btn-primary">Close</button>
-            @else
-                <button type="submit" class="btn btn-primary">Close</button>
-            @endif
+            <button type="submit" class="btn btn-primary">Close</button>
         </form>
     @endif
 </td>
+
                                     </tr>
                                 @endforeach
                             </tbody>

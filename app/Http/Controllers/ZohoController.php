@@ -2749,7 +2749,7 @@ public function customenterprise(Request $request)
     ->first();
 
 if ($openTicket) {
-    // Return with an error message if an open ticket exists
+  
     return back()->withErrors('You already raised a support ticket');
 }
 
@@ -2776,7 +2776,7 @@ public function revokeTicket(Request $request)
     ]);
 
     $support = Support::where('zoho_cust_id', $validated['zoho_cust_id'])
-                      ->where('request_type', 'Custom Support') 
+                       ->whereIn('request_type', ['Custom Support', 'Custom Enterprise'])
                       ->where('status', 'open') 
                       ->first();
 

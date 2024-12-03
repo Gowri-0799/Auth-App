@@ -92,7 +92,7 @@ Route:: get("/in", [AuthController::class, "index"])
 Route::get('admin/plans', [ZohoController::class, "getAllPlans"])
     ->name('plans');
 
-
+    Route::post('/admin/password/update', [AdminController::class, 'adminupdatePassword'])->name('adpro.password.update');
 Route:: get("admin/support-ticket", [ZohoController::class, "supportticket"])
     ->name("Support.Ticket");
     Route:: get("admin/terms-log", [ZohoController::class, "termslog"])
@@ -100,7 +100,8 @@ Route:: get("admin/support-ticket", [ZohoController::class, "supportticket"])
 
  Route::get('/customer/profile', [ZohoController::class, 'showCustomerDetails'])
      ->name('customer.details');
-
+     Route::get('/admin/profile', [AdminController::class, 'adminprofile'])
+     ->name('admin.profile');
 
      Route::get('/customer/providerdata', [ZohoController::class, 'ProviderData'])
      ->name('customer.provider');     

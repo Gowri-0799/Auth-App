@@ -300,5 +300,54 @@ public function destroy($id)
     return redirect()->route('admin.index')->with('success', 'Admin deleted successfully.');
 }
 
+
+public function adminprofile()
+{
+  
+    $email = Session::get('user_email');
+
+    $admin = Admin::where('email', $email)->first();
+
+    return view('adminprofile', compact('admin'));
+}
+
+public function adminupdatePassword(Request $request)
+{
+    $request->validate([
+        'current_password' => 'required',
+        'new_password' => [
+            'required',
+            'confirmed',
+            'min:6',
+            'regex:/[a-zA-Z]/',      
+            'regex:/[0-9]/',          
+            'regex:/[@$!%*?&]/'   
+        ],
+    ], [
+        'new_password.required' => 'The new password field is required.',
+        'new_password.confirmed' => 'The new password confirmation does not match.',
+        'new_password.min' => 'The password must be at least 6 characters long.',
+        'new_password.regex' => 'The password must contain at least one letter, one number, and one special character.'
+    ]);
+    $email = Session::get('user_email'); 
+    $admin = Admin::where('email', $email)->first();
+
+   
+    if (!$admin) {
+        return redirect()->back()->withErrors(['email' => 'Admin not found.']);
     }
+
+ 
+    if (!Hash::check($request->current_password, $admin->password)) {
+        return redirect()->back()->withErrors(['current_password' => 'The current password is incorrect.']);
+    }
+
+ 
+    $admin->password = Hash::make($request->new_password);
+    $admin->save();
+
+    return redirect()->back()->with('success', 'Password updated successfully.');
+}
+
+}
 
