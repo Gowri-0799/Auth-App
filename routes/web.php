@@ -238,3 +238,5 @@ Route::post('/invite-user', [ZohoController::class, 'inviteUser'])->name('invite
 Route::post('/cancel-subscription', [ZohoController::class, 'cancelSubscription'])->name('support.Subscription');
 
 Route::post('/cancel-subscription/alert', [ZohoController::class, 'Cancellation'])->name('cancel.subscription');
+
+Route::post('admin/subscribe', [ZohoController::class, 'subscribelink'])->name('subscribelink');

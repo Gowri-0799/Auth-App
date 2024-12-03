@@ -110,57 +110,87 @@
          </div>
       </div>
    </div>
-   <!-- Subscriptions Section -->
-   <div id="subscriptions" class="section mt-4" style="{{ $selectedSection !== 'subscriptions' ? 'display: none;' : '' }}">
-      <!-- Filter Form -->
-      <form method="GET" action="{{ route('nav.subscriptions.filter') }}" class="row mb-4 align-items-end">
-         @include('partials.filter-form')
-         <input type="hidden" name="zohocust_id" value="{{ $customer->zohocust_id }}">
-         <input type="hidden" name="section" value="subscriptions"> <!-- Pass the selected section with the form -->
-      </form>
-      @if($subscriptions->count() == 0)
-      <p class="text-center">No subscriptions found.</p>
-      @else
-      <div class="table-responsive">
-         <table class="table table-hover text-center table-bordered" style="background-color: #fff; width: 100%; max-width: 100%;">
-            <thead class="table-light">
-               <tr>
-                  <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">S.No</th>
-                  <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Subscription Number</th>
-                  <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Company Name</th>
-                  <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Plan Name</th>
-                  <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Plan Amount</th>
-                  <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Start Date</th>
-                  <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">End Date</th>
-                  <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Status</th>
-               </tr>
-            </thead>
-            <tbody>
-               @foreach($subscriptions as $index => $subscription)
-               <tr>
-                  <td>{{ $index + 1 }}</td>
-                  <td>{{ $subscription->subscription_number }}</td>
-                  <td>{{ $customer->company_name}}</td>
-                  <td>{{ $subscription->plan_name }}</td>
-                  <td>{{ number_format($subscription->plan_price, 2) }}</td>
-                  <td>{{ $subscription->start_date }}</td>
-                  <td>{{ $subscription->next_billing_at }}</td>
-                  <td>
-                                            @if(strtolower($subscription->status) == 'live')
-                                                <span class="badge badge-success">Live</span>
-                                             @elseif(strtolower($subscription->status) == 'cancelled')
-                                                <span class="badge badge-fail">Cancelled</span>  
-                                            @else
-                                                <span class="badge badge-fail">Pending</span>
-                                            @endif
-                                        </td>
-               </tr>
-               @endforeach
-            </tbody>
-         </table>
-      </div>
-      @endif
-   </div>
+<!-- Subscriptions Section -->
+<div id="subscriptions" class="section mt-4" style="{{ $selectedSection !== 'subscriptions' ? 'display: none;' : '' }}">
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <!-- Title -->
+    <div>
+        <span style="font-family: Arial, sans-serif; font-size: 18px; font-weight: bold;">Subscription</span>
+    </div>
+
+    <!-- "+" Icon and Text -->
+    <div class="d-flex align-items-center">
+    <a href="#" class="btn btn-primary rounded-circle d-flex align-items-center justify-content-center" 
+       style="width: 40px; height: 40px; margin-right: 10px;"
+       data-bs-toggle="modal" data-bs-target="#downgradeModal">
+        <i class="fas fa-plus"></i>
+    </a>
+    <span style="font-family: Arial, sans-serif; font-size: 16px; margin-right: 170px;">Create Subscription</span>
+</div>
+</div>
+
+    @if($subscriptions->count() == 0)
+        <!-- Centered "No Subscriptions" Message -->
+        <div class="d-flex justify-content-center align-items-center" 
+             style="height: 150px; width: 90%; margin-left: auto; margin-right: auto; border: 1px solid #ddd; border-radius: 5px;">
+            <div class="text-muted" style="font-family: Arial, sans-serif; font-size: 18px;">No Subscriptions Made</div>
+        </div>
+    @else
+        <!-- Filter Form (appears only if subscriptions exist) -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <form method="GET" action="{{ route('nav.subscriptions.filter') }}" class="d-flex align-items-center">
+                @include('partials.filter-form')
+                <input type="hidden" name="zohocust_id" value="{{ $customer->zohocust_id }}">
+                <input type="hidden" name="section" value="subscriptions"> <!-- Pass the selected section with the form -->
+            </form>
+        </div>
+
+        <!-- Subscriptions Table -->
+        <div class="table-responsive">
+            <table class="table table-hover text-center table-bordered" style="background-color: #fff; width: 100%; max-width: 100%;">
+                <thead class="table-light">
+                    <tr>
+                        <th style="font-family: Arial, sans-serif; font-size: 16px; background-color: #EEF1F4; width: 25%;">S.No</th>
+                        <th style="font-family: Arial, sans-serif; font-size: 16px; background-color: #EEF1F4;">Subscription Number</th>
+                        <th style="font-family: Arial, sans-serif; font-size: 16px; background-color: #EEF1F4;">Company Name</th>
+                        <th style="font-family: Arial, sans-serif; font-size: 16px; background-color: #EEF1F4;">Plan Name</th>
+                        <th style="font-family: Arial, sans-serif; font-size: 16px; background-color: #EEF1F4;">Plan Amount</th>
+                        <th style="font-family: Arial, sans-serif; font-size: 16px; background-color: #EEF1F4;">Start Date</th>
+                        <th style="font-family: Arial, sans-serif; font-size: 16px; background-color: #EEF1F4;">End Date</th>
+                        <th style="font-family: Arial, sans-serif; font-size: 16px; background-color: #EEF1F4;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($subscriptions as $index => $subscription)
+                        <tr>
+                            <td>{{ $index + 1 }}</td>
+                            <td>{{ $subscription->subscription_number }}</td>
+                            <td>{{ $customer->company_name }}</td>
+                            <td>{{ $subscription->plan_name }}</td>
+                            <td>{{ number_format($subscription->plan_price, 2) }}</td>
+                            <td>{{ $subscription->start_date }}</td>
+                            <td>{{ $subscription->next_billing_at }}</td>
+                            <td>
+                                @if(strtolower($subscription->status) == 'live')
+                                    <span class="badge badge-success">Live</span>
+                                @elseif(strtolower($subscription->status) == 'cancelled')
+                                    <span class="badge badge-danger">Cancelled</span>
+                                @else
+                                    <span class="badge badge-warning">Pending</span>
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    @endif
+</div>
+
+
+
+
    <!-- Invoices Section --> 
    <div id="invoices" class="section mt-4" style="{{ $selectedSection !== 'invoices' ? 'display: none;' : '' }}">
       <!-- Filter Form for Invoices -->
@@ -293,6 +323,38 @@
       </div>
       @endif
    </div>
+</div>
+<!-- Create subscription model-->
+<div class="modal fade" id="downgradeModal" tabindex="-1" aria-labelledby="downgradeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-popup">
+            <div class="modal-header">
+                <h3 class="modal-title" id="downgradeModalLabel">Enter the required details</h3>
+                <button type="button" class="close border-0" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="fa-solid fa-xmark fs-3"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+            <form id="downgradeForm" action="{{ route('subscribelink') }}" method="POST">
+    @csrf
+    <div class="mb-3">
+        <div class="d-flex flex-column">
+            <h3 class="modal-title" id="downgradeModalLabel">Plans</h3>
+            <select id="downgradeSelect" name="plan_id" class="mt-4 form-select-lg border-dark shadow-none" required="" style="width:300px;">
+                <option class="py-3" value="" disabled selected>Select a Plan</option>
+                @foreach($plans as $plan)
+                    <option class="py-3" value="{{ $plan->plan_code }}">
+                        {{ $plan->plan_name }} - ${{ number_format($plan->plan_price, 2) }}
+                    </option>
+                @endforeach
+            </select>
+            <input type="submit" class="mt-5 w-25 btn btn-primary rounded" value="Submit">
+        </div>
+    </div>
+</form>
+            </div>
+        </div>
+    </div>
 </div>
 <!-- Invite User Modal -->
 <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">

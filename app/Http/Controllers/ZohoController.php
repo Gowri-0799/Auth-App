@@ -28,6 +28,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Mail\SubscriptionDowngrade;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\CustomerInvitation;
+use App\Mail\SubscriptionEmail;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 
@@ -2453,6 +2454,7 @@ public function show($zohocust_id, Request $request)
             'affiliates.domain_name'
         )
         ->get();
+        $plans = DB::table('plans')->select('plan_code', 'plan_name', 'plan_price')->get();
 
     return view('customer-show', compact(
         'customer',
@@ -2461,7 +2463,8 @@ public function show($zohocust_id, Request $request)
         'creditnotes',
         'affiliates',
         'selectedSection',
-        'partnerUser' 
+        'partnerUser' ,
+        'plans' 
     ));
 }
 
@@ -2605,8 +2608,8 @@ public function filterSubscriptionsnav(Request $request)
     )
     ->get();
     $selectedSection = 'subscriptions'; 
-
-    return view('customer-show', compact('customer', 'subscriptions','selectedSection', 'affiliates', 'search', 'startDate', 'endDate', 'invoices','creditnotes', 'partnerUser'));
+    $plans = DB::table('plans')->select('plan_id', 'plan_name', 'plan_price')->get();
+    return view('customer-show', compact('customer', 'subscriptions','selectedSection', 'affiliates', 'search', 'startDate', 'endDate', 'invoices','creditnotes', 'partnerUser','plans'));
 }   
 
     
@@ -2666,8 +2669,9 @@ public function filterInvoicesnav(Request $request)
         'affiliates.domain_name'
     )
     ->get();
+    $plans = DB::table('plans')->select('plan_id', 'plan_name', 'plan_price')->get();
     // Pass the data back to the view
-    return view('customer-show', compact('customer', 'subscriptions','selectedSection', 'affiliates', 'search', 'startDate', 'endDate', 'invoices','creditnotes', 'partnerUser'));
+    return view('customer-show', compact('customer', 'subscriptions','selectedSection', 'affiliates', 'search', 'startDate', 'endDate', 'invoices','creditnotes', 'partnerUser','plans'));
 }
 
 public function filtercreditnav(Request $request)
@@ -2721,8 +2725,8 @@ public function filtercreditnav(Request $request)
     )
     ->get();
     $selectedSection = 'creditnote';  
-
-    return view('customer-show', compact('customer', 'subscriptions', 'selectedSection', 'affiliates','invoices', 'search', 'startDate', 'endDate', 'creditnotes','partnerUser'));
+    $plans = DB::table('plans')->select('plan_id', 'plan_name', 'plan_price')->get();
+    return view('customer-show', compact('customer', 'subscriptions', 'selectedSection', 'affiliates','invoices', 'search', 'startDate', 'endDate', 'creditnotes','partnerUser','plans'));
 }
 public function customenterprise(Request $request)
 {
@@ -2935,7 +2939,71 @@ public function cancelSubscription(Request $request)
  
     }
 
+    public function subscribelink(Request $request)
+    {
+        $plancode = $request->input('plan_id');
+    
+        $accessToken = $this->zohoService->getAccessToken();
+    
+        $partneruser = PartnerUser::where('email', Session::get('user_email'))->first();
+    
+        if (!$partneruser) {
+            return redirect()->back()->withErrors('Customer not found.');
+        }
+    
+        $customer = Customer::where('zohocust_id', $partneruser->zoho_cust_id)->first();
+    
+        if (!$customer) {
+            return redirect()->back()->withErrors('Customer not found.');
+        }
+    
+        $response = Http::withHeaders([
+            'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
+            'Content-Type' => 'application/json'
+        ])->post(config('services.zoho.zoho_new_subscription'), [
+            'organization_id' => config('services.zoho.zoho_org_id'),
+            'customer_id' => $customer->zohocust_id,
+            'customer' => [
+                'display_name' => $customer->customer_name,
+                'email' => $partneruser->email,
+            ],
+            'plan' => [
+                'plan_code' => $plancode
+            ],
+            'redirect_url' => url('thankyou')
+        ]);
+    
+        if ($response->successful()) {
+            $hostedPageData = $response->json();
+            $hostedPageUrl = $hostedPageData['hostedpage']['url'];
+    
+            Session::put('hostedpage_id', $hostedPageData['hostedpage']['hostedpage_id']); 
+    
+            $this->sendSubscriptionEmail($partneruser, $customer, $hostedPageUrl, $plancode);
+    
+            return redirect()->back()->with('success', 'Subscription created successfully. Please check your email to complete the subscription.');
+        } else {
+            return redirect()->back()->withErrors('Error creating subscription: ' . $response->body());
+        }
+    }
+    public function sendSubscriptionEmail($partneruser,$customer, $hostedPageUrl, $plancode)
+    {
 
+        $plan = Plan::where('plan_code', $plancode)->first();
+    
+        if (!$plan) {
+            return back()->withErrors('Plan not found.');
+        }
+
+        $emailData = [
+            'customer_name' => $customer->customer_name,
+            'hostedPageUrl' => $hostedPageUrl,
+            'plan' => $plan,
+        ];
+
+            Mail::to($partneruser->email)->send(new SubscriptionEmail($emailData));
+    
+    }
 }
 
 
