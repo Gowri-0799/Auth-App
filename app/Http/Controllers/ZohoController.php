@@ -573,9 +573,30 @@ class ZohoController extends Controller
         }
     }
 
-    public function subscribe($planId)
-    {
-      
+    public function subscribe(Request $request,$planId)
+{
+
+    $validated = $request->validate([
+        'zoho_cust_id' => 'required|string',
+        'plan_code'=>'required|string',
+        'zoho_cpid' => 'nullable|string',
+        'plan_name' => 'required|string',
+        'amount' => 'required|numeric',
+        'consent' => 'required|boolean',  
+    ]);
+
+    Term::create([
+        'zoho_cust_id' => $validated['zoho_cust_id'],
+        'zoho_cpid' => $validated['zoho_cpid'] ?? null,
+        'subscription_number' => null,
+        'ip_address' => $request->ip(),  
+        'browser_agent' => $request->header('User-Agent'), 
+        'consent' => $validated['consent'],  
+        'plan_name' => $validated['plan_name'],
+        'amount' => $validated['amount'],
+    ]);
+
+   
         $accessToken = $this->zohoService->getAccessToken();
 
         $partneruser = PartnerUser::where('email', Session::get('user_email'))->first();
@@ -602,11 +623,10 @@ class ZohoController extends Controller
                 'email'        => $partneruser->email,
             ],
             'plan' => [
-                    'plan_code' => $planId // Plan code from the form
+                    'plan_code' => $planId, // Plan code from the form
             ],
             'redirect_url' => url('thankyou')
         ]);
-
 
         if ($response->successful()) {
             $hostedPageData = $response->json();
@@ -2166,18 +2186,20 @@ public function showUpgradePreview(Request $request)
 }
 public function showsubscribePreview(Request $request)
 {
-    $planCode = $request->input('plan_code');
   
+    $planCode = $request->input('plan_code');
+ 
     $newPlan = Plan::where('plan_code', $planCode)->first();
-   
+  
     $partneruser = PartnerUser::where('email', Session::get('user_email'))->first();
     
         if (!$partneruser) {
             return back()->withErrors('Customer not found.');
         }
 
-   
-    return view('subscribe-preview', compact('newPlan'));
+        $customer = Customer::where('zohocust_id', $partneruser->zoho_cust_id)->first();
+
+    return view('subscribe-preview', compact('newPlan','customer','partneruser'));
 }
 public function processUpgrade(Request $request)
 {
@@ -2812,13 +2834,10 @@ public function inviteUser(Request $request)
         'zoho_cust_id' => 'required|string', 
     ]);
 
-    // Generate a random password
     $defaultPassword = Str::random(16);
 
-    // Get Zoho access token
     $accessToken = $this->zohoService->getAccessToken();
 
-    // Call Zoho API to create contact person
     $zohoResponse = Http::withHeaders([
         'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
         'Content-Type'  => 'application/json',
@@ -2999,6 +3018,7 @@ public function cancelSubscription(Request $request)
             'customer_name' => $customer->customer_name,
             'hostedPageUrl' => $hostedPageUrl,
             'plan' => $plan,
+           'email' => $partneruser->email,
         ];
 
             Mail::to($partneruser->email)->send(new SubscriptionEmail($emailData));

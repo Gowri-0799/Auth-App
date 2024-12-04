@@ -30,9 +30,13 @@
                               
                               <!-- Subscription button -->
                               <div style="text-align:center;margin:20px auto;display:block">
-                                 <a style="background-color:#0d6efd;border:0;padding:10px;color:#ffffff;display:inline-block;letter-spacing:1px;max-width:300px;min-width:150px;text-align:center;text-decoration:none;text-transform:uppercase;margin:20px auto;font-size:16px;border-radius:5px;font-family:Verdana,sans-serif" href="{{ $hostedPageUrl }}" target="_blank">
-                                    Subscribe Now
-                                 </a>
+                              
+    <a href="{{ route('customer.subscribe', [ $plan_code, 'email' => $email]) }}" 
+       style="background-color:#0d6efd;border:0;padding:10px;color:#ffffff;display:inline-block;letter-spacing:1px;max-width:300px;min-width:150px;text-align:center;text-decoration:none;text-transform:uppercase;margin:20px auto;font-size:16px;border-radius:5px;font-family:Verdana,sans-serif" 
+       target="_blank">
+        Subscribe Now
+    </a>
+</div>
                               </div>
 
                               <!-- Closing statement -->

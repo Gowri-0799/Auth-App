@@ -92,7 +92,7 @@ Route:: get("/in", [AuthController::class, "index"])
 Route::get('admin/plans', [ZohoController::class, "getAllPlans"])
     ->name('plans');
 
-    Route::post('/admin/password/update', [AdminController::class, 'adminupdatePassword'])->name('adpro.password.update');
+    Route::post('profile/admin/password', [AdminController::class, 'adminupdatePassword'])->name('adpro.password.update');
 Route:: get("admin/support-ticket", [ZohoController::class, "supportticket"])
     ->name("Support.Ticket");
     Route:: get("admin/terms-log", [ZohoController::class, "termslog"])
@@ -134,7 +134,7 @@ Route::post('/customerdetail', [ZohoController::class, 'storepartner'])->name('c
 
 Route::get('/customer',[ZohoController::class,'display']) ->name('cust.display');
 
-Route::get('/subscribe/{planId}', [ZohoController::class, 'subscribe'])->name('subscribe');
+
 Route::post('/addon', [ZohoController::class, 'addons'])->name('addon');
 
 Route::get('/customer/subscription/details',[ZohoController::class,'thankyousub']) ->name('thankyousub');
@@ -202,7 +202,11 @@ Route ::get('/pdt/{creditnote_id}', [ZohoController::class, 'pdfdownload'])->nam
 
 
 Route::post('/upgrade/preview', [ZohoController::class, 'showUpgradePreview'])->name('upgrade.preview');
-Route::post('/subscribe/preview', [ZohoController::class, 'showsubscribePreview'])->name('subscribe.preview');
+Route::post('/upgrade-subscription', [ZohoController::class, 'upgrade'])->name('upgrade.subscription');
+
+Route::post('/preview/subscription', [ZohoController::class, 'showsubscribePreview'])->name('preview.subscribe');
+Route::post('/subscribe/{planId}', [ZohoController::class, 'subscribe'])->name('customer.subscribe');
+
 Route::post('/upgrade/subscription', [ZohoController::class, 'processUpgrade'])->name('upgrade.subscription.detail');
 
 Route::post('/store-terms', [ZohoController::class, 'storeTerms'])->name('storeTerms');

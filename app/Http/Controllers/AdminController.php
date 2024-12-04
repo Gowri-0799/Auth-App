@@ -176,7 +176,7 @@ class AdminController extends Controller
         ], [
             'password.regex' => 'The password must contain at least one letter, one number, and one special character.'
         ]);
-  
+
         $admin = Admin::where('email', $request->email)->first();
       
         if (!$admin) {

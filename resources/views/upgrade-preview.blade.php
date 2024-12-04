@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Subscription Plans')
+@section('title', 'Subscription Plans') 
 
 @section('content')
 <div id="content" style="box-sizing: border-box; margin-left: 300px; max-width: 1200px; width: 100%;" class="p-3">
