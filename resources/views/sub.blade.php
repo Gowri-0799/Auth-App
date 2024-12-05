@@ -145,13 +145,13 @@
                 @else
                     @if ($subscriptions->isNotEmpty())
                       
-                    <form action="{{ route('upgrade.preview') }}" method="POST" style="display: inline;">
+                    <form action="{{ route('upgrade.preview') }}" method="GET" style="display: inline;">
                     @csrf
                      <input type="hidden" name="plan_code" value="{{ $plan->plan_code }}">
                     <button type="submit" class="btn btn-primary">Upgrade</button>
                   </form>
                   @else
-                    <form action="{{ route('preview.subscribe') }}" method="POST" style="display: inline;">
+                    <form action="{{ route('preview.subscribe') }}" method="GET" style="display: inline;">
     @csrf
     <input type="hidden" name="plan_code" value="{{ $plan->plan_code }}">
     <button type="submit" class="btn btn-primary" id="subscribeButton">Subscribe</button>

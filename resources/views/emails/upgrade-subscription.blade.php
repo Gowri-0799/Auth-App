@@ -3,7 +3,7 @@
    <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Subscription Invitation</title>
+      <title>Upgrade Invitation</title>
       <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
    </head>
    <body>
@@ -20,7 +20,7 @@
                               
                               <!-- Subscription details -->
                               <p style="color:black;font-size:16px;font-family:Verdana,sans-serif;font-weight:400;text-align:left;line-height:26px">
-                                 Are you ready to unlock the benefits of the <strong>{{ $plan_name }}</strong> subscription? Click the button below to easily create your subscription and start enjoying the benefits!
+                                 Are you ready to unlock the benefits of the <strong>{{ $plan_name }}</strong> upgrade? Click the button below to easily  upgrade your plan and start enjoying the benefits!
                               </p>
                               
                               <p style="color:black;font-size:16px;font-family:Verdana,sans-serif;font-weight:400;text-align:left;line-height:26px">
@@ -30,12 +30,12 @@
                               
                               <div style="text-align:center;margin:20px auto;display:block">
                               
-                              <a href="{{ route('login', ['plan_code' => $plan_code, 'email' => $email]) }}" 
-   style="background-color:#0d6efd;border:0;padding:10px;color:#ffffff;display:inline-block;letter-spacing:1px;max-width:300px;min-width:150px;text-align:center;text-decoration:none;text-transform:uppercase;margin:20px auto;font-size:16px;border-radius:5px;font-family:Verdana,sans-serif" 
-   target="_blank">
-    Subscribe Now
-</a>
-</div>
+                              <a href="{{ route('login', ['plan_code' => $plan_code, 'email' => $email,'is_upgrade' => $is_upgrade]) }}" 
+                               style="background-color:#0d6efd;border:0;padding:10px;color:#ffffff;display:inline-block;letter-spacing:1px;max-width:300px;min-width:150px;text-align:center;text-decoration:none;text-transform:uppercase;margin:20px auto;font-size:16px;border-radius:5px;font-family:Verdana,sans-serif" 
+                                 target="_blank">
+                              Upgrade Now
+                             </a>
+                       </div>
                               </div>
 
                               <!-- Closing statement -->

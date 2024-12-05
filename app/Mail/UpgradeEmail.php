@@ -6,16 +6,17 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class SubscriptionEmail extends Mailable
+class UpgradeEmail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $customer_name;
+public $customer_name;
 public $hostedPageUrl;
 public $plan_name;
 public $plan_price;
 public $plan_code;
 public $email;
+public $is_upgrade;
 
     public function __construct($emailData)
     {
@@ -25,12 +26,13 @@ public $email;
     $this->plan_price = $emailData['plan']->plan_price;  
     $this->plan_code = $emailData['plan']->plan_code; 
     $this->partneruser = $emailData['email']; 
+    $this->is_upgrade = $emailData['is_upgrade'];
     }
 
     public function build()
     {
-        return $this->subject('Subscription -Payment link')
-                    ->view('emails.create-subscription')
+        return $this->subject('Upgrade -Payment link')
+                    ->view('emails.upgrade-subscription')
                     ->with([
                         'customer_name' => $this->customer_name,
                         'hostedPageUrl' => $this->hostedPageUrl,
@@ -38,6 +40,7 @@ public $email;
                         'plan_price' => $this->plan_price,   
                         'plan_code' => $this->plan_code, 
                         'email'=>$this->email,
+                        'is_upgrade' => $this->is_upgrade,
                     ]);
     }
 }

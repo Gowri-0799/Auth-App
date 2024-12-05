@@ -170,6 +170,8 @@ Route::get('/zoho/payment', [ZohoController::class, 'callback'])->name('zoho.cal
 
 Route::post('/upgrade-subscription', [ZohoController::class, 'upgrade'])->name('upgrade.subscription');
 
+Route::post('/subscriptions/upgrade', [ZohoController::class, 'upgradelink'])->name('upgradelink');
+
 Route::post('/downgrade-subscription', [ZohoController::class, 'downgradesub'])->name('downgrade.subscription');
 
 Route::get('/upgrade-custsubscription', [ZohoController::class, 'custsupgrade'])->name('custsupgrade');
@@ -201,10 +203,10 @@ Route::get('nav/creditnote/filter', [ZohoController::class, 'filtercreditnav'])-
 Route ::get('/pdt/{creditnote_id}', [ZohoController::class, 'pdfdownload'])->name('pdf.download');
 
 
-Route::post('/upgrade/preview', [ZohoController::class, 'showUpgradePreview'])->name('upgrade.preview');
+Route::get('/upgrade/preview', [ZohoController::class, 'showUpgradePreview'])->name('upgrade.preview');
 Route::post('/upgrade-subscription', [ZohoController::class, 'upgrade'])->name('upgrade.subscription');
 
-Route::post('/preview/subscription', [ZohoController::class, 'showsubscribePreview'])->name('preview.subscribe');
+Route::get('/preview/subscription', [ZohoController::class, 'showsubscribePreview'])->name('preview.subscribe');
 Route::post('/subscribe/{planId}', [ZohoController::class, 'subscribe'])->name('customer.subscribe');
 
 Route::post('/upgrade/subscription', [ZohoController::class, 'processUpgrade'])->name('upgrade.subscription.detail');

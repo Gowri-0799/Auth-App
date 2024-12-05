@@ -26,10 +26,20 @@ class AuthController extends Controller
         return Auth::guard('web');  
     }
 
-    public function login()
-    {
-        return view("auth.login");
+    public function login(Request $request)
+{
+    // Store plan_code and email in the session
+    if ($request->has('plan_code')) {
+        Session::put('plan_code', $request->plan_code);
     }
+    if ($request->has('email')) {
+        Session::put('email', $request->email);
+    }
+    if ($request->has('is_upgrade')) {
+        Session::put('is_upgrade', $request->is_upgrade);
+    }
+    return view("auth.login");
+}
 
     public function adminlogin()
     {
@@ -38,6 +48,7 @@ class AuthController extends Controller
 
     public function loginPost(Request $request)
     {
+       
         $request->validate([
             "email" => "required",
             "password" => "required_if:resend_otp,0"
@@ -61,6 +72,7 @@ class AuthController extends Controller
         if ($partnerUser && Hash::check($credentials['password'], $partnerUser->password)) {
             Auth::guard('web')->login($partnerUser);
             Session::put('user_email', $credentials["email"]);
+
             
         
             if (empty($partnerUser->userLastLoggedin) || $partnerUser->userLastLoggedin == '0000-00-00 00:00:00') {
@@ -83,21 +95,34 @@ class AuthController extends Controller
      }
     
      public function verifyOtp(Request $request)
-{
-    $request->validate([
-        "email" => "required",
-        "otp" => "required"
-    ]);
-
-    $sessionOtp = Session::get('otp');
-    $inputOtp = $request->input('otp');
-
-    if ($sessionOtp && $sessionOtp == $inputOtp) {
-        return redirect()->route('showplan');
-    }
-
-    return redirect()->back()->with('error', 'Invalid OTP, please try again.');
-}
+     {
+         $request->validate([
+             "email" => "required",
+             "otp" => "required"
+         ]);
+     
+         $sessionOtp = Session::get('otp');
+         $inputOtp = $request->input('otp');
+     
+         if ($sessionOtp && $sessionOtp == $inputOtp) {
+            // Check for upgrade flow
+            if (Session::has('plan_code')) {
+                $planCode = Session::get('plan_code');
+    
+                if (Session::get('is_upgrade') === 'yes') {
+                    return redirect()->route('upgrade.preview', ['plan_code' => $planCode]);
+                }
+    
+                // Redirect to subscription preview
+                return redirect()->route('preview.subscribe', ['plan_code' => $planCode]);
+            }
+    
+            // Normal case: Redirect to showplan
+            return redirect()->route('showplan');
+        }
+         return redirect()->back()->with('error', 'Invalid OTP, please try again.');
+     }
+     
 
 public function resendOtp(Request $request)
 {

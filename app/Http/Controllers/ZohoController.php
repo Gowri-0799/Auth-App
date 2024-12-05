@@ -29,6 +29,7 @@ use App\Mail\SubscriptionDowngrade;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\CustomerInvitation;
 use App\Mail\SubscriptionEmail;
+use App\Mail\UpgradeEmail;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 
@@ -2186,7 +2187,9 @@ public function showUpgradePreview(Request $request)
 }
 public function showsubscribePreview(Request $request)
 {
-  
+    $planCode = Session::get('plan_code');
+    $email = Session::get('email');
+
     $planCode = $request->input('plan_code');
  
     $newPlan = Plan::where('plan_code', $planCode)->first();
@@ -2434,12 +2437,12 @@ public function show($zohocust_id, Request $request)
     $customer = Customer::where('zohocust_id', $zohocust_id)->firstOrFail();
 
     $partnerUser = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)
-    ->whereNotNull('zoho_cpid') // Ensure zoho_cpid is not null
-    ->get();
+        ->whereNotNull('zoho_cpid') // Ensure zoho_cpid is not null
+        ->get();
 
     $normalUser = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)
-    ->whereNull('zoho_cpid') // Ensure zoho_cpid is null
-    ->first();
+        ->whereNull('zoho_cpid') // Ensure zoho_cpid is null
+        ->first();
 
     if ($normalUser) {
         $customer->email = $normalUser->email;
@@ -2447,6 +2450,7 @@ public function show($zohocust_id, Request $request)
     
     $selectedSection = $request->query('section', 'overview');
 
+    // Fetch the current subscription and its associated plan
     $subscriptions = DB::table('subscriptions')
         ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
         ->join('customers', 'subscriptions.zoho_cust_id', '=', 'customers.zohocust_id')
@@ -2460,14 +2464,22 @@ public function show($zohocust_id, Request $request)
             'subscriptions.start_date',
             'subscriptions.next_billing_at',
             'subscriptions.status',
-            'customers.zohocust_id'
+            'customers.zohocust_id',
         )
-        ->get();
-
+        ->get(); 
+        $currentSubscription = DB::table('subscriptions')
+        ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
+        ->where('subscriptions.zoho_cust_id', $customer->zohocust_id)
+        ->select('plans.plan_price', 'plans.plan_id')
+        ->first();
+    
+    // Fetch plans with a higher price than the current subscribed plan
+    $upgradePlans = $currentSubscription 
+        ? Plan::where('plan_price', '>', $currentSubscription->plan_price)->get() 
+        : [];
+   
     $invoices = Invoice::where('zoho_cust_id', $customer->zohocust_id)->get();
-
     $creditnotes = Creditnote::where('zoho_cust_id', $customer->zohocust_id)->get();
-
     $affiliates = DB::table('partner_affiliates')
         ->join('affiliates', 'partner_affiliates.affiliate_id', '=', 'affiliates.id')  
         ->where('partner_affiliates.partner_id', $customer->zohocust_id)  
@@ -2476,7 +2488,8 @@ public function show($zohocust_id, Request $request)
             'affiliates.domain_name'
         )
         ->get();
-        $plans = DB::table('plans')->select('plan_code', 'plan_name', 'plan_price')->get();
+
+    $plans = DB::table('plans')->select('plan_code', 'plan_name', 'plan_price')->get();
 
     return view('customer-show', compact(
         'customer',
@@ -2485,10 +2498,13 @@ public function show($zohocust_id, Request $request)
         'creditnotes',
         'affiliates',
         'selectedSection',
-        'partnerUser' ,
-        'plans' 
+        'partnerUser',
+        'plans',
+         'upgradePlans'
+
     ));
 }
+
 
 public function customfilter(Request $request)
 {
@@ -2619,6 +2635,18 @@ public function filterSubscriptionsnav(Request $request)
 
     $invoices = Invoice::where('zoho_cust_id', $customer->zohocust_id)->get();
 
+    $currentSubscription = DB::table('subscriptions')
+    ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
+    ->where('subscriptions.zoho_cust_id', $customer->zohocust_id)
+    ->select('plans.plan_price', 'plans.plan_id')
+    ->first();
+
+// Fetch plans with a higher price than the current subscribed plan
+$upgradePlans = $currentSubscription 
+    ? Plan::where('plan_price', '>', $currentSubscription->plan_price)->get() 
+    : [];
+
+
     $creditnotes = Creditnote::where('zoho_cust_id', $customer->zohocust_id)->get();
 
     $affiliates = DB::table('partner_affiliates')
@@ -2630,8 +2658,8 @@ public function filterSubscriptionsnav(Request $request)
     )
     ->get();
     $selectedSection = 'subscriptions'; 
-    $plans = DB::table('plans')->select('plan_id', 'plan_name', 'plan_price')->get();
-    return view('customer-show', compact('customer', 'subscriptions','selectedSection', 'affiliates', 'search', 'startDate', 'endDate', 'invoices','creditnotes', 'partnerUser','plans'));
+    $plans = DB::table('plans')->select('plan_code', 'plan_name', 'plan_price')->get();
+    return view('customer-show', compact('customer', 'subscriptions','selectedSection', 'affiliates', 'search', 'startDate', 'endDate', 'invoices','creditnotes', 'partnerUser','plans','upgradePlans'));
 }   
 
     
@@ -2691,9 +2719,20 @@ public function filterInvoicesnav(Request $request)
         'affiliates.domain_name'
     )
     ->get();
-    $plans = DB::table('plans')->select('plan_id', 'plan_name', 'plan_price')->get();
+    $currentSubscription = DB::table('subscriptions')
+    ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
+    ->where('subscriptions.zoho_cust_id', $customer->zohocust_id)
+    ->select('plans.plan_price', 'plans.plan_id')
+    ->first();
+
+// Fetch plans with a higher price than the current subscribed plan
+$upgradePlans = $currentSubscription 
+    ? Plan::where('plan_price', '>', $currentSubscription->plan_price)->get() 
+    : [];
+
+    $plans = DB::table('plans')->select('plan_code', 'plan_name', 'plan_price')->get();
     // Pass the data back to the view
-    return view('customer-show', compact('customer', 'subscriptions','selectedSection', 'affiliates', 'search', 'startDate', 'endDate', 'invoices','creditnotes', 'partnerUser','plans'));
+    return view('customer-show', compact('customer', 'subscriptions','selectedSection', 'affiliates', 'search', 'startDate', 'endDate', 'invoices','creditnotes', 'partnerUser','plans','upgradePlans'));
 }
 
 public function filtercreditnav(Request $request)
@@ -2746,9 +2785,20 @@ public function filtercreditnav(Request $request)
         'affiliates.domain_name'
     )
     ->get();
-    $selectedSection = 'creditnote';  
-    $plans = DB::table('plans')->select('plan_id', 'plan_name', 'plan_price')->get();
-    return view('customer-show', compact('customer', 'subscriptions', 'selectedSection', 'affiliates','invoices', 'search', 'startDate', 'endDate', 'creditnotes','partnerUser','plans'));
+    $selectedSection = 'creditnote'; 
+    $currentSubscription = DB::table('subscriptions')
+    ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
+    ->where('subscriptions.zoho_cust_id', $customer->zohocust_id)
+    ->select('plans.plan_price', 'plans.plan_id')
+    ->first();
+
+// Fetch plans with a higher price than the current subscribed plan
+$upgradePlans = $currentSubscription 
+    ? Plan::where('plan_price', '>', $currentSubscription->plan_price)->get() 
+    : [];
+ 
+    $plans = DB::table('plans')->select('plan_code', 'plan_name', 'plan_price')->get();
+    return view('customer-show', compact('customer', 'subscriptions', 'selectedSection', 'affiliates','invoices', 'search', 'startDate', 'endDate', 'creditnotes','partnerUser','plans','upgradePlans'));
 }
 public function customenterprise(Request $request)
 {
@@ -3009,11 +3059,11 @@ public function cancelSubscription(Request $request)
     {
 
         $plan = Plan::where('plan_code', $plancode)->first();
-    
+   
         if (!$plan) {
             return back()->withErrors('Plan not found.');
         }
-
+        
         $emailData = [
             'customer_name' => $customer->customer_name,
             'hostedPageUrl' => $hostedPageUrl,
@@ -3022,8 +3072,85 @@ public function cancelSubscription(Request $request)
         ];
 
             Mail::to($partneruser->email)->send(new SubscriptionEmail($emailData));
-    
     }
+
+    public function upgradelink(Request $request)
+    {
+        $accessToken = $this->zohoService->getAccessToken();
+    
+        // Retrieve the logged-in user's email from the session
+        $partnerUser = PartnerUser::where('email', Session::get('user_email'))->first();
+        if (!$partnerUser) {
+            return back()->withErrors('Customer not found.');
+        }
+    
+        // Fetch customer and subscription details
+        $customer = Customer::where('zohocust_id', $partnerUser->zoho_cust_id)->first();
+        if (!$customer) {
+            return back()->withErrors('Customer not found.');
+        }
+    
+        $subscription = Subscription::where('zoho_cust_id', $customer->zohocust_id)->first();
+        if (!$subscription) {
+            return back()->withErrors('Subscription not found.');
+        }
+    
+        // Get the plan code from the dropdown
+        $planCode = $request->input('plan_code');
+        if (!$planCode) {
+            return back()->withErrors('Plan code is required.');
+        }
+    
+        // Make the API call to upgrade the subscription
+        $response = Http::withHeaders([
+            'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
+            'Content-Type' => 'application/json'
+        ])->post(config('services.zoho.zoho_upgrade_subscription'), [
+            'organization_id' => config('services.zoho.zoho_org_id'),
+            'subscription_id' => $subscription->subscription_id,
+            'plan' => [
+                'plan_code' => $planCode
+            ],
+            'redirect_url' => url('thanks')
+        ]);
+    
+        if ($response->successful()) {
+            $hostedPageData = $response->json();
+            $hostedPageUrl = $hostedPageData['hostedpage']['url'];
+            $hostedPageId = $hostedPageData['hostedpage']['hostedpage_id'];
+    
+           
+            Session::put('hostedpage_id', $hostedPageId);
+    
+           
+            $this->sendupgradeEmail($partnerUser, $customer, $hostedPageUrl, $planCode);
+    
+            return redirect()->back()->with('success', 'Subscription upgraded successfully. Please check your email to complete the process.');
+        } else {
+      
+            return redirect()->back()->withErrors('Failed to upgrade subscription: ' . $response->body());
+        }
+    }
+
+    public function sendupgradeEmail($partnerUser, $customer, $hostedPageUrl, $planCode)
+{
+    $plan = Plan::where('plan_code', $planCode)->first();
+   
+    if (!$plan) {
+        throw new \Exception('Plan not found.');
+    }
+        
+    $emailData = [
+        'customer_name' => $customer->customer_name,
+        'hostedPageUrl' => $hostedPageUrl,
+        'plan' => $plan,
+        'email' => $partnerUser->email,
+        'is_upgrade' => 'yes',
+    ];
+
+    // Send the email using the Mailable
+    Mail::to($partnerUser->email)->send(new UpgradeEmail($emailData));
+}
 }
 
 
