@@ -118,13 +118,11 @@
          </div>
          <!-- "+" Icon and Text -->
          <div class="d-flex align-items-center">
-    <a href="#"
-        class="btn btn-primary rounded-circle d-flex align-items-center justify-content-center" 
-        style="width: 40px; height: 40px; margin-right: 10px;"
-        data-bs-toggle="modal" 
-        data-bs-target="{{ $subscriptions->count() == 0 ? '#downgradeModal' : '#upgradeModal' }}">
-        <i class="fas fa-plus"></i>
-    </a>
+         <a href="#"
+   class="btn btn-primary rounded-circle d-flex align-items-center justify-content-center create-subscription-btn" 
+   style="width: 40px; height: 40px; margin-right: 10px;">
+   <i class="fas fa-plus"></i>
+</a>
     @if($subscriptions->count() == 0)
         <span style="font-family: Arial, sans-serif; font-size: 16px; margin-right: 170px;">Create Subscription</span>
     @else
@@ -385,6 +383,23 @@
         </div>
     </div>
 </div>
+<!-- Alert Message Modal -->
+<div class="modal fade" id="firstLoginModal" tabindex="-1" aria-labelledby="firstLoginModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="firstLoginModalLabel">Incomplete Customer Information</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                The customer needs to add provider data and company info fields before creating a subscription.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 <!-- Invite User Modal -->
 <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
    <div class="modal-dialog modal-dialog-centered" style="max-width: 500px;">
@@ -440,6 +455,25 @@
         const url = window.location.href.split('?')[0]; // Get the base URL without query parameters
         window.location.href = url; // Redirect to the base URL to reset filters
     }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const createSubscriptionBtn = document.querySelector('.create-subscription-btn');
+        createSubscriptionBtn.addEventListener('click', function (event) {
+            event.preventDefault(); // Prevent default action
+            const firstLogin = @json($customer->first_login); // Pass PHP variable to JS
+            
+            if (firstLogin === 1) {
+                // Show the first login modal
+                const modal = new bootstrap.Modal(document.getElementById('firstLoginModal'));
+                modal.show();
+            } else {
+                // Proceed to show the subscription modal
+                const modalId = '{{ $subscriptions->count() == 0 ? '#downgradeModal' : '#upgradeModal' }}';
+                const modal = new bootstrap.Modal(document.querySelector(modalId));
+                modal.show();
+            }
+        });
+    });
    
 </script>
 @endsection
