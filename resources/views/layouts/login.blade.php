@@ -33,9 +33,7 @@
    <div id="overlay"></div>
    <div class="scrollable">
       @yield('content')
-      <footer class="footer p-4 bg-clearlink w-100 d-flex justify-content-center position-fixed position-absolute text-center bottom-0 align-items-center ">
-         @ Testlink Technologies 2024
-      </footer>
+      
    </div>
    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>

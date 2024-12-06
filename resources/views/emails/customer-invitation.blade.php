@@ -16,7 +16,7 @@
                      <tr>
                         <td>
                            <div style="color:black;font-size:16px;font-family:Verdana,sans-serif;font-weight:400;text-align:left;line-height:26px">
-                              <p style="color:black;font-size:16px;font-family:Verdana,sans-serif;font-weight:400;text-align:left;line-height:26px">Dear {{ $customer->customer_name }},</p>
+                              <p style="color:black;font-size:16px;font-family:Verdana,sans-serif;font-weight:400;text-align:left;line-height:26px">Dear {{ $customer->first_name }}{{ $customer->last_name }},</p>
                               <p style="color:black;font-size:16px;font-family:Verdana,sans-serif;font-weight:400;text-align:left;line-height:26px"> We are excited to invite you to become a partner in the Testlink ISP Partner Program. After signing in, please complete the required information in the Company Info and Provider Data sections before subscribing to a plan.<br><br>
                                  To get started, please click on the link below to log in:
                               </p>

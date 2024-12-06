@@ -3,7 +3,11 @@
 <div id="content" style="box-sizing: border-box; margin-left:300px;" class="p-3">
    <!-- Top Navigation Tabs -->
    <div class="d-flex justify-content-between align-items-center my-3">
-      <h3>{{ $customer->company_name }}</h3>
+      <h3>{{ $customer->company_name }} 
+      <span class="badge" style="background-color: #D4EDDA; color: #155724; padding: 5px 10px;">
+      {{ $partnerUserStatus }}                     
+    </span> 
+</h3>
    </div>
    <!-- Navigation Tabs with Active Class based on Section -->
    <ul class="nav nav-tabs">
@@ -111,6 +115,34 @@
    </div>
    <!-- Subscriptions Section -->
    <div id="subscriptions" class="section mt-4" style="{{ $selectedSection !== 'subscriptions' ? 'display: none;' : '' }}">
+       <!-- Flash Messages -->
+       @if(session('success'))
+    <div 
+        class="alert alert-success alert-dismissible fade show" 
+        role="alert" 
+        style="position: absolute; top: 20px; right: 20px; max-width: 300px; z-index: 1050; font-size: 14px; padding: 10px 15px; border-radius: 5px;"
+    >
+        <strong>Success!</strong> {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
+
+@if($errors->any())
+    <div 
+        class="alert alert-danger alert-dismissible fade show" 
+        role="alert" 
+        style="position: absolute; top: 20px; right: 20px; max-width: 300px; z-index: 1050; font-size: 14px; padding: 10px 15px; border-radius: 5px;"
+    >
+        <strong>Error!</strong>
+        <ul class="mb-0">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
+
       <div class="d-flex justify-content-between align-items-center mb-3">
          <!-- Title -->
          <div>

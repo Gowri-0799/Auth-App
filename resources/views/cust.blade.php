@@ -72,14 +72,18 @@
                                 <td>{{ $customer->company_name }}</td>
                                 <td>
                                     <!-- Dynamic Status -->
-                                    @if ($customer->status === 'Setup In Progress')
+                                    @if ($customer->status === 'Invited')
                                         <span class="badge" style="background-color: #FFEEBA; color: #856404; padding: 5px 10px;">
-                                            Setup In Progress
+                                        Invited
                                         </span>
-                                    @elseif ($customer->status === 'Setup Completed')
+                                    @elseif ($customer->status === 'Active')
                                         <span class="badge" style="background-color: #D4EDDA; color: #155724; padding: 5px 10px;">
-                                            Setup Completed
+                                        Active
                                         </span>
+                                    @else
+                                          <span class="badge" style="background-color: #F8D7DA; color: #721C24; padding: 5px 10px;">
+                                         Status Unknown
+                                         </span>
                                     @endif
                                 </td>
                                 <td>                                   

@@ -56,6 +56,10 @@
       </div>
    </div>
 </div>
+<footer class="footer p-4 bg-clearlink w-100 d-flex justify-content-center text-center bottom-0 align-items-center ">
+    @ Testlink Technologies 2024
+</footer>
+    </div>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     const passwordField = document.getElementById("password1");

@@ -27,19 +27,31 @@ class AuthController extends Controller
     }
 
     public function login(Request $request)
-{
-    // Store plan_code and email in the session
-    if ($request->has('plan_code')) {
-        Session::put('plan_code', $request->plan_code);
+    {
+         if ($request->has("is_upgrade")) {
+	            Session::put("is_upgrade", $request->is_upgrade);
+	            if (Auth::check()) {
+	                return redirect()->route("upgrade.preview", [
+	                    "plan_code" => $request->plan_code,
+	                ]);
+	            }
+        }
+        
+        if ($request->has("plan_code")) {
+            Session::put("plan_code", $request->plan_code);
+            if (Auth::check()) {
+                return redirect()->route("preview.subscribe", [
+                    "plan_code" => $request->plan_code,
+                ]);
+            }
+        }
+
+        if ($request->has("email")) {
+            Session::put("email", $request->email);       
+        }
+        
+        return view("auth.login");
     }
-    if ($request->has('email')) {
-        Session::put('email', $request->email);
-    }
-    if ($request->has('is_upgrade')) {
-        Session::put('is_upgrade', $request->is_upgrade);
-    }
-    return view("auth.login");
-}
 
     public function adminlogin()
     {
@@ -228,6 +240,7 @@ public function updatePassword(Request $request)
 
     $partnerUser->password = Hash::make($request->password);
     $partnerUser->userlastloggedin = now();
+    $partnerUser->status='Active';
     if( $partnerUser->save()){
        
             return redirect()->route('showplan')->with('success', 'Your password has been successfully updated.');

@@ -19,6 +19,7 @@ class CustomerInvitation extends Mailable
         $this->customer = $customer;
         $this->password = $password;
         $this->loginUrl = $loginUrl;
+        \Log::info('Customer Object:', (array) $customer);
     }
 
     public function build()

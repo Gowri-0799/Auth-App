@@ -103,18 +103,21 @@
                         <div style="flex: 1; padding: 20px; background-color: #eaf1fc; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); margin-right: 20px; position: relative;">
                            {{-- Live Badge Positioned on the Top Right --}}
                            <span class="sub-status p-1 badge-success mt-3 fs-5"
-    id="status-span"
-    style="display: inline-block; float: right; margin-right: 15px; margin-top: -10px;">
-    <strong>{{ $subscriptions->status }}</strong>
-</span>
+                             id="status-span"
+                             style="display: inline-block; float: right; margin-right: 15px; margin-top: -10px;">
+                             <strong>{{ $subscriptions->status }}</strong>
+                           </span>
                            <h3 style="font-size: 24px; font-weight: bold; color: #004085; margin-bottom: 15px;">
                               {{ $plans->plan_name }}
                            </h3>
                            <span style="display: block; font-size: 16px; color: #555; margin-bottom: 10px;">
                            {{ $subscriptions->subscription_number }}
                            </span>
-                           <span style="font-size: 36px; font-weight: bold; color: #000;">
-                           US ${{ $plans->plan_price }}
+                           <span style="font-size: 30px; font-weight: bold; color: #000;">
+                           US ${{ $plans->plan_price }} 
+                             @if ($subscriptions->addon == 1)
+                               + ${{ $plans->addon_price }}
+                             @endif
                            </span>
                            {{-- Buttons for Add-On and Upgrade --}}
                            <div style="margin-top: 25px; display: flex; justify-content: space-between;">

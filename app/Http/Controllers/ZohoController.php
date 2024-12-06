@@ -214,9 +214,12 @@ class ZohoController extends Controller
 
     public function customerdb()
     {
-        $response['customers'] = $this->customer->all();
-      
-        return view("cust")->with($response);
+        $response['customers'] = \DB::table('customers')
+            ->leftJoin('partner_users', 'customers.zohocust_id', '=', 'partner_users.zoho_cust_id')
+            ->select('customers.*', 'partner_users.status')
+            ->get();
+          
+        return view('cust')->with($response);
     }
     public function getAllCustomers()
     {
@@ -502,6 +505,7 @@ class ZohoController extends Controller
                 'email' => $validatedData['customer_email'],
                 'password' => Hash::make($defaultPassword),
                 'zoho_cust_id' => $zohoCustomerId,
+                'status'=>'Invited',
             ]);
     
             if ($request->has('affiliate_ids')) {
@@ -514,11 +518,11 @@ class ZohoController extends Controller
                         'updated_at' => now(),
                     ]);
                 }
-            }
+            } 
     
             $loginUrl = route('login');
             try {
-                Mail::to($partnerUser->email)->send(new CustomerInvitation($partnerUser, $defaultPassword, $loginUrl));
+                Mail::to($partnerUser->email)->send(new CustomerInvitation($partnerUser, $defaultPassword, $loginUrl,$customer));
             } catch (\Exception $e) {
                 \Log::error('Failed to send email: ' . $e->getMessage());
                 return redirect()->back()->withErrors('Partner created successfully; but unable to send email.')->withInput();
@@ -2439,13 +2443,17 @@ public function show($zohocust_id, Request $request)
     $partnerUser = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)
         ->whereNotNull('zoho_cpid') // Ensure zoho_cpid is not null
         ->get();
-
+  
     $normalUser = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)
         ->whereNull('zoho_cpid') // Ensure zoho_cpid is null
         ->first();
-
+    $partnerUsers = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)->get();
+  
+   $partnerUserStatus = $partnerUsers->first()->status ?? null; 
+        
     if ($normalUser) {
         $customer->email = $normalUser->email;
+
     }
     
     $selectedSection = $request->query('section', 'overview');
@@ -2467,7 +2475,7 @@ public function show($zohocust_id, Request $request)
             'customers.zohocust_id',
         )
         ->get(); 
-        $currentSubscription = DB::table('subscriptions')
+    $currentSubscription = DB::table('subscriptions')
         ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
         ->where('subscriptions.zoho_cust_id', $customer->zohocust_id)
         ->select('plans.plan_price', 'plans.plan_id')
@@ -2500,7 +2508,9 @@ public function show($zohocust_id, Request $request)
         'selectedSection',
         'partnerUser',
         'plans',
-         'upgradePlans'
+         'upgradePlans',
+         'partnerUsers',
+         'partnerUserStatus',
 
     ));
 }
@@ -2659,7 +2669,11 @@ $upgradePlans = $currentSubscription
     ->get();
     $selectedSection = 'subscriptions'; 
     $plans = DB::table('plans')->select('plan_code', 'plan_name', 'plan_price')->get();
-    return view('customer-show', compact('customer', 'subscriptions','selectedSection', 'affiliates', 'search', 'startDate', 'endDate', 'invoices','creditnotes', 'partnerUser','plans','upgradePlans'));
+    $partnerUsers = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)->get();
+  
+    $partnerUserStatus = $partnerUsers->first()->status ?? null; 
+
+    return view('customer-show', compact('customer','partnerUsers','partnerUserStatus', 'subscriptions','selectedSection', 'affiliates', 'search', 'startDate', 'endDate', 'invoices','creditnotes', 'partnerUser','plans','upgradePlans'));
 }   
 
     
@@ -2731,8 +2745,11 @@ $upgradePlans = $currentSubscription
     : [];
 
     $plans = DB::table('plans')->select('plan_code', 'plan_name', 'plan_price')->get();
+    $partnerUsers = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)->get();
+  
+    $partnerUserStatus = $partnerUsers->first()->status ?? null; 
     // Pass the data back to the view
-    return view('customer-show', compact('customer', 'subscriptions','selectedSection', 'affiliates', 'search', 'startDate', 'endDate', 'invoices','creditnotes', 'partnerUser','plans','upgradePlans'));
+    return view('customer-show', compact('customer','partnerUsers','partnerUserStatus', 'subscriptions','selectedSection', 'affiliates', 'search', 'startDate', 'endDate', 'invoices','creditnotes', 'partnerUser','plans','upgradePlans'));
 }
 
 public function filtercreditnav(Request $request)
@@ -2798,7 +2815,10 @@ $upgradePlans = $currentSubscription
     : [];
  
     $plans = DB::table('plans')->select('plan_code', 'plan_name', 'plan_price')->get();
-    return view('customer-show', compact('customer', 'subscriptions', 'selectedSection', 'affiliates','invoices', 'search', 'startDate', 'endDate', 'creditnotes','partnerUser','plans','upgradePlans'));
+    $partnerUsers = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)->get();
+  
+    $partnerUserStatus = $partnerUsers->first()->status ?? null; 
+    return view('customer-show', compact('customer','partnerUsers','partnerUserStatus', 'subscriptions', 'selectedSection', 'affiliates','invoices', 'search', 'startDate', 'endDate', 'creditnotes','partnerUser','plans','upgradePlans'));
 }
 public function customenterprise(Request $request)
 {
@@ -3050,8 +3070,8 @@ public function cancelSubscription(Request $request)
     
             $this->sendSubscriptionEmail($partneruser, $customer, $hostedPageUrl, $plancode);
     
-            return redirect()->back()->with('success', 'Subscription created successfully. Please check your email to complete the subscription.');
-        } else {
+            return redirect()->back()->with('success', 'Subscription email sent to the customer successfully.');
+          } else {
             return redirect()->back()->withErrors('Error creating subscription: ' . $response->body());
         }
     }
