@@ -100,67 +100,86 @@
                   <div class="text-start w-full p-3 border-0 bg-clearlink">
                      <div style="display: flex; width: 100%;">
                         {{-- Left Card with Subscription Details --}}
-                        <div style="flex: 1; padding: 20px; background-color: #eaf1fc; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); margin-right: 20px; position: relative;">
-                           {{-- Live Badge Positioned on the Top Right --}}
-                           <span class="sub-status p-1 badge-success mt-3 fs-5"
-                             id="status-span"
-                             style="display: inline-block; float: right; margin-right: 15px; margin-top: -10px;">
-                             <strong>{{ $subscriptions->status }}</strong>
-                           </span>
-                           <h3 style="font-size: 24px; font-weight: bold; color: #004085; margin-bottom: 15px;">
-                              {{ $plans->plan_name }}
-                           </h3>
-                           <span style="display: block; font-size: 16px; color: #555; margin-bottom: 10px;">
-                           {{ $subscriptions->subscription_number }}
-                           </span>
-                           <span style="font-size: 30px; font-weight: bold; color: #000;">
-                           US ${{ $plans->plan_price }} 
-                             @if ($subscriptions->addon == 1)
-                               + ${{ $plans->addon_price }}
-                             @endif
-                           </span>
-                           {{-- Buttons for Add-On and Upgrade --}}
-                           <div style="margin-top: 25px; display: flex; justify-content: space-between;">
-                              @if($subscriptions->addon == 1)
-                              <p class="mt-3 w-50 text-dark">You have also Subscribed to: <span>{{$plans->addon_code}}</span> for the current month</p>
-                              @else  
-                              <form action="{{ route('addon.preview') }}" method="POST" style="display: inline; margin-top: 20px;">
-                                @csrf
-                                <input type="hidden" name="plan_code" value="{{  $plans->plan_code }}">
-                                 <button type="submit" class="btn btn-primary">Monthly Click Add-On</button>
-                              </form>
-                              <!-- <a style="cursor: pointer;" href="{{ route('addon.preview', $plans->plan_code) }}" class="btn btn-primary my-3 me-5 justify-content-center d-flex align-items-center rounded w-50">Monthly Click Add-On</a> -->
-                              @endif
-                              @if($upgradePlans->isEmpty())
+                        @if($subscriptions->status == 'Cancelled')
+<div style="flex: 1; padding: 20px; background-color: #eaf1fc; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); margin-right: 20px; position: relative;">
+    {{-- Live Badge Positioned on the Top Right --}}
+    <h3 style="font-size: 24px; font-weight: bold; color: #004085; margin-bottom: 15px;">
+        {{ $plans->plan_name }}
+    </h3>
+    <span style="display: block; font-size: 16px; color: #555; margin-bottom: 10px;">
+        {{ $subscriptions->subscription_number }}
+    </span>
+    <span style="font-size: 30px; font-weight: bold; color: #000;">
+        US ${{ $plans->plan_price }} 
+        @if ($subscriptions->addon == 1)
+            + ${{ $plans->addon_price }}
+        @endif
+    </span><br>
+    <span class="badge-fail" style="font-size: 25px;">Cancelled</span>
+   </div>
+@else
+<div style="flex: 1; padding: 20px; background-color: #eaf1fc; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); margin-right: 20px; position: relative;">
+    {{-- Live Badge Positioned on the Top Right --}}
+    <span class="sub-status p-1 badge-success mt-3 fs-5"
+        id="status-span"
+        style="display: inline-block; float: right; margin-right: 15px; margin-top: -10px;">
+        <strong>{{ $subscriptions->status }}</strong>
+    </span>
+    <h3 style="font-size: 24px; font-weight: bold; color: #004085; margin-bottom: 15px;">
+        {{ $plans->plan_name }}
+    </h3>
+    <span style="display: block; font-size: 16px; color: #555; margin-bottom: 10px;">
+        {{ $subscriptions->subscription_number }}
+    </span>
+    <span style="font-size: 30px; font-weight: bold; color: #000;">
+        US ${{ $plans->plan_price }} 
+        @if ($subscriptions->addon == 1)
+            + ${{ $plans->addon_price }}
+        @endif
+    </span>
+    {{-- Buttons for Add-On and Upgrade --}}
+    <div style="margin-top: 25px; display: flex; justify-content: space-between;">
+        @if($subscriptions->addon == 1)
+        <p class="mt-3 w-50 text-dark">You have also Subscribed to: <span>{{$plans->addon_code}}</span> for the current month</p>
+        @else  
+        <form action="{{ route('addon.preview') }}" method="POST" style="display: inline; margin-top: 20px;">
+            @csrf
+            <input type="hidden" name="plan_code" value="{{  $plans->plan_code }}">
+            <button type="submit" class="btn btn-primary">Monthly Click Add-On</button>
+        </form>
+        @endif
+        @if($upgradePlans->isEmpty())
         {{-- No upgrade plans available, show Contact Us button --}}
-        <a  data-bs-toggle="modal" data-bs-target="#contactModal" id="save"
-           class="btn btn-primary m-3 d-flex align-items-center w-50 justify-content-center rounded p-2">
+        <a data-bs-toggle="modal" data-bs-target="#contactModal" id="save"
+            class="btn btn-primary m-3 d-flex align-items-center w-50 justify-content-center rounded p-2">
             Contact Us
         </a>
-    @else
+        @else
         {{-- Upgrade plans available, show Upgrade button --}}
         <a id="upgrade-button" 
-           style="cursor: pointer;" 
-           data-bs-toggle="modal" 
-           data-bs-target="#upgradeModal" 
-           class="btn btn-primary m-3 d-flex align-items-center w-50 justify-content-center rounded p-2">
+            style="cursor: pointer;" 
+            data-bs-toggle="modal" 
+            data-bs-target="#upgradeModal" 
+            class="btn btn-primary m-3 d-flex align-items-center w-50 justify-content-center rounded p-2">
             Upgrade
         </a>
-    @endif
-                              <!-- <a id="upgrade-button" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#upgradeModal" class="btn btn-primary m-3 d-flex align-items-center w-50 justify-content-center rounded p-2">Upgrade</a> -->
-                           </div>
-                           {{-- Downgrade and Cancellation Links --}}
-                           <div style="margin-top: 20px; display: flex; justify-content: space-between;">
-                             <a href="#" data-bs-toggle="modal" data-bs-target="#cancelSubscription" style="color: #007bff; text-decoration: underline; font-size: 16px;">
-                             Cancellation
-                              </a>                            
-                       <a href="#" data-bs-toggle="modal" data-bs-target="#downgradeModal" style="color: #007bff; text-decoration: underline; font-size: 16px;"> Downgrade</a>
-                           </div>
-                           {{-- Next Renewal Date --}}
-                           <div style="margin-top: 20px;">
-                              <span style="font-size: 16px; color: #888;">Next Renewal Date: {{ \Carbon\Carbon::parse( $subscriptions->next_billing_at)->format('d-M-Y') }}</span>
-                           </div>
-                        </div>
+        @endif
+    </div>
+    {{-- Downgrade and Cancellation Links --}}
+    <div style="margin-top: 20px; display: flex; justify-content: space-between;">
+        <a href="#" data-bs-toggle="modal" data-bs-target="#cancelSubscription" style="color: #007bff; text-decoration: underline; font-size: 16px;">
+            Cancellation
+        </a>                            
+        <a href="#" data-bs-toggle="modal" data-bs-target="#downgradeModal" style="color: #007bff; text-decoration: underline; font-size: 16px;"> Downgrade</a>
+    </div>
+    {{-- Next Renewal Date --}}
+    <div style="margin-top: 20px;">
+        <span style="font-size: 16px; color: #888;">Next Renewal Date: {{ \Carbon\Carbon::parse( $subscriptions->next_billing_at)->format('d-M-Y') }}</span>
+    </div>
+</div>
+@endif
+
+                   
 
                         {{-- Right Card with Payment Details --}}
                         <div style="flex: 1; padding: 20px; background-color: #eaf1fc; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; justify-content: center; align-items: center;">
