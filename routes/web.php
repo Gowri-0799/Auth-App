@@ -79,6 +79,7 @@ Route:: get("/plantest", [ZohoController::class, "plantest"])
   
     Route:: get("admin/plan", [ZohoController::class, "plandb"])
     ->name("plandb");
+    Route::get('/plans/{id}/view', [ZohoController::class, 'view'])->name('plans.view');
     Route::get('admin/plans/create', [ZohoController::class, 'create'])
     ->name('plans.create');
     Route::post('plans', [ZohoController::class, 'storeplan'])

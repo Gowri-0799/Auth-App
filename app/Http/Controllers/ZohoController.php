@@ -3171,6 +3171,12 @@ public function cancelSubscription(Request $request)
     // Send the email using the Mailable
     Mail::to($partnerUser->email)->send(new UpgradeEmail($emailData));
 }
+public function view($id)
+{
+    $plan = Plan::find($id); 
+    return view('plan-features', compact('plan'));
+}
+
 }
 
 

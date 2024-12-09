@@ -32,6 +32,7 @@
                                         <th style="font-family: Arial, sans-serif; font-size: 16px;background-color:#EEF1F4;">Plan Price $</th>
                                         <th style="font-family: Arial, sans-serif; font-size: 16px;background-color:#EEF1F4;">Addon Name</th>
                                         <th style="font-family: Arial, sans-serif; font-size: 16px;background-color:#EEF1F4;">Addon Price $</th>
+                                        <th style="font-family: Arial, sans-serif; font-size: 16px;background-color:#EEF1F4;">Action</th>
 
                                     </tr>
                                 </thead>
@@ -43,6 +44,9 @@
                                      <td>{{ $plan->plan_price }}</td>
                                      <td>{{ $plan->addon_name }}</td>
                                      <td>{{ $plan->addon_price }}</td>
+                                     <td>
+                                    <a href="{{ route('plans.view', $plan->id) }}" class="btn button-clearlink text-primary fw-bold">Edit/View</a>
+                                    </td>
                                     </tr>
                                 @endforeach
                                 </tbody>
