@@ -11,7 +11,7 @@ use App\Models\Affiliate;
 use App\Models\PartnerUser;
 use Illuminate\Support\Facades\Hash;  
 use Illuminate\Support\Facades\Route;
-use App\Models\Customer;
+use App\Models\Partner;
 use App\Models\Subscription;
 use Illuminate\Support\Facades\DB;
 use App\Models\Payment;
@@ -40,7 +40,7 @@ class ZohoController extends Controller
     protected $zohoService;
     
     protected $plan;
-    protected $customer;
+    protected $partner;
     protected $subscription;
     protected $invoice;
     protected $payment;
@@ -57,7 +57,7 @@ class ZohoController extends Controller
     {
         $this->zohoService = $zohoService;
         $this->plan = new Plan();
-        $this->customer = new Customer();
+        $this->partner = new Partner();
         $this->subscription = new Subscription();
         $this->invoice =new Invoice();
         $this->payment =new Payment();
@@ -215,9 +215,9 @@ class ZohoController extends Controller
 
     public function customerdb()
     {
-        $response['customers'] = \DB::table('customers')
-            ->leftJoin('partner_users', 'customers.zohocust_id', '=', 'partner_users.zoho_cust_id')
-            ->select('customers.*', 'partner_users.status')
+        $response['customers'] = \DB::table('partners')
+            ->leftJoin('partner_users', 'partners.zohocust_id', '=', 'partner_users.zoho_cust_id')
+            ->select('partners.*')
             ->get();
           
         return view('cust')->with($response);
@@ -239,7 +239,7 @@ class ZohoController extends Controller
                 if ($customerDetails['code'] == 0) {
                     $details = $customerDetails['customer'];
 
-                    Customer::updateOrCreate(
+                    Partner::updateOrCreate(
                         ['zohocust_id' => $customerId],
                         ['customer_name' => $details['display_name'],
                             'customer_email' => $details['email'],
@@ -273,35 +273,35 @@ class ZohoController extends Controller
     public function showCustomerDetails()
     {
         $partnerUser = PartnerUser::where('email', Session::get('user_email'))->first();
-   
+    
         if (!$partnerUser) {
-            return back()->withErrors('Customer not found.');
+            return back()->withErrors('Partner User not found.');
         }
-
-        $customer = Customer::where('zohocust_id', $partnerUser->zoho_cust_id)->first();
+    
+        $customer = Partner::where('zohocust_id', $partnerUser->zoho_cust_id)->first();
+    
+        if (!$customer) {
+            return back()->withErrors('Partner not found.');
+        }
     
         $payments = Payment::where('zoho_cust_id', $customer->zohocust_id)->get();
-   
+    
         $invitedUsers = PartnerUser::where('zoho_cust_id', $partnerUser->zoho_cust_id)
-            ->where('id', '!=', $partnerUser->id) 
+            ->where('id', '!=', $partnerUser->id)
             ->get();
     
-        return view('profile', [
-            'customer' => $customer,
-            'payments' => $payments,
-            'partnerUser' => $partnerUser,
-            'invitedUsers' => $invitedUsers, 
-        ]);
+        return view('profile', compact('customer','payments','partnerUser','invitedUsers'));
+           
+       
     }
+    
 
 
     function cust()
     {
-        $response['customers'] = $this->customer->all();
+        $response['customers'] = $this->partner->all();
         return view("cust")->with($response);
     }
-
-    
 
     public function showplan()
     {
@@ -310,32 +310,43 @@ class ZohoController extends Controller
         if (!$partnerUser) {
             return back()->withErrors('Customer not found.');
         }
-   
-        $customer = Customer::where('zohocust_id', $partnerUser->zoho_cust_id)->first();
+    
+        $customer = Partner::where('zohocust_id', $partnerUser->zoho_cust_id)->first();
     
         if (!$customer) {
             return back()->withErrors('Customer record not found in the customers table.');
         }
-   
+    
         $subscriptions = Subscription::where('zoho_cust_id', $partnerUser->zoho_cust_id)->get();
         $companyInfo = CompanyInfo::where('zoho_cust_id', $partnerUser->zoho_cust_id)->first();
         $plans = Plan::orderBy('plan_price', 'asc')->get();
         $providerData = ProviderData::where('zoho_cust_id', $partnerUser->zoho_cust_id)->first();
+        
+        // Fetch features for each plan
+        $planFeatures = Feature::whereIn('plan_code', $plans->pluck('plan_code'))->get()->keyBy('plan_code');
+        
+        // Optionally decode the features_json field
+        foreach ($planFeatures as $key => $feature) {
+            if (is_string($feature->features_json)) {
+                $feature->features_json = json_decode($feature->features_json, true);
+            }
+        }
     
         $firstLogin = $customer->first_login;
     
-        return view('sub', compact('subscriptions', 'plans', 'firstLogin', 'companyInfo', 'providerData'));
+        return view('sub', compact('subscriptions', 'plans', 'firstLogin', 'companyInfo', 'providerData', 'planFeatures'));
     }
+    
     
     function showsubscription()
     {
         $subscriptions = DB::table('subscriptions')
         ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
-        ->join('customers', 'subscriptions.zoho_cust_id', '=', 'customers.zohocust_id')
+        ->join('partners', 'subscriptions.zoho_cust_id', '=', 'partners.zohocust_id')
         ->select(
             'subscriptions.subscription_id',
             'subscriptions.subscription_number',
-            'customers.company_name',
+            'partners.company_name',
             'plans.plan_name',
             'plans.plan_price',
             'subscriptions.start_date',
@@ -353,10 +364,10 @@ class ZohoController extends Controller
     {
         // Execute the query to fetch invoices along with related plan and customer data
         $invoices = DB::table('invoices')
-            ->join('customers', 'invoices.zoho_cust_id', '=', 'customers.zohocust_id')
+            ->join('partners', 'invoices.zoho_cust_id', '=', 'partners.zohocust_id')
             ->select(
                 'invoices.*',
-                'customers.company_name',
+                'partners.company_name',
                 DB::raw("JSON_UNQUOTE(JSON_EXTRACT(invoice_items, '$[0].code')) AS plan_name"), // Extracting plan name from JSON
                 DB::raw("JSON_UNQUOTE(JSON_EXTRACT(invoice_items, '$[0].price')) AS plan_price"),
                 DB::raw("JSON_UNQUOTE(JSON_EXTRACT(payment_details, '$[0].payment_mode')) AS payment_mode")
@@ -377,10 +388,10 @@ class ZohoController extends Controller
     
         // Start the query for filtering invoices
         $query = DB::table('invoices')
-            ->join('customers', 'invoices.zoho_cust_id', '=', 'customers.zohocust_id')
+            ->join('partners', 'invoices.zoho_cust_id', '=', 'partners.zohocust_id')
             ->select(
                 'invoices.*',
-                'customers.company_name',
+                'partners.company_name',
                 DB::raw("JSON_UNQUOTE(JSON_EXTRACT(invoice_items, '$[0].code')) AS plan_name"), // Extracting plan name from JSON
                 DB::raw("JSON_UNQUOTE(JSON_EXTRACT(invoice_items, '$[0].price')) AS plan_price"),
                 DB::raw("JSON_UNQUOTE(JSON_EXTRACT(payment_details, '$[0].payment_mode')) AS payment_mode")
@@ -445,7 +456,7 @@ class ZohoController extends Controller
         $fullName = trim($validatedData['first_name'] . ' ' . $validatedData['last_name']);
     
         // Check if customer_name already exists in customers table
-        $exists = Customer::where('customer_name', $fullName)->exists();
+        $exists = Partner::where('customer_name', $fullName)->exists();
         if ($exists) {
             return redirect()->back()->withErrors([
                 'name_combination' => 'The combination of first name and last name already exists.',
@@ -481,9 +492,10 @@ class ZohoController extends Controller
             $zohoCustomerId = $zohoResponse['customer']['customer_id'];
     
             // Save to customers table
-            $customer = Customer::create([
+            $customer = Partner::create([
                 'customer_name' => $fullName,
                 'company_name' => $validatedData['company_name'],
+                'status'=>'invited',
                 'billing_attention' => $fullName,
                 'billing_street' => $validatedData['billing_street'],
                 'billing_city' => $validatedData['billing_city'],
@@ -499,14 +511,13 @@ class ZohoController extends Controller
                 'zohocust_id' => $zohoCustomerId,
             ]);
     
-            // Save to partner_users table
             $partnerUser = PartnerUser::create([
                 'first_name' => $validatedData['first_name'],
                 'last_name' => $validatedData['last_name'],
                 'email' => $validatedData['customer_email'],
                 'password' => Hash::make($defaultPassword),
                 'zoho_cust_id' => $zohoCustomerId,
-                'status'=>'Invited',
+               
             ]);
     
             if ($request->has('affiliate_ids')) {
@@ -611,7 +622,7 @@ class ZohoController extends Controller
             return back()->withErrors('Customer not found.');
         }
         
-        $customer = Customer::where('zohocust_id', $partneruser->zoho_cust_id)->first(); 
+        $customer = Partner::where('zohocust_id', $partneruser->zoho_cust_id)->first(); 
 
         if (!$customer) {
             return back()->withErrors('Customer not found.');
@@ -839,7 +850,7 @@ if (!$existingInvoice) {
             return back()->withErrors('Customer not found.');
         }
         
-        $customer = Customer::where('zohocust_id', $partneruser->zoho_cust_id)->first();
+        $customer = Partner::where('zohocust_id', $partneruser->zoho_cust_id)->first();
     
         $subscriptions = Subscription::where('zoho_cust_id', $customer->zohocust_id)->first();
         
@@ -870,7 +881,7 @@ if (!$existingInvoice) {
     public function edit($zohocust_id)
     {
         // Find the customer by customer_email or fail if not found
-        $customer = Customer::where('zohocust_id', $zohocust_id)->firstOrFail();
+        $customer = Partner::where('zohocust_id', $zohocust_id)->firstOrFail();
     
         // Return the edit view and pass the customer object
         return view('edit', compact('customer'));
@@ -879,7 +890,7 @@ if (!$existingInvoice) {
     public function update(Request $request, $id)
     {
         // Find the customer by ID or fail if not found
-        $customer = Customer::findOrFail($id);
+        $customer = Partner::findOrFail($id);
     
         // Validate the request data
         $validatedData = $request->validate([
@@ -1022,7 +1033,7 @@ public function showCustomerInvoices()
 public function addupdate(Request $request, $id)
     {
         // Find the customer by ID or fail if not found
-        $customer = Customer::where('zohocust_id', $id)->firstOrFail();
+        $customer = Partner::where('zohocust_id', $id)->firstOrFail();
     
         // Validate the request data
         $validatedData = $request->validate([
@@ -1186,7 +1197,7 @@ public function addupdate(Request $request, $id)
             return back()->withErrors('Customer not found.');
         }
         
-        $customer = Customer::where('zohocust_id', $partneruser->zoho_cust_id)->first();
+        $customer = Partner::where('zohocust_id', $partneruser->zoho_cust_id)->first();
     
         $subscription = Subscription::where('zoho_cust_id', $customer->zohocust_id)->first();
   
@@ -1406,7 +1417,7 @@ if (!$existingInvoice) {
             return back()->withErrors('Customer not found.');
         }
         
-        $customer = Customer::where('zohocust_id', $partneruser->zoho_cust_id)->first();
+        $customer = Partner::where('zohocust_id', $partneruser->zoho_cust_id)->first();
     
        
         $subscriptions = Subscription::where('zoho_cust_id', $customer->zohocust_id)->first();
@@ -1433,11 +1444,11 @@ if (!$existingInvoice) {
      
         $query = DB::table('subscriptions')
             ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
-            ->join('customers', 'subscriptions.zoho_cust_id', '=', 'customers.zohocust_id')
+            ->join('partners', 'subscriptions.zoho_cust_id', '=', 'partners.zohocust_id')
             ->select(
                 'subscriptions.subscription_id',
                 'subscriptions.subscription_number',
-                'customers.company_name',
+                'partners.company_name',
                 'plans.plan_name',
                 'plans.plan_price',
                 'subscriptions.start_date',
@@ -1479,7 +1490,7 @@ if (!$existingInvoice) {
             return back()->withErrors('Customer not found.');
         }
         
-        $customer = Customer::where('zohocust_id', $partneruser->zoho_cust_id)->first(); 
+        $customer = Partner::where('zohocust_id', $partneruser->zoho_cust_id)->first(); 
 
     $query = DB::table('invoices')->where('zoho_cust_id', $customer->zohocust_id);
 
@@ -1513,7 +1524,7 @@ public function showCustomerCredits()
         return back()->withErrors('Customer not found.');
     }
 
-    $customer = Customer::where('zohocust_id', $partneruser->zoho_cust_id)->first();
+    $customer = Partner::where('zohocust_id', $partneruser->zoho_cust_id)->first();
     $creditnotes = Creditnote::where('zoho_cust_id', $customer->zohocust_id)->get();
     
     // Check if there are any credit notes
@@ -1522,7 +1533,7 @@ public function showCustomerCredits()
         $customers = null;
     } else {
         // Fetch customer details based on the first credit note
-        $customers = Customer::where('zohocust_id', $creditnotes->first()->zoho_cust_id)->first();
+        $customers = Partner::where('zohocust_id', $creditnotes->first()->zoho_cust_id)->first();
     }
 
     return view('creditnotes', compact('creditnotes', 'customers'));
@@ -1560,7 +1571,7 @@ public function filtercredits(Request $request)
         return back()->withErrors('Customer not found.');
     }
     
-    $customer = Customer::where('zohocust_id', $partneruser->zoho_cust_id)->first(); 
+    $customer = Partner::where('zohocust_id', $partneruser->zoho_cust_id)->first(); 
 
     $query = Creditnote::where('zoho_cust_id', $customer->zohocust_id);
 
@@ -1585,7 +1596,7 @@ public function filtercredits(Request $request)
     // Apply limit for number of results (show entries)
     $showEntries = $request->input('show', 10); // Default to 10
     $creditnotes = $query->paginate($showEntries);
-    $customers = Customer::where('zohocust_id', $customer->zohocust_id)->first();
+    $customers = Partner::where('zohocust_id', $customer->zohocust_id)->first();
     // Pass filtered credit notes and customer details to the view
     return view('creditnotes', compact('creditnotes', 'customers'));
 }
@@ -1598,7 +1609,7 @@ public function showCustomerSupport(Request $request)
         return back()->withErrors('Customer not found.');
     }
 
-    $customer = Customer::where('zohocust_id', $partneruser->zoho_cust_id)->first();
+    $customer = Partner::where('zohocust_id', $partneruser->zoho_cust_id)->first();
 
     $supportsQuery = Support::where('zoho_cust_id', $customer->zohocust_id);
 
@@ -1633,7 +1644,7 @@ public function ticketstore(Request $request)
         return back()->withErrors('Customer not found.');
     }
     $zohocpid = $partneruser->zoho_cpid;
-    $customer = Customer::where('zohocust_id', $partneruser->zoho_cust_id)->first();  
+    $customer = Partner::where('zohocust_id', $partneruser->zoho_cust_id)->first();  
 
     $zohoCustId = $customer->zohocust_id;
 
@@ -1669,7 +1680,7 @@ public function downgrade(Request $request)
             return back()->withErrors('Customer not found.');
         }
         
-        $customer = Customer::where('zohocust_id', $partneruser->zoho_cust_id)->first(); 
+        $customer = Partner::where('zohocust_id', $partneruser->zoho_cust_id)->first(); 
 
     $subscription = Subscription::where('zoho_cust_id', $customer->zohocust_id)->first();
   
@@ -1710,13 +1721,13 @@ public function downgrade(Request $request)
 public function supportticket()
 {
     $supports = DB::table('supports')
-    ->join('customers', 'supports.zoho_cust_id', '=', 'customers.zohocust_id')
-    ->join('partner_users', 'customers.zohocust_id', '=', 'partner_users.zoho_cust_id') 
+    ->join('partners', 'supports.zoho_cust_id', '=', 'partners.zohocust_id')
+    ->join('partner_users', 'partners.zohocust_id', '=', 'partner_users.zoho_cust_id') 
     ->leftJoin('subscriptions', 'supports.subscription_number', '=', 'subscriptions.subscription_number') 
     ->select(
         'supports.*',
-        'customers.company_name',
-        'customers.customer_name',
+        'partners.company_name',
+        'partners.customer_name',
         'partner_users.email as customer_email', 
         'subscriptions.plan_id',
         'subscriptions.subscription_id',
@@ -1765,10 +1776,10 @@ public function supportticketfilter(Request $request)
 
   
     $query = DB::table('supports')
-        ->join('customers', 'supports.zoho_cust_id', '=', 'customers.zohocust_id')
+        ->join('partners', 'supports.zoho_cust_id', '=', 'partners.zohocust_id')
         ->select(
             'supports.*', 
-            'customers.company_name' 
+            'partners.company_name' 
         );
 
    
@@ -1782,7 +1793,7 @@ public function supportticketfilter(Request $request)
     if ($search) {
         $query->where(function ($q) use ($search) {
             $q->where('supports.subscription_number', 'LIKE', "%{$search}%")
-              ->orWhere('customers.company_name', 'LIKE', "%{$search}%");
+              ->orWhere('partners.company_name', 'LIKE', "%{$search}%");
              
         });
     }
@@ -2038,7 +2049,7 @@ if (!$existingInvoice) {
             return back()->withErrors('Customer not found.');
         }
         
-        $customer = Customer::where('zohocust_id', $partneruser->zoho_cust_id)->first();
+        $customer = Partner::where('zohocust_id', $partneruser->zoho_cust_id)->first();
 
         $subscriptions = Subscription::where('zoho_cust_id', $customer->zohocust_id)->first();
 
@@ -2155,7 +2166,7 @@ if (!$existingInvoice) {
    
     $partneruser = PartnerUser::where('email', $request->email)->first();
 
-    $customer = Customer::where('zohocust_id', $partneruser->zoho_cust_id)->first();
+    $customer = Partner::where('zohocust_id', $partneruser->zoho_cust_id)->first();
 
     if (! $partneruser || !Hash::check($request->current_password,  $partneruser->password)) {
         return redirect()->back()->withErrors(['current_password' => 'Invalid current password or email.']);
@@ -2184,7 +2195,7 @@ public function showUpgradePreview(Request $request)
             return back()->withErrors('Customer not found.');
         }
         
-        $customer = Customer::where('zohocust_id', $partneruser->zoho_cust_id)->first();
+        $customer = Partner::where('zohocust_id', $partneruser->zoho_cust_id)->first();
 
     $subscription = Subscription::where('zoho_cust_id', $customer->zohocust_id)->first();
     $plan=Plan::where ('plan_id',$subscription->plan_id)->first();
@@ -2205,7 +2216,7 @@ public function showsubscribePreview(Request $request)
             return back()->withErrors('Customer not found.');
         }
 
-        $customer = Customer::where('zohocust_id', $partneruser->zoho_cust_id)->first();
+        $customer = Partner::where('zohocust_id', $partneruser->zoho_cust_id)->first();
 
     return view('subscribe-preview', compact('newPlan','customer','partneruser'));
 }
@@ -2232,7 +2243,7 @@ public function showAddonPreview(Request $request)
         return back()->withErrors('Customer not found.');
     }
     
-    $customer = Customer::where('zohocust_id', $partneruser->zoho_cust_id)->first();
+    $customer = Partner::where('zohocust_id', $partneruser->zoho_cust_id)->first();
 
     $subscription = Subscription::where('zoho_cust_id', $customer->zohocust_id)->first();
     $plan = Plan::where('plan_id', $subscription->plan_id)->first();
@@ -2248,7 +2259,7 @@ public function companyinfo()
         return back()->withErrors('Customer not found.');
     }
     
-    $customer = Customer::where('zohocust_id', $partneruser->zoho_cust_id)->first(); 
+    $customer = Partner::where('zohocust_id', $partneruser->zoho_cust_id)->first(); 
     
     $company = CompanyInfo::where('zoho_cust_id', $partneruser->zoho_cust_id)->firstOrNew(['zoho_cust_id' => $partneruser->zoho_cust_id]);
 
@@ -2282,7 +2293,7 @@ public function updatecompanyinfo(Request $request)
         return back()->withErrors('Customer not found.');
     }
     
-    $customer = Customer::where('zohocust_id', $partneruser->zoho_cust_id)->first();   
+    $customer = Partner::where('zohocust_id', $partneruser->zoho_cust_id)->first();   
 
     $data = [
         'company_name' => $request->company_name,
@@ -2318,7 +2329,7 @@ public function ProviderData()
     if (!$partneruser) {
         return back()->withErrors('Customer not found.');
     }
-    $customer = Customer::where('zohocust_id', $partneruser->zoho_cust_id)->first();     
+    $customer = Partner::where('zohocust_id', $partneruser->zoho_cust_id)->first();     
     $providerData = ProviderData::where('zoho_cust_id', $customer->zohocust_id)->get(); 
     $totalCount = ProviderData::where('uploaded_by', $customer->customer_name)->count();  
 
@@ -2348,7 +2359,7 @@ public function uploadCsv(Request $request)
             return back()->withErrors('Customer not found.');
         }
         
-        $customer = Customer::where('zohocust_id', $partneruser->zoho_cust_id)->first();
+        $customer = Partner::where('zohocust_id', $partneruser->zoho_cust_id)->first();
 
         $lineCount = 0;
         if (($handle = fopen($file->getPathname(), 'r')) !== false) {
@@ -2425,7 +2436,7 @@ public function ProviderDatafilter(Request $request)
             return back()->withErrors('Customer not found.');
         }
         
-        $customer = Customer::where('zohocust_id', $partneruser->zoho_cust_id)->first();  
+        $customer = Partner::where('zohocust_id', $partneruser->zoho_cust_id)->first();  
      $totalCount = ProviderData::where('uploaded_by', $customer->customer_name)->count();  
      $providerData->appends([
          'search' => $request->get('search'),
@@ -2439,7 +2450,7 @@ public function ProviderDatafilter(Request $request)
 
 public function show($zohocust_id, Request $request)
 {
-    $customer = Customer::where('zohocust_id', $zohocust_id)->firstOrFail();
+    $customer = Partner::where('zohocust_id', $zohocust_id)->firstOrFail();
 
     $partnerUser = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)
         ->whereNotNull('zoho_cpid') // Ensure zoho_cpid is not null
@@ -2450,7 +2461,6 @@ public function show($zohocust_id, Request $request)
         ->first();
     $partnerUsers = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)->get();
   
-   $partnerUserStatus = $partnerUsers->first()->status ?? null; 
         
     if ($normalUser) {
         $customer->email = $normalUser->email;
@@ -2462,18 +2472,18 @@ public function show($zohocust_id, Request $request)
     // Fetch the current subscription and its associated plan
     $subscriptions = DB::table('subscriptions')
         ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
-        ->join('customers', 'subscriptions.zoho_cust_id', '=', 'customers.zohocust_id')
+        ->join('partners', 'subscriptions.zoho_cust_id', '=', 'partners.zohocust_id')
         ->where('subscriptions.zoho_cust_id', $customer->zohocust_id)
         ->select(
             'subscriptions.subscription_id',
             'subscriptions.subscription_number',
-            'customers.company_name',
+            'partners.company_name',
             'plans.plan_name',
             'plans.plan_price',
             'subscriptions.start_date',
             'subscriptions.next_billing_at',
             'subscriptions.status',
-            'customers.zohocust_id',
+            'partners.zohocust_id',
         )
         ->get(); 
     $currentSubscription = DB::table('subscriptions')
@@ -2511,7 +2521,7 @@ public function show($zohocust_id, Request $request)
         'plans',
          'upgradePlans',
          'partnerUsers',
-         'partnerUserStatus',
+        
 
     ));
 }
@@ -2520,7 +2530,7 @@ public function show($zohocust_id, Request $request)
 public function customfilter(Request $request)
 {
     // Start building the query for customers
-    $customerQuery = Customer::query();
+    $customerQuery = Partner::query();
 
     // Apply the zohocust_id filter if provided
     if ($request->filled('zohocust_id')) {
@@ -2551,11 +2561,11 @@ public function customfilter(Request $request)
 public function termslog()
 {
     $terms = DB::table('terms')
-        ->join('customers', 'terms.zoho_cust_id', '=', 'customers.zohocust_id')
+        ->join('partners', 'terms.zoho_cust_id', '=', 'partners.zohocust_id')
         ->select(
             'terms.*',
-            'customers.company_name',
-            'customers.customer_name'
+            'partners.company_name',
+            'partners.customer_name'
         )
         ->get();
 
@@ -2570,11 +2580,11 @@ public function filterTermsLog(Request $request)
     $showEntries = $request->input('show', 10); 
 
     $query = DB::table('terms')
-        ->join('customers', 'terms.zoho_cust_id', '=', 'customers.zohocust_id')
+        ->join('partners', 'terms.zoho_cust_id', '=', 'partners.zohocust_id')
         ->select(
             'terms.*',
-            'customers.company_name',
-            'customers.customer_name'
+            'partners.company_name',
+            'partners.customer_name'
         );
 
     if ($startDate) {
@@ -2588,8 +2598,8 @@ public function filterTermsLog(Request $request)
     if ($search) {
         $query->where(function ($q) use ($search) {
             $q->where('terms.subscription_number', 'like', '%' . $search . '%')
-              ->orWhere('customers.company_name', 'like', '%' . $search . '%')
-              ->orWhere('customers.customer_name', 'like', '%' . $search . '%')
+              ->orWhere('partners.company_name', 'like', '%' . $search . '%')
+              ->orWhere('partners.customer_name', 'like', '%' . $search . '%')
               ->orWhere('terms.plan_name', 'like', '%' . $search . '%');
         });
     }
@@ -2611,11 +2621,11 @@ public function filterSubscriptionsnav(Request $request)
  
     $query = DB::table('subscriptions')
         ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
-        ->join('customers', 'subscriptions.zoho_cust_id', '=', 'customers.zohocust_id')
+        ->join('partners', 'subscriptions.zoho_cust_id', '=', 'partners.zohocust_id')
         ->select(
             'subscriptions.subscription_id',
             'subscriptions.subscription_number',
-            'customers.company_name',
+            'partners.company_name',
             'plans.plan_name',
             'plans.plan_price',
             'subscriptions.start_date',
@@ -2638,7 +2648,7 @@ public function filterSubscriptionsnav(Request $request)
 
     $subscriptions = $query->paginate($perPage);
 
-    $customer = Customer::where('zohocust_id', $zohocust_id)->first();
+    $customer = Partner::where('zohocust_id', $zohocust_id)->first();
 
     $partnerUser = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)
     ->whereNotNull('zoho_cpid') 
@@ -2672,9 +2682,8 @@ $upgradePlans = $currentSubscription
     $plans = DB::table('plans')->select('plan_code', 'plan_name', 'plan_price')->get();
     $partnerUsers = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)->get();
   
-    $partnerUserStatus = $partnerUsers->first()->status ?? null; 
-
-    return view('customer-show', compact('customer','partnerUsers','partnerUserStatus', 'subscriptions','selectedSection', 'affiliates', 'search', 'startDate', 'endDate', 'invoices','creditnotes', 'partnerUser','plans','upgradePlans'));
+ 
+    return view('customer-show', compact('customer','partnerUsers', 'subscriptions','selectedSection', 'affiliates', 'search', 'startDate', 'endDate', 'invoices','creditnotes', 'partnerUser','plans','upgradePlans'));
 }   
 
     
@@ -2688,10 +2697,10 @@ public function filterInvoicesnav(Request $request)
     $perPage = $request->input('rows_to_show', 10); 
     
     $query = DB::table('invoices')
-    ->join('customers', 'invoices.zoho_cust_id', '=', 'customers.zohocust_id')
+    ->join('partners', 'invoices.zoho_cust_id', '=', 'partners.zohocust_id')
     ->select(
         'invoices.*',
-        'customers.company_name',
+        'partners.company_name',
         DB::raw("JSON_UNQUOTE(JSON_EXTRACT(invoice_items, '$[0].code')) AS plan_name"), // Extracting plan name from JSON
         DB::raw("JSON_UNQUOTE(JSON_EXTRACT(invoice_items, '$[0].price')) AS plan_price"),
         DB::raw("JSON_UNQUOTE(JSON_EXTRACT(payment_details, '$[0].payment_mode')) AS payment_mode")
@@ -2717,7 +2726,7 @@ public function filterInvoicesnav(Request $request)
     // Paginate the results
     $invoices = $query->paginate($perPage);
 
-    $customer = Customer::where('zohocust_id', $zohocust_id)->first();
+    $customer = Partner::where('zohocust_id', $zohocust_id)->first();
     $partnerUser = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)
     ->whereNotNull('zoho_cpid') // Ensure zoho_cpid is not null
     ->get();
@@ -2748,9 +2757,8 @@ $upgradePlans = $currentSubscription
     $plans = DB::table('plans')->select('plan_code', 'plan_name', 'plan_price')->get();
     $partnerUsers = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)->get();
   
-    $partnerUserStatus = $partnerUsers->first()->status ?? null; 
     // Pass the data back to the view
-    return view('customer-show', compact('customer','partnerUsers','partnerUserStatus', 'subscriptions','selectedSection', 'affiliates', 'search', 'startDate', 'endDate', 'invoices','creditnotes', 'partnerUser','plans','upgradePlans'));
+    return view('customer-show', compact('customer','partnerUsers', 'subscriptions','selectedSection', 'affiliates', 'search', 'startDate', 'endDate', 'invoices','creditnotes', 'partnerUser','plans','upgradePlans'));
 }
 
 public function filtercreditnav(Request $request)
@@ -2763,10 +2771,10 @@ public function filtercreditnav(Request $request)
     $perPage = $request->input('rows_to_show', 10);
 
     $query = DB::table('creditnotes')
-        ->join('customers', 'creditnotes.zoho_cust_id', '=', 'customers.zohocust_id')
+        ->join('partners', 'creditnotes.zoho_cust_id', '=', 'partners.zohocust_id')
         ->select(
             'creditnotes.*',
-            'customers.company_name'
+            'partners.company_name'
         )
         ->where('creditnotes.zoho_cust_id', $zohocust_id);
 
@@ -2787,7 +2795,7 @@ public function filtercreditnav(Request $request)
     $creditnotes = $query->paginate($perPage);
 
 
-    $customer = Customer::where('zohocust_id', $zohocust_id)->first();
+    $customer = Partner::where('zohocust_id', $zohocust_id)->first();
     $partnerUser = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)
     ->whereNotNull('zoho_cpid') 
     ->get();
@@ -2818,8 +2826,8 @@ $upgradePlans = $currentSubscription
     $plans = DB::table('plans')->select('plan_code', 'plan_name', 'plan_price')->get();
     $partnerUsers = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)->get();
   
-    $partnerUserStatus = $partnerUsers->first()->status ?? null; 
-    return view('customer-show', compact('customer','partnerUsers','partnerUserStatus', 'subscriptions', 'selectedSection', 'affiliates','invoices', 'search', 'startDate', 'endDate', 'creditnotes','partnerUser','plans','upgradePlans'));
+
+    return view('customer-show', compact('customer','partnerUsers', 'subscriptions', 'selectedSection', 'affiliates','invoices', 'search', 'startDate', 'endDate', 'creditnotes','partnerUser','plans','upgradePlans'));
 }
 public function customenterprise(Request $request)
 {
@@ -2833,7 +2841,7 @@ public function customenterprise(Request $request)
         return back()->withErrors('Customer not found.');
     }
     $zohocpid = $partneruser->zoho_cpid;
-    $customer = Customer::where('zohocust_id', $partneruser->zoho_cust_id)->first(); 
+    $customer = Partner::where('zohocust_id', $partneruser->zoho_cust_id)->first(); 
 
     $zohoCustId =  $customer->zohocust_id;
 
@@ -2962,7 +2970,7 @@ public function Cancellation(Request $request)
         return back()->withErrors('Customer not found.');
     }
      
-    $customer = Customer::where('zohocust_id', $partneruser->zoho_cust_id)->first();
+    $customer = Partner::where('zohocust_id', $partneruser->zoho_cust_id)->first();
 
     if (!$customer) {
         return back()->withErrors('Customer details not found.');
@@ -3018,6 +3026,7 @@ public function cancelSubscription(Request $request)
 
         DB::table('supports')
             ->where('subscription_number', $subscriptionNumber)
+            ->where('request_type', 'Cancellation')
             ->update(['status' => 'Completed']);
 
         DB::table('subscriptions')
@@ -3041,7 +3050,7 @@ public function cancelSubscription(Request $request)
             return redirect()->back()->withErrors('Customer not found.');
         }
     
-        $customer = Customer::where('zohocust_id', $partneruser->zoho_cust_id)->first();
+        $customer = Partner::where('zohocust_id', $partneruser->zoho_cust_id)->first();
     
         if (!$customer) {
             return redirect()->back()->withErrors('Customer not found.');
@@ -3106,7 +3115,7 @@ public function cancelSubscription(Request $request)
         }
     
         // Fetch customer and subscription details
-        $customer = Customer::where('zohocust_id', $partnerUser->zoho_cust_id)->first();
+        $customer = Partner::where('zohocust_id', $partnerUser->zoho_cust_id)->first();
         if (!$customer) {
             return back()->withErrors('Customer not found.');
         }

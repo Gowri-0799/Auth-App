@@ -11,11 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('customers', function (Blueprint $table) {
+        Schema::create('partners', function (Blueprint $table) {
             $table->id();
             $table->string('customer_name')->unique();
             $table->string('zohocust_id') ->nullable();
             $table->string('company_name')->nullable();
+            $table->string('status')->nullable();
             $table->boolean('first_login')->default(true);
             // billing address fields
             $table->string('billing_attention')->nullable();
@@ -43,6 +44,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('customers');
+        Schema::dropIfExists('partners');
     }
 };

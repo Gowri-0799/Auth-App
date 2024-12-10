@@ -71,12 +71,11 @@
                                 <td>{{ ++$key }}</td>
                                 <td>{{ $customer->company_name }}</td>
                                 <td>
-                                    <!-- Dynamic Status -->
-                                    @if ($customer->status === 'Invited')
+                                    @if ($customer->status === 'invited')
                                         <span class="badge" style="background-color: #FFEEBA; color: #856404; padding: 5px 10px;">
                                         Invited
                                         </span>
-                                    @elseif ($customer->status === 'Active')
+                                    @elseif ($customer->status === 'active')
                                         <span class="badge" style="background-color: #D4EDDA; color: #155724; padding: 5px 10px;">
                                         Active
                                         </span>

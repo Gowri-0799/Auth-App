@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\Customer;
+use App\Models\Partner;
 use Illuminate\Http\Request;
 use App\Models\Admin;
 use App\Models\PartnerUser;
@@ -240,14 +240,17 @@ public function updatePassword(Request $request)
 
     $partnerUser->password = Hash::make($request->password);
     $partnerUser->userlastloggedin = now();
-    $partnerUser->status='Active';
-    if( $partnerUser->save()){
-       
-            return redirect()->route('showplan')->with('success', 'Your password has been successfully updated.');
+
+    if ($partnerUser->save()) {
+        Partner::where('zohocust_id', $partnerUser->zoho_cust_id)
+            ->update(['status' => 'active']);
+
+        return redirect()->route('showplan')->with('success', 'Your password has been successfully updated.');
     }
 
-    return redirect()->route('login')->with('success', 'Your password has been successfully updated.');
+    return redirect()->route('login')->withErrors(['error' => 'Failed to update password.']);
 }
+
 
 
 function provider(){

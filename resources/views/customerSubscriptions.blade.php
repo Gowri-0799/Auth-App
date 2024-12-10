@@ -71,7 +71,7 @@
                      <button type="button" class="close border-0" data-bs-dismiss="modal" aria-label="Close"><i class="fa-solid fa-xmark fs-3"></i></button>
                   </div>
                   <div class="modal-body">
-                     <form id="upgradeForm" action="{{ route('upgrade.preview') }}" method="POST">
+                     <form id="upgradeForm" action="{{ route('upgrade.preview') }}" method="GET">
                         @csrf
                         <div class="mb-3">
                            <label for="upgradeSelect" class="form-label">Select an Upgrade Plan</label>

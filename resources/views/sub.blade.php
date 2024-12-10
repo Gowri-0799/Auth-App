@@ -176,41 +176,62 @@
                 <tbody>
                 <tr>
             
-            <td class="fixed-column align-left fs-5 fw-bold">
-                <div>
-                    <ul>
-                        <li>Update Logo</li>
-                        <li>Custom URL</li>
-                        <li>Zip code availability updates</li>
-                        <li>Data updates (speeds, connection types)</li>
-                        <li>Self-service portal access</li>
-                        <li>Account management support</li>
-                        <li>Reporting</li>
-                        <li>Maximum Allowed Clicks</li>
-                        <li>Maximum Click Monthly Add-On</li>
-                    </ul>
-                </div>
-            </td>
-            
-            @foreach ($plans as $plan)
-            <td>
-                <div>
-                    <ul>
-                        <li><i class="fa-solid fa-check text-check fs-3"></i></li>
-                        <li><i class="fa-solid fa-check text-check fs-3"></i></li>
-                        <li><i class="fa-solid fa-check text-check fs-3"></i></li>
-                        <li><i class="fa-solid fa-check text-check fs-3"></i></li>
-                        <li><i class="fa-solid fa-check text-check fs-3"></i></li>
-                        <li><i class="fa-solid fa-xmark text-cross fs-3"></i></li>
-                        <li>Monthly</li>
-                        <li>up to {{ $plan->max_clicks }}/month</li>
-                        <li>${{ $plan->click_addon_price }} for {{ $plan->addon_clicks }} Clicks</li>
-                    </ul>
-                </div>
-            </td>
-            @endforeach
-           
-            <td>
+                <td class="fixed-column align-left fs-5 fw-bold">
+    <div>
+        <ul>
+            <li>Update Logo</li>
+            <li>Custom URL</li>
+            <li>Zip code availability updates</li>
+            <li>Data updates (speeds, connection types)</li>
+            <li>Self-service portal access</li>
+            <li>Account management support</li>
+            <li>Reporting</li>
+            <li>Maximum Allowed Clicks</li>
+            <li>Maximum Click Monthly Add-On</li>
+        </ul>
+    </div>
+</td>
+@foreach ($plans as $plan)
+    @php
+        $features = $planFeatures[$plan->plan_code] ?? null;
+        $featureData = $features ? $features->features_json : [];
+    @endphp
+    <td>
+        <div>
+            <ul>
+                <li>
+                    <i class="fa-solid {{ !empty($featureData['Update Logo']) && strtolower($featureData['Update Logo']) == 'yes' ? 'fa-check text-check' : 'fa-xmark text-cross' }} fs-3"></i>
+                </li>
+                <li>
+                    <i class="fa-solid {{ !empty($featureData['Custom URL']) && strtolower($featureData['Custom URL']) == 'yes' ? 'fa-check text-check' : 'fa-xmark text-cross' }} fs-3"></i>
+                </li>
+                <li>
+                    <i class="fa-solid {{ !empty($featureData['Zip Code Availability Updates']) && strtolower($featureData['Zip Code Availability Updates']) == 'yes' ? 'fa-check text-check' : 'fa-xmark text-cross' }} fs-3"></i>
+                </li>
+                <li>
+                    <i class="fa-solid {{ !empty($featureData['Data Updates']) && strtolower($featureData['Data Updates']) == 'yes' ? 'fa-check text-check' : 'fa-xmark text-cross' }} fs-3"></i>
+                </li>
+                <li>
+                    <i class="fa-solid {{ !empty($featureData['Self Service Portal Access']) && strtolower($featureData['Self Service Portal Access']) == 'yes' ? 'fa-check text-check' : 'fa-xmark text-cross' }} fs-3"></i>
+                </li>
+                <li>
+                    <i class="fa-solid {{ !empty($featureData['Account Management Support']) && strtolower($featureData['Account Management Support']) == 'yes' ? 'fa-check text-check' : 'fa-xmark text-cross' }} fs-3"></i>
+                </li>
+                <li>
+    {{ $featureData['Reporting'] ?? '' }}
+</li>
+<li>
+    {{ $featureData['Maximum Allowed Clicks'] ?? '' }}
+</li>
+<li>
+    {{ $featureData['Maximum Click Monthly Add-on'] ?? '' }}
+</li>
+                
+            </ul>
+        </div>
+    </td>
+@endforeach
+   <td>
                 <div>
                     <ul>
                         <li><i class="fa-solid fa-check text-check fs-3"></i></li>

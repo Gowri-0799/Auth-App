@@ -5,7 +5,7 @@
    <div class="d-flex justify-content-between align-items-center my-3">
       <h3>{{ $customer->company_name }} 
       <span class="badge" style="background-color: #D4EDDA; color: #155724; padding: 5px 10px;">
-      {{ $partnerUserStatus }}                     
+      {{ $customer->status }}                     
     </span> 
 </h3>
    </div>

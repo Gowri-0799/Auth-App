@@ -16,11 +16,11 @@
  
                              <p class="m-0">
                <i class="fa fa-user right-margin text-primary" aria-hidden="true"></i>
-                  <strong>{{ $admin ->admin_name}}</strong>
+                  <strong>{{ $admin ->admin_name ?? '' }}</strong>
                </p>
                <p class="m-0">
                <i class="fa fa-envelope right-margin text-primary" aria-hidden="true"></i>
-                  <strong>{{ $admin ->email}}</strong>
+                  <strong>{{ $admin ->email ?? ''}}</strong>
                </p>
                        
                     </div>

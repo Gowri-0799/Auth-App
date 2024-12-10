@@ -3,17 +3,16 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Notifications\Notifiable;
 
-class Customer extends Authenticatable
+class Partner extends Model
 {
-    use HasFactory,Notifiable;
-    protected $table = 'customers';
+    use HasFactory;
+    protected $table = 'partners';
     protected $fillable = [
         'customer_name',
         'zohocust_id', 
+        'status',
         'billing_attention',
         'billing_street',
         'billing_city',
