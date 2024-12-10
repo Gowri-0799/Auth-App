@@ -12,8 +12,8 @@ class Feature extends Model
     protected $table = 'features';
 
     protected $fillable = ['plan_code', 'features_json'];
-
+    
     protected $casts = [
-        'features_json' => 'array', 
+        'features_json' => 'array',
     ];
 }

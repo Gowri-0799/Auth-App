@@ -31,6 +31,7 @@ use App\Mail\CustomerInvitation;
 use App\Mail\SubscriptionEmail;
 use App\Mail\UpgradeEmail;
 use Illuminate\Support\Str;
+use App\Models\Feature;
 use Illuminate\Support\Facades\Log;
 
 
@@ -3173,9 +3174,57 @@ public function cancelSubscription(Request $request)
 }
 public function view($id)
 {
-    $plan = Plan::find($id); 
-    return view('plan-features', compact('plan'));
+    $plan = Plan::find($id);
+
+    if (!$plan) {
+        abort(404, 'Plan not found');
+    }
+
+    $feature = Feature::where('plan_code', $plan->plan_code)->first();
+
+    if (!$feature) {
+        $feature = (object)[
+            'features_json' => json_encode([]), // Ensure this is a JSON string
+        ];
+    }
+
+    // Ensure features_json is a string before decoding
+    $featuresJson = is_string($feature->features_json) ? $feature->features_json : json_encode($feature->features_json);
+
+    // Decode the JSON string
+    $features = json_decode($featuresJson, true);
+
+    return view('plan-features', compact('plan', 'features'));
 }
+
+
+public function updateFeatures(Request $request)
+    {
+     
+        $featuresJson = [
+            'Update Logo' => $request->has('update_logo') ? 'Yes' : 'No',
+            'Custom URL' => $request->has('custom_url') ? 'Yes' : 'No',
+            'Zip Code Availability Updates' => $request->has('zip_code_updates') ? 'Yes' : 'No',
+            'Data Updates' => $request->has('data_updates') ? 'Yes' : 'No',
+            'Self Service Portal Access' => $request->has('self_service_access') ? 'Yes' : 'No',
+            'Account Management Support' => $request->has('account_support') ? 'Yes' : 'No',
+            'Reporting' => $request->input('reporting'),
+            'Maximum Allowed Clicks' => $request->input('max_clicks'),
+            'Maximum Click Monthly Add-on' => $request->input('click_addon'),
+        ];
+
+        $feature = Feature::firstOrCreate(
+            ['plan_code' => $request->input('plan_code')], // Match or create based on plan_code
+            ['features_json' => json_encode($featuresJson)] // Initial value if new
+        );
+
+    
+        if (!$feature->wasRecentlyCreated) {
+            $feature->update(['features_json' => $featuresJson]);
+        }
+
+        return redirect()->back()->with('success', 'Features updated successfully!');
+    }
 
 }
 
