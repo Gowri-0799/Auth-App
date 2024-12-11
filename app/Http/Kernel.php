@@ -59,6 +59,8 @@ class Kernel extends HttpKernel
             ShareErrorsFromSession::class,
             VerifyCsrfToken::class,
             SubstituteBindings::class,
+
+            \App\Http\Middleware\ResetSessionTimeout::class,
         ],
 
         'api' => [
