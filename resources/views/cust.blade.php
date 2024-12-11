@@ -80,9 +80,7 @@
                                         Active
                                         </span>
                                     @else
-                                          <span class="badge" style="background-color: #F8D7DA; color: #721C24; padding: 5px 10px;">
-                                         Status Unknown
-                                         </span>
+                                      <span> </span>
                                     @endif
                                 </td>
                                 <td>                                   
