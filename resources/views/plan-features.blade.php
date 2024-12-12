@@ -25,20 +25,25 @@
 
                 <!-- Left Side: Existing Features -->
                 <div class="col-md-6">
-                    <h4 class="mb-3">Existing Plan Features</h4>
-                    <ul class="list-unstyled">
-                        <li style="margin-bottom: 15px;"><strong>Plan Code:</strong> {{ $plan->plan_code }}</li>
-                        <li style="margin-bottom: 15px;"><strong>Update Logo:</strong> {{ $features['Update Logo'] ?? 'N/A' }}</li>
-                        <li style="margin-bottom: 15px;"><strong>Custom URL:</strong> {{ $features['Custom URL'] ?? 'N/A' }}</li>
-                        <li style="margin-bottom: 15px;"><strong>Zip Code Availability Updates:</strong> {{ $features['Zip Code Availability Updates'] ?? 'N/A' }}</li>
-                        <li style="margin-bottom: 15px;"><strong>Data Updates:</strong> {{ $features['Data Updates'] ?? 'N/A' }}</li>
-                        <li style="margin-bottom: 15px;"><strong>Self Service Portal Access:</strong> {{ $features['Self Service Portal Access'] ?? 'N/A' }}</li>
-                        <li style="margin-bottom: 15px;"><strong>Account Management Support:</strong> {{ $features['Account Management Support'] ?? 'N/A' }}</li>
-                        <li style="margin-bottom: 15px;"><strong>Reporting:</strong> {{ $features['Reporting'] ?? 'N/A' }}</li>
-                        <li style="margin-bottom: 15px;"><strong>Maximum Allowed Clicks:</strong> {{ $features['Maximum Allowed Clicks'] ?? 'N/A' }}</li>
-                        <li style="margin-bottom: 15px;"><strong>Maximum Click Monthly Add-on:</strong> {{ $features['Maximum Click Monthly Add-on'] ?? 'N/A' }}</li>
-                    </ul>
-                </div>
+    <h4 class="mb-3">Existing Plan Features</h4>
+
+    @if(empty($features) || !is_array($features))
+        <p>No existing plan features</p>
+    @else
+        <ul class="list-unstyled">
+            <li style="margin-bottom: 15px;"><strong>Plan Code:</strong> {{ $plan->plan_code }}</li>
+            <li style="margin-bottom: 15px;"><strong>Update Logo:</strong> {{ $features['Update Logo'] ?? 'N/A' }}</li>
+            <li style="margin-bottom: 15px;"><strong>Custom URL:</strong> {{ $features['Custom URL'] ?? 'N/A' }}</li>
+            <li style="margin-bottom: 15px;"><strong>Zip Code Availability Updates:</strong> {{ $features['Zip Code Availability Updates'] ?? 'N/A' }}</li>
+            <li style="margin-bottom: 15px;"><strong>Data Updates:</strong> {{ $features['Data Updates'] ?? 'N/A' }}</li>
+            <li style="margin-bottom: 15px;"><strong>Self Service Portal Access:</strong> {{ $features['Self Service Portal Access'] ?? 'N/A' }}</li>
+            <li style="margin-bottom: 15px;"><strong>Account Management Support:</strong> {{ $features['Account Management Support'] ?? 'N/A' }}</li>
+            <li style="margin-bottom: 15px;"><strong>Reporting:</strong> {{ $features['Reporting'] ?? 'N/A' }}</li>
+            <li style="margin-bottom: 15px;"><strong>Maximum Allowed Clicks:</strong> {{ $features['Maximum Allowed Clicks'] ?? 'N/A' }}</li>
+            <li style="margin-bottom: 15px;"><strong>Maximum Click Monthly Add-on:</strong> {{ $features['Maximum Click Monthly Add-on'] ?? 'N/A' }}</li>
+        </ul>
+         @endif
+     </div>
 
                 <!-- Right Side: Update Plan Features -->
                 <div class="col-md-6">

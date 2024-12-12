@@ -58,7 +58,7 @@
                </p>
                <p class="m-0">
                   <!-- <i class="fa fa-user right-margin text-primary" aria-hidden="true"></i> -->
-                  <strong>{{ $customer->email }}</strong>
+                 
                </p>
                <h5 class="mt-4"><strong>Affiliate IDs:</strong></h5>
                <ul>
@@ -82,38 +82,57 @@
             </div>
          </div>
       </div>
-      <!-- Users Section -->
-      <div class="col-lg-6">
-         <div class="card w-100 border-0 bg-clearlink rounded mb-3">
-            <div class="card-body right-margin">
-               <div class="d-flex flex-row mb-5 justify-content-between">
-                  <h4 class="ms-3">Users</h4>
-                  <a data-bs-toggle="modal" data-bs-target="#addUserModal" class="btn btn-primary btn-sm me-3">Invite User</a>
-               </div>
-               @if($partnerUser->count() == 0)
-               <div class="d-flex justify-content-center align-items-center"> No secondary users found </div>
-               @else
-               @foreach($partnerUser as $user)
-               <div class="d-flex flex-row mb-4">
-                  <div class="col-lg-1 user-icon">
-                     <i style="font-size: 44px;" class="fa-solid fa-circle-user text-primary"></i>
-                  </div>
-                  <div class="col-lg-9 ms-3">
-                     <p class="p-0 m-0">
-                        <strong>
-                        {{ $user->first_name }}&nbsp;{{ $user->last_name }}
-                        </strong>
-                     </p>
-                     <p class="p-0 m-0">{{ $user->email ??'' }}</p>
-                  </div>
-               </div>
-               <hr class="borders-clearlink">
-               @endforeach
-               @endif
+  <!-- Users Section -->
+<div class="col-lg-6">
+    <div class="card w-100 border-0 bg-clearlink rounded mb-3">
+        <div class="card-body right-margin">
+            <div class="d-flex flex-row mb-5 justify-content-between">
+                <h4 class="ms-3">Users</h4>
+                <a data-bs-toggle="modal" data-bs-target="#addUserModal" class="btn btn-primary btn-sm me-3">Invite User</a>
             </div>
-         </div>
-      </div>
-   </div>
+
+            <!-- Primary User Section -->
+            <div class="d-flex flex-row mb-4">
+                <div class="col-lg-1 user-icon">
+                    <i style="font-size: 44px;" class="fa-solid fa-circle-user text-primary"></i>
+                </div>
+                <div class="col-lg-9 ms-3">
+                    <div class="d-flex align-items-center">
+                        <p class="p-0 m-0 me-2">
+                            <strong>{{ $customer->company_name }} (Primary)</strong>
+                        </p>
+                        <button type="submit" class="btn button-clearlink text-primary fw-bold btn-sm">Resend invite</button>
+                    </div>
+                    <p class="p-0 m-0">{{ $customer->email }}</p>
+                </div>
+            </div>
+
+            <!-- Secondary Users Section -->
+            @if($partnerUser->count() == 0)
+                <div class="d-flex justify-content-center align-items-center">No secondary users found</div>
+            @else
+                @foreach($partnerUser as $user)
+                <div class="d-flex flex-row mb-4">
+                    <div class="col-lg-1 user-icon">
+                        <i style="font-size: 44px;" class="fa-solid fa-circle-user text-primary"></i>
+                    </div>
+                    <div class="col-lg-9 ms-3">
+                        <div class="d-flex align-items-center">
+                            <p class="p-0 m-0 me-2">
+                                <strong>{{ $user->first_name }}&nbsp;{{ $user->last_name }}</strong>
+                            </p>
+                            <button type="submit" class="btn button-clearlink text-primary fw-bold btn-sm">Resend invite</button>
+                        </div>
+                        <p class="p-0 m-0">{{ $user->email ?? '' }}</p>
+                    </div>
+                </div>
+                <hr class="borders-clearlink">
+                @endforeach
+            @endif
+        </div>
+    </div>
+</div> 
+</div>
    <!-- Subscriptions Section -->
    <div id="subscriptions" class="section mt-4" style="{{ $selectedSection !== 'subscriptions' ? 'display: none;' : '' }}">
        <!-- Flash Messages -->
@@ -356,30 +375,116 @@
       @endif
    </div>
 <!-- provider data Section -->
+<!-- Provider Data Section -->
 <div id="providerdata" class="section mt-4" style="{{ $selectedSection !== 'providerdata' ? 'display: none;' : '' }}">
-<div class="d-flex justify-content-between align-items-center mb-3">
-         <!-- Title -->
-         <div>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <!-- Title -->
+        <div>
             <span style="font-family: Arial, sans-serif; font-size: 21px; font-weight: bold;">Company Info</span>
-         </div>
-         <!-- "+" Icon and Text -->
-         <div class="d-flex align-items-center">
-    @if($subscriptions->count() == 0)
-    <a href="{{ route('cust.display') }}" class="btn btn-primary position-absolute top-0 end-0 m-3">
+        </div>
+        
+        <!-- Button for Upload or Send -->
+        <div class="d-flex align-items-center">
+        @if(!$companyInfo)
+            <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadCompanyInfoModal">
+              Upload Company Info
+            </a>
+            @else
+                <a href="#" class="btn btn-primary">
+                    Send Details to Admin
+                </a>
+            @endif
+        </div>
+    </div>
 
-   </a>   
-         @else
-        <a href="{{ route('cust.display') }}" class="btn btn-primary position-absolute top-0 end-0 m-3">
-            Invite Partner
-        </a>   
-         @endif
-</div>
+    <!-- Company Info Table -->
+    <div class="table-responsive">
+    @if(!$companyInfo)
+        <div class="text-center p-3 border" style="width: 70%; height: 100px; margin: 0 auto;">No data found</div>
+        @else
+        <table class="table" style="border-collapse: collapse; width: 100%; border: 1px solid black;">
+    <thead>
+        <tr style="border-bottom: 2px solid black;">
+            <th style="font-weight: bold; text-align: center;">Logo Image</th>
+            <th style="font-weight: bold; text-align: center;">Landing Page URL</th>
+            <th style="font-weight: bold; text-align: center;">Landing Page URL (Spanish)</th>
+            <th style="font-weight: bold; text-align: center;">Company Name</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td style="border-top: 1px solid black;">       
+                <img src="{{ asset('storage/' . $companyInfo->logo_image ?? '') }}" alt="logo" style="width:110px;" id="logoPreview">
+            </td>
+            <td style="border-top: 1px solid black; text-align: center;"><a href="{{ $companyInfo->landing_page_uri }}" target="_blank">{{ $companyInfo->landing_page_uri }}</a></td>
+            <td style="border-top: 1px solid black; text-align: center;"><a href="{{ $companyInfo->landing_page_url_spanish }}" target="_blank">{{ $companyInfo->landing_page_url_spanish }}</a></td>
+            <td style="border-top: 1px solid black; text-align: center;">{{ $companyInfo->company_name }}</td>
+        </tr>
+    </tbody>
+</table>
+
+        @endif
+    </div>
+
+   
+<!-- Provider Data Table -->
+<!-- Provider Data Table -->
+<div class="mt-4">
+    <span style="font-family: Arial, sans-serif; font-size: 21px; font-weight: bold;">Provider Data</span><br><br>
+
+    <!-- Button aligned to the right -->
+    <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadProviderModal" style="float: right; margin-top: 10px;">Upload Provider Data</a>
+
+    <form method="GET" action="{{ route('nav.provider.filter') }}" class="row mb-4 align-items-end">
+        @include('partials.filter-form')
+        <input type="hidden" name="zohocust_id" value="{{ $customer->zohocust_id }}">
+        <input type="hidden" name="section" value="creditnote">
+    </form>
 </div>
 
-</div>
+<div class="table-responsive">
+    @if($providerData && $providerData->count() > 0)
+    <table class="table" style="border-collapse: collapse; width: 90%; margin: 0 auto; border: 1px solid black;">
+        <thead>
+            <tr>
+                <th style="font-weight: bold; text-align: center;">Date</th>
+                <th style="font-weight: bold; text-align: center;">File Name</th>
+                <th style="font-weight: bold; text-align: center;">File Size</th>
+                <th style="font-weight: bold; text-align: center;">ZIP Count</th>
+                <th style="font-weight: bold; text-align: center;">CSV File URL</th>
+            </tr>
+        </thead>
+        <tbody style="border-top: 2px solid #000; border-bottom: 2px solid #000;">
+            @foreach($providerData as $data)
+            <tr>
+                <td style="border-left: none; border-right: none; text-align: center;">
+                {{ \Carbon\Carbon::parse($data->created_at)->format('Y-m-d') }}
+                </td>
+                <td style="border-left: none; border-right: none; text-align: center;">{{ $data->file_name ?? 'N/A' }}</td>
+                <td style="text-align: center;">{{ $data->file_size ?? 'N/A' }}</td>
+                <td style="text-align: center;">{{ $data->zip_count ?? 'N/A' }}</td>
+                <td style="text-align: center;">
+                    @if(!empty($data->url))
+                    <a href="{{ asset('storage/' . $data->url) }}" download>Download</a>
+                    @else
+                    N/A
+                    @endif
+                </td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+    <!-- Pagination links -->
+    <div class="mt-2">
+        {{ $providerData->links() }}
+    </div>
+    @else
+    <p style="text-align: center; font-size: 18px;">No provider data found.</p>
+    @endif
 </div>
 
- 
+<!--end nav div-->
+</div> 
 <!-- Create subscription model-->
 <div class="modal fade" id="downgradeModal" tabindex="-1" aria-labelledby="downgradeModalLabel" aria-hidden="true">
    <div class="modal-dialog modal-dialog-centered">
@@ -463,6 +568,65 @@
         </div>
     </div>
 </div>
+<!-- Modal for upload company info -->
+<div class="modal fade" id="uploadCompanyInfoModal" tabindex="-1" aria-labelledby="uploadCompanyInfoLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" style="background-color: #e6f7ff;"> 
+            <div class="modal-header">
+                <h5 class="modal-title" id="uploadCompanyInfoLabel">Enter the required details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="uploadCompanyInfoForm" action="{{ route('company-info.update') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="mb-3">
+                        <label for="logo" class="form-label" style="font-weight: bold; color: black;">Logo*</label>
+                        <input type="file" class="form-control" accept="image/*" name="logo" >
+                    </div>
+                    <div class="mb-3">
+                        <label for="landingPageUrl" class="form-label" style="font-weight: bold; color: black;">Landing Page Url*</label>
+                        <input type="url" class="form-control" name="landing_page_url" id="landingPageUrl" placeholder="Enter landing page URL">
+                    </div>
+                    <div class="mb-3">
+                        <label for="landingPageUrlSpanish" class="form-label" style="font-weight: bold; color: black;">Landing Page Url (Spanish)</label>
+                        <input type="url" class="form-control" name="landing_page_url_spanish" id="landingPageUrlSpanish" placeholder="Enter landing page URL in Spanish">
+                    </div>
+                    <div class="mb-3">
+                        <label for="companyName" class="form-label" style="font-weight: bold; color: black;">Company Name*</label>
+                        <input type="text" class="form-control" name="company_name" value="{{ $customer->company_name ?? '' }}" required>
+                    </div>
+                    <button type="button" class="btn btn-primary" style="width: auto;" id="submitCompanyInfoButton">Upload Company Info</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for provider data-->
+<div class="modal fade" id="uploadProviderModal" tabindex="-1" aria-labelledby="uploadProviderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background-color: #e3f2fd; border-radius: 8px;">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="uploadProviderModalLabel">Enter the required details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Form to upload CSV -->
+                <form id="providerDataForm" method="POST" enctype="multipart/form-data" action="{{ route('provider-data.upload') }}">
+                  @csrf
+                    <div class="mb-3">
+                        <label for="formFile" class="form-label fw-bold">Choose file</label>
+                        <input class="form-control" type="file" name="csv_file" id="csvFileInput" accept=".csv">
+                    </div>
+                    <div class="d-grid">
+                        <!-- This button now triggers the form submission -->
+                        <button type="submit" class="btn btn-primary" style="width: auto;">Upload Provider Data</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 <!-- Invite User Modal -->
 <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
    <div class="modal-dialog modal-dialog-centered" style="max-width: 500px;">
@@ -537,6 +701,11 @@
                 modal.show();
             }
         });
+
+        document.getElementById('submitCompanyInfoButton').addEventListener('click', function() {
+        // Submit the form when the button is clicked
+        document.getElementById('uploadCompanyInfoForm').submit();
+    });
     });
    
 </script>

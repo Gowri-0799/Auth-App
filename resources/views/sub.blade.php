@@ -361,51 +361,79 @@
         const planCode = selectedOption.getAttribute('data-plan-code');
         document.getElementById('hiddenPlanCode').value = planCode || '';
     }
-
     document.addEventListener("DOMContentLoaded", function () {
-        // Select all subscribe buttons
-        var subscribeButtons = document.querySelectorAll("button#subscribeButton");
+    // Select all subscribe buttons
+    var subscribeButtons = document.querySelectorAll("button#subscribeButton");
+    var contactButton = document.getElementById("save");
 
-        // Function to check all required conditions
-        function checkConditions() {
-            const logoUploaded = {{ $companyInfo && $companyInfo->logo_image ? 'true' : 'false' }};
-            const companyNameSet = {{ $companyInfo && $companyInfo->company_name ? 'true' : 'false' }};
-            const landingPageSet = {{ $companyInfo && $companyInfo->landing_page_uri ? 'true' : 'false' }};
-            const providerDataUploaded = {{ $providerData && $providerData->url ? 'true' : 'false' }};
-            const firstLogin = {{ $firstLogin ? 'true' : 'false' }};
+    // Function to check all required conditions
+    function checkConditions() {
+        const logoUploaded = {{ $companyInfo && $companyInfo->logo_image ? 'true' : 'false' }};
+        const companyNameSet = {{ $companyInfo && $companyInfo->company_name ? 'true' : 'false' }};
+        const landingPageSet = {{ $companyInfo && $companyInfo->landing_page_uri ? 'true' : 'false' }};
+        const providerDataUploaded = {{ $providerData && $providerData->url ? 'true' : 'false' }};
+        const firstLogin = {{ $firstLogin ? 'true' : 'false' }};
 
-            // All conditions must be true to proceed
-            return (
-                logoUploaded &&
-                companyNameSet &&
-                landingPageSet &&
-                providerDataUploaded &&
-                !firstLogin
-            );
-        }
+        // All conditions must be true to proceed
+        return (
+            logoUploaded &&
+            companyNameSet &&
+            landingPageSet &&
+            providerDataUploaded &&
+            !firstLogin
+        );
+    }
 
-        // Attach event listeners to subscribe buttons
-        subscribeButtons.forEach((button) => {
-            button.addEventListener("click", function (event) {
-                if (!checkConditions()) {
-                    event.preventDefault(); // Prevent default action (form submission)
-                    var showAlertModal = new bootstrap.Modal(
-                        document.getElementById("showAlertModal"),
-                        {}
-                    );
-                    showAlertModal.show(); // Show the modal to alert the user
-                }
-            });
+    // Attach event listeners to subscribe buttons
+    subscribeButtons.forEach((button) => {
+        button.addEventListener("click", function (event) {
+            if (!checkConditions()) {
+                event.preventDefault(); // Prevent default action (form submission)
+                var showAlertModal = new bootstrap.Modal(
+                    document.getElementById("showAlertModal"),
+                    {}
+                );
+                showAlertModal.show(); // Show the modal to alert the user
+            }
         });
-
-        // Function to recheck conditions when modal is hidden (optional)
-        const modal = document.getElementById("showAlertModal");
-        if (modal) {
-            modal.addEventListener("hidden.bs.modal", function () {
-                checkConditions(); // Recheck conditions when the modal is closed
-            });
-        }
     });
+
+    // Attach event listener to the Contact Us button
+    if (contactButton) {
+        contactButton.addEventListener("click", function (event) {
+            event.preventDefault(); // Prevent the default navigation
+
+            if (!checkConditions()) {
+                var showAlertModal = new bootstrap.Modal(
+                    document.getElementById("showAlertModal"),
+                    {}
+                );
+                showAlertModal.show(); // Show the alert modal if conditions are not met
+            } else {
+                // Only show the Contact Us modal if the conditions are satisfied
+                var contactModal = new bootstrap.Modal(
+                    document.getElementById("contactModal"),
+                    {}
+                );
+                contactModal.show(); // Show the Contact Us modal if conditions are met
+            }
+        });
+    }
+
+    // Optional: Close the alert modal if the user closes it
+    const modal = document.getElementById("showAlertModal");
+    if (modal) {
+        modal.addEventListener("hidden.bs.modal", function () {
+            // Recheck conditions when the modal is closed (optional)
+            if (checkConditions()) {
+                // You can perform any actions here if needed after the alert modal closes
+            }
+        });
+    }
+});
+
+
+
 </script>
 
 @endsection

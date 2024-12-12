@@ -201,6 +201,9 @@ Route ::get('/support/ticket/filter', [ZohoController::class, 'supportticketfilt
 Route ::get('nav/subscriptions/filter', [ZohoController::class, 'filterSubscriptionsnav'])->name('nav.subscriptions.filter');
 Route::get('nav/invoices/filter', [ZohoController::class, 'filterInvoicesnav'])->name('nav.invoice.filter');
 Route::get('nav/creditnote/filter', [ZohoController::class, 'filtercreditnav'])->name('nav.creditnote.filter');
+Route::get('nav/providerdata/filter', [ZohoController::class, 'filterProviderDatanav'])->name('nav.provider.filter');
+
+
 
 Route ::get('/pdt/{creditnote_id}', [ZohoController::class, 'pdfdownload'])->name('pdf.download');
 
