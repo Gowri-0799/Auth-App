@@ -19,8 +19,8 @@ return new class extends Migration
             $table->string('last_name');
             $table->string('email')->unique();
             $table->string('phone_number')->nullable();
-            $table->string('status')->nullable();
-            $table->string('invitation_status')->nullable();
+            $table->string('status');
+            $table->string('invitation_status');
             $table->string('password')->nullable(); 
             $table->timestamp('userLastLoggedin')->nullable();
             $table->timestamps(); 
@@ -36,4 +36,3 @@ return new class extends Migration
         Schema::dropIfExists('partner_users');
     }
 };
-       

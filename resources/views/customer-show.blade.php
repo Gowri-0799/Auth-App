@@ -9,7 +9,7 @@
     </span> 
 </h3>
    </div>
-   <!-- Navigation Tabs with Active Class based on Section -->
+<!--Navigation section-->
    <ul class="nav nav-tabs">
       <li class="nav-item">
          <a class="nav-link {{ $selectedSection === 'overview' ? 'active' : '' }}" 
@@ -30,8 +30,9 @@
       <li class="nav-item">
          <a class="nav-link" href="#">Refunds</a>
       </li>
-      <li class="nav-item">
-         <a class="nav-link" href="#">Provider Data</a>
+      <li class="nav-item" >
+         <a class="nav-link {{ $selectedSection === 'providerdata' ? 'active' : '' }}"
+          href="{{ route('customers.show', $customer->zohocust_id) }}?section=providerdata">Provider Data</a>
       </li>
       <li class="nav-item">
          <a class="nav-link" href="#">Clicks Data</a>
@@ -146,7 +147,7 @@
       <div class="d-flex justify-content-between align-items-center mb-3">
          <!-- Title -->
          <div>
-            <span style="font-family: Arial, sans-serif; font-size: 18px; font-weight: bold;">Subscription</span>
+            <span style="font-family: Arial, sans-serif; font-size: 21px; font-weight: bold;">Subscription</span>
          </div>
          <!-- "+" Icon and Text -->
          <div class="d-flex align-items-center">
@@ -218,6 +219,9 @@
    </div>
    <!-- Invoices Section --> 
    <div id="invoices" class="section mt-4" style="{{ $selectedSection !== 'invoices' ? 'display: none;' : '' }}">
+   <div>
+            <span style="font-family: Arial, sans-serif; font-size: 21px; font-weight: bold;">Invoice</span>
+         </div><br>
       <!-- Filter Form for Invoices -->
       <form method="GET" action="{{ route('nav.invoice.filter') }}" class="row mb-4 align-items-end">
          @include('partials.filter-form')
@@ -295,6 +299,9 @@
    </div>
    <!-- Credit Notes Section -->
    <div id="creditnote" class="section mt-4" style="{{ $selectedSection !== 'creditnote' ? 'display: none;' : '' }}">
+   <div>
+            <span style="font-family: Arial, sans-serif; font-size: 21px; font-weight: bold;">Credit notes</span>
+         </div><br>
       <!-- Filter Form for Credit Notes -->
       <form method="GET" action="{{ route('nav.creditnote.filter') }}" class="row mb-4 align-items-end">
          @include('partials.filter-form')
@@ -348,7 +355,31 @@
       </div>
       @endif
    </div>
+<!-- provider data Section -->
+<div id="providerdata" class="section mt-4" style="{{ $selectedSection !== 'providerdata' ? 'display: none;' : '' }}">
+<div class="d-flex justify-content-between align-items-center mb-3">
+         <!-- Title -->
+         <div>
+            <span style="font-family: Arial, sans-serif; font-size: 21px; font-weight: bold;">Company Info</span>
+         </div>
+         <!-- "+" Icon and Text -->
+         <div class="d-flex align-items-center">
+    @if($subscriptions->count() == 0)
+    <a href="{{ route('cust.display') }}" class="btn btn-primary position-absolute top-0 end-0 m-3">
+
+   </a>   
+         @else
+        <a href="{{ route('cust.display') }}" class="btn btn-primary position-absolute top-0 end-0 m-3">
+            Invite Partner
+        </a>   
+         @endif
 </div>
+</div>
+
+</div>
+</div>
+
+ 
 <!-- Create subscription model-->
 <div class="modal fade" id="downgradeModal" tabindex="-1" aria-labelledby="downgradeModalLabel" aria-hidden="true">
    <div class="modal-dialog modal-dialog-centered">
@@ -473,6 +504,7 @@
        document.getElementById('subscriptions').style.display = 'none';
        document.getElementById('invoices').style.display = 'none';
        document.getElementById('creditnote').style.display = 'none';
+       document.getElementById('providerdata').style.display = 'none';
        document.getElementById(sectionId).style.display = 'block';
    
        // Remove active class from all tabs
