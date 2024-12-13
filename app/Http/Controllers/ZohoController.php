@@ -3418,7 +3418,7 @@ public function updateFeatures(Request $request)
         return back()->withErrors('An unexpected error occurred.');
     }
 }
-  // For generating random passwords
+
 
 public function resendInvite(Request $request)
 {
