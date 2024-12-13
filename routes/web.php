@@ -224,6 +224,9 @@ Route::post('/company-info/update', [ZohoController::class, 'updatecompanyinfo']
 
 Route::post('/upload-csv', [ZohoController::class, 'uploadCsv'])->name('provider-data.upload');
 
+Route::post('admin/upload-csv', [ZohoController::class, 'aduploadCsv'])->name('admin.provider-data.upload');
+Route::post('/resend-invite', [ZohoController::class, 'resendInvite'])->name('resend.invite');
+
 Route::get('/provider-info', [ZohoController::class, 'ProviderDatafilter'])->name('provider.info');
 
 Route::get('/customers/{zohocust_id}/view', [ZohoController::class, 'show'])->name('customers.show');

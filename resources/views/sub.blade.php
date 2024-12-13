@@ -361,12 +361,17 @@
         const planCode = selectedOption.getAttribute('data-plan-code');
         document.getElementById('hiddenPlanCode').value = planCode || '';
     }
+
     document.addEventListener("DOMContentLoaded", function () {
-    // Select all subscribe buttons
     var subscribeButtons = document.querySelectorAll("button#subscribeButton");
     var contactButton = document.getElementById("save");
+    var showAlertModalElement = document.getElementById("showAlertModal");
+    var contactModalElement = document.getElementById("contactModal");
 
-    // Function to check all required conditions
+    var showAlertModal = new bootstrap.Modal(showAlertModalElement, {});
+    var contactModal = new bootstrap.Modal(contactModalElement, {});
+
+    // Function to check conditions
     function checkConditions() {
         const logoUploaded = {{ $companyInfo && $companyInfo->logo_image ? 'true' : 'false' }};
         const companyNameSet = {{ $companyInfo && $companyInfo->company_name ? 'true' : 'false' }};
@@ -374,7 +379,6 @@
         const providerDataUploaded = {{ $providerData && $providerData->url ? 'true' : 'false' }};
         const firstLogin = {{ $firstLogin ? 'true' : 'false' }};
 
-        // All conditions must be true to proceed
         return (
             logoUploaded &&
             companyNameSet &&
@@ -384,57 +388,40 @@
         );
     }
 
-    // Attach event listeners to subscribe buttons
+    // Event listener for Contact Us button
+    if (contactButton) {
+        contactButton.addEventListener("click", function (event) {
+            event.preventDefault(); // Prevent default behavior
+
+            if (!checkConditions()) {
+                // Show the alert modal if conditions are not met
+                showAlertModal.show();
+
+                // After alert modal is hidden, show the Contact Us modal
+                showAlertModalElement.addEventListener("hidden.bs.modal", function () {
+                    contactModal.show();
+                });
+            } else {
+                // If conditions are met, directly show the Contact Us modal
+                contactModal.show();
+            }
+        });
+    }
+
+    // Attach event listeners to Subscribe buttons
     subscribeButtons.forEach((button) => {
         button.addEventListener("click", function (event) {
             if (!checkConditions()) {
-                event.preventDefault(); // Prevent default action (form submission)
-                var showAlertModal = new bootstrap.Modal(
-                    document.getElementById("showAlertModal"),
-                    {}
-                );
-                showAlertModal.show(); // Show the modal to alert the user
+                event.preventDefault(); // Prevent default form submission
+                showAlertModal.show();
             }
         });
     });
-
-    // Attach event listener to the Contact Us button
-    if (contactButton) {
-        contactButton.addEventListener("click", function (event) {
-            event.preventDefault(); // Prevent the default navigation
-
-            if (!checkConditions()) {
-                var showAlertModal = new bootstrap.Modal(
-                    document.getElementById("showAlertModal"),
-                    {}
-                );
-                showAlertModal.show(); // Show the alert modal if conditions are not met
-            } else {
-                // Only show the Contact Us modal if the conditions are satisfied
-                var contactModal = new bootstrap.Modal(
-                    document.getElementById("contactModal"),
-                    {}
-                );
-                contactModal.show(); // Show the Contact Us modal if conditions are met
-            }
-        });
-    }
-
-    // Optional: Close the alert modal if the user closes it
-    const modal = document.getElementById("showAlertModal");
-    if (modal) {
-        modal.addEventListener("hidden.bs.modal", function () {
-            // Recheck conditions when the modal is closed (optional)
-            if (checkConditions()) {
-                // You can perform any actions here if needed after the alert modal closes
-            }
-        });
-    }
 });
 
-
-
 </script>
+
+
 
 @endsection
 

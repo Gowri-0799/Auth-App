@@ -35,7 +35,6 @@ use App\Models\Feature;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Collection;
 
-
 class ZohoController extends Controller
 {
     protected $zohoService;
@@ -2463,7 +2462,8 @@ public function show($zohocust_id, Request $request)
         ->where('zoho_cust_id', $customer->zohocust_id)
         ->first();
 
-        $providerData = ProviderData::where('zoho_cust_id', $customer->zohocust_id)->first();
+    //$providerData = ProviderData::where('zoho_cust_id', $customer->zohocust_id)->first();
+    $providerData = ProviderData::where('zoho_cust_id', $customer->zohocust_id)->paginate(10);
 
     $normalUser = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)
         ->whereNull('zoho_cpid') // Ensure zoho_cpid is null
@@ -2867,6 +2867,7 @@ $upgradePlans = $currentSubscription
     'creditnotes','partnerUser','plans','upgradePlans', 'companyInfo',
     'providerData'));
 }
+
 public function filterProviderDatanav(Request $request)
 {
     // Retrieve input values
@@ -3355,6 +3356,99 @@ public function updateFeatures(Request $request)
 
         return redirect()->back()->with('success', 'Features updated successfully!');
     }
+
+    public function aduploadCsv(Request $request)
+{
+    try {
+        $request->validate([
+            'csv_file' => 'required|mimes:csv,txt|max:2048',
+        ]);
+
+        if (!$request->hasFile('csv_file')) {
+            return back()->withErrors('No file received.');
+        }
+
+        $file = $request->file('csv_file');
+        $fileName = $file->getClientOriginalName(); 
+        $fileSize = $file->getSize();
+        $filePath = $file->storeAs('uploads/csv_files', $fileName, 'public');
+
+        $partneruser = PartnerUser::where('email', Session::get('user_email'))->first();
+    
+        if (!$partneruser) {
+            return back()->withErrors('Customer not found.');
+        }
+        
+        $customer = Partner::where('zohocust_id', $partneruser->zoho_cust_id)->first();
+
+        $lineCount = 0;
+        if (($handle = fopen($file->getPathname(), 'r')) !== false) {
+            // Skip the header row
+            $headerSkipped = false;
+            while (($data = fgetcsv($handle)) !== false) {
+                if (!$headerSkipped) {
+                    $headerSkipped = true; 
+                    continue;
+                }
+
+                if (array_filter($data)) {
+                    $lineCount++;
+                }
+            }
+            fclose($handle);
+        }
+    
+        $providerData = new ProviderData();
+        $providerData->file_name = $fileName;
+        $providerData->file_size =  $fileSize;
+        $providerData->url = $filePath;
+        $providerData->zoho_cust_id = $customer->zohocust_id;
+        $providerData->uploaded_by = $customer->customer_name;
+        $providerData->zip_count = $lineCount;
+        $providerData->save();
+
+        if (CompanyInfo::where('zoho_cust_id', $customer->zohocust_id)->exists()) {
+            $customer->first_login = false;
+            $customer->save();
+        }
+
+        return back()->with('success', 'File uploaded successfully!');
+    } catch (\Exception $e) {
+        Log::error('CSV Upload Error', ['error' => $e->getMessage()]);
+        return back()->withErrors('An unexpected error occurred.');
+    }
+}
+  // For generating random passwords
+
+public function resendInvite(Request $request)
+{
+    $validated = $request->validate([
+        'email' => 'required|email|exists:partner_users,email',
+    ]);
+
+    $partnerUser = PartnerUser::where('email', $validated['email'])->first();
+
+    if (!$partnerUser) {
+        return response()->json(['error' => 'User not found'], 404);
+    }
+
+    $loginUrl = route('login');
+
+    $password = Str::random(16);  
+
+    $partnerUser->password = bcrypt($password); 
+    $partnerUser->save();
+
+    try {
+   
+        Mail::to($partnerUser->email)->send(new CustomerInvitation($partnerUser, $password, $loginUrl));
+
+        return back()->with('success', 'File uploaded successfully!');
+    } catch (\Exception $e) {
+        return back()->withErrors('An unexpected error occurred.');
+    }
+}
+
 
 }
 

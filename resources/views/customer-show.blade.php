@@ -101,8 +101,13 @@
                         <p class="p-0 m-0 me-2">
                             <strong>{{ $customer->company_name }} (Primary)</strong>
                         </p>
-                        <button type="submit" class="btn button-clearlink text-primary fw-bold btn-sm">Resend invite</button>
-                    </div>
+                        <form action="{{ route('resend.invite') }}" method="POST" style="display: inline;">
+    @csrf
+    <input type="hidden" name="email" value="{{ $customer->email}}">
+    <button type="submit" 
+    class="btn button-clearlink text-primary fw-bold btn-sm resend-invite" >Resend invite</button>
+</form>
+                          </div>
                     <p class="p-0 m-0">{{ $customer->email }}</p>
                 </div>
             </div>
@@ -121,7 +126,13 @@
                             <p class="p-0 m-0 me-2">
                                 <strong>{{ $user->first_name }}&nbsp;{{ $user->last_name }}</strong>
                             </p>
-                            <button type="submit" class="btn button-clearlink text-primary fw-bold btn-sm">Resend invite</button>
+                           
+<form action="{{ route('resend.invite') }}" method="POST" style="display: inline;">
+    @csrf
+    <input type="hidden" name="email" value="{{ $user->email }}">
+    <button type="submit" 
+    class="btn button-clearlink text-primary fw-bold btn-sm resend-invite" >Resend invite</button>
+</form>
                         </div>
                         <p class="p-0 m-0">{{ $user->email ?? '' }}</p>
                     </div>
@@ -426,8 +437,7 @@
         @endif
     </div>
 
-   
-<!-- Provider Data Table -->
+
 <!-- Provider Data Table -->
 <div class="mt-4">
     <span style="font-family: Arial, sans-serif; font-size: 21px; font-weight: bold;">Provider Data</span><br><br>
@@ -458,7 +468,7 @@
             @foreach($providerData as $data)
             <tr>
                 <td style="border-left: none; border-right: none; text-align: center;">
-                {{ \Carbon\Carbon::parse($data->created_at)->format('Y-m-d') }}
+                {{ optional($data)->created_at ? \Carbon\Carbon::parse($data->created_at)->format('Y-m-d') : 'No date available' }}
                 </td>
                 <td style="border-left: none; border-right: none; text-align: center;">{{ $data->file_name ?? 'N/A' }}</td>
                 <td style="text-align: center;">{{ $data->file_size ?? 'N/A' }}</td>
@@ -612,7 +622,7 @@
             </div>
             <div class="modal-body">
                 <!-- Form to upload CSV -->
-                <form id="providerDataForm" method="POST" enctype="multipart/form-data" action="{{ route('provider-data.upload') }}">
+                <form id="providerDataForm" method="POST" enctype="multipart/form-data" action="{{ route('admin.provider-data.upload') }}">
                   @csrf
                     <div class="mb-3">
                         <label for="formFile" class="form-label fw-bold">Choose file</label>
