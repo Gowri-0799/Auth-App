@@ -152,10 +152,10 @@
                   </form>
                   @else
                     <form action="{{ route('preview.subscribe') }}" method="GET" style="display: inline;">
-    @csrf
-    <input type="hidden" name="plan_code" value="{{ $plan->plan_code }}">
-    <button type="submit" class="btn btn-primary" id="subscribeButton">Subscribe</button>
-</form>
+                      @csrf
+                       <input type="hidden" name="plan_code" value="{{ $plan->plan_code }}">
+                        <button type="submit" class="btn btn-primary" id="subscribeButton">Subscribe</button>
+                    </form>
                     @endif
                  
                 @endif
@@ -167,7 +167,13 @@
                         <th class=" align-middle position-relative">
                         <div>
                         <h5 class="mb-2"><strong><span class="text-primary">Custom</span><span> Enterprise</span></strong></h5>
-                        <a data-bs-toggle="modal" data-bs-target="#contactModal" id="save" class="btn btn-primary">Contact Us</a>
+                        @if ($firstLogin == 1)
+                           
+                           <a data-bs-toggle="modal" data-bs-target="#showAlertModal" class="btn btn-primary">Contact Us</a>
+                         @else
+                         
+                           <a data-bs-toggle="modal" data-bs-target="#contactModal" class="btn btn-primary">Contact Us</a>
+                        @endif
                     </div>
                      
                         </th>
