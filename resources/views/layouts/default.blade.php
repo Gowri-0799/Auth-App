@@ -188,39 +188,40 @@
                         </a>
                     </li>
                     <li class="sidebar-item">
-                        <!-- Plan Management Link -->
-                        <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse" data-bs-target="#planManagement" aria-expanded="true" aria-controls="planManagement">
-                            <span>Settings</span>
-                            <span class="ms-1">
-                                <i class="fa-solid fa-angle-down"></i>
-                            </span>
-                        </a>
+                       <!-- Settings Link -->
+                           <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse" data-bs-target="#settingsMenu" aria-expanded="true" aria-controls="settingsMenu">
+                             <span>Settings</span>
+                             <span class="ms-1">
+                               <i class="fa-solid fa-angle-down"></i>
+                              </span>
+                           </a>
 
-                        <ul id="planManagement" class="ms-5 sidebar-dropdown list-unstyled collapse show" data-bs-parent="#sidebar">
-                            <li class="sidebar-item">
+                         <!-- Submenu for Settings -->
+                           <ul id="settingsMenu" class="ms-5 sidebar-dropdown list-unstyled collapse show" data-bs-parent="#sidebar">
+                             <li class="sidebar-item">
                                 <a href="{{ route('plandb') }}" class="sidebar-link">
-                                - Plans
-                                </a>
-                            </li>
-                            <li class="sidebar-item">
-                                <a href="{{ route('affiliates.index') }}" class="sidebar-link">
-                                - Affiliate
-                                </a>
-                            </li>
-                            <li class="sidebar-item"> 
-                                <a href="{{ route('admin.index') }}" class="sidebar-link">
-                                - Admins
-                                </a>
-                            </li>
-                            <li class="sidebar-item">
-                                <a href="{{ route('admin.profile') }}" class="sidebar-link">
-                                - Profile
-                                </a>
-                            </li>
-                            
-                        </ul>
+                                   - Plans
+                                 </a>
+                              </li>
+                              <li class="sidebar-item">
+                                 <a href="{{ route('affiliates.index') }}" class="sidebar-link">
+                                  - Affiliate
+                                 </a>
+                               </li>
+                               <li class="sidebar-item">
+                                 <a href="{{ route('admin.index') }}" class="sidebar-link">
+                                    - Admins
+                                 </a>
+                               </li>
+                               <li class="sidebar-item">
+                                  <a href="{{ route('admin.profile') }}" class="sidebar-link">
+                                     - Profile
+                                   </a>
+                              </li>
+                           </ul>
                     </li>
-                </ul>
+               </ul>
+
                 
                 <div class="bottom-footer mt-auto">
                     <hr class="line mt-0">
@@ -260,24 +261,20 @@
     <!-- JavaScript to handle submenu -->
 
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-    // Highlight active sidebar links
-    const sidebarLinks = document.querySelectorAll('.sidebar-link'); 
+document.addEventListener('DOMContentLoaded', function () {
+    const settingsMenu = document.getElementById('settingsMenu');
+    const settingsLink = document.querySelector('[data-bs-target="#settingsMenu"]');
 
-    function removeActiveClass() {
-        sidebarLinks.forEach(function(link) {
-            link.classList.remove('active');
-        });
+    if (settingsMenu) {
+        settingsMenu.classList.add('show'); // Ensure the submenu is open
     }
 
-    sidebarLinks.forEach(function(link) {
-        link.addEventListener('click', function(e) {
-            removeActiveClass();
-            this.classList.add('active');
-        });
-    });
+    if (settingsLink) {
+        settingsLink.setAttribute('aria-expanded', 'true'); // Mark it as expanded
+    }
 });
-    </script>
+</script>
+
       <script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.jquery.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 

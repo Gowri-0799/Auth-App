@@ -322,11 +322,9 @@ class ZohoController extends Controller
         $companyInfo = CompanyInfo::where('zoho_cust_id', $partnerUser->zoho_cust_id)->first();
         $plans = Plan::orderBy('plan_price', 'asc')->get();
         $providerData = ProviderData::where('zoho_cust_id', $partnerUser->zoho_cust_id)->first();
-        
-        // Fetch features for each plan
+      
         $planFeatures = Feature::whereIn('plan_code', $plans->pluck('plan_code'))->get()->keyBy('plan_code');
-        
-        // Optionally decode the features_json field
+      
         foreach ($planFeatures as $key => $feature) {
             if (is_string($feature->features_json)) {
                 $feature->features_json = json_decode($feature->features_json, true);
@@ -363,42 +361,39 @@ class ZohoController extends Controller
     
     public function showinvoice()
     {
-        // Execute the query to fetch invoices along with related plan and customer data
+      
         $invoices = DB::table('invoices')
             ->join('partners', 'invoices.zoho_cust_id', '=', 'partners.zohocust_id')
             ->select(
                 'invoices.*',
                 'partners.company_name',
-                DB::raw("JSON_UNQUOTE(JSON_EXTRACT(invoice_items, '$[0].code')) AS plan_name"), // Extracting plan name from JSON
+                DB::raw("JSON_UNQUOTE(JSON_EXTRACT(invoice_items, '$[0].code')) AS plan_name"), 
                 DB::raw("JSON_UNQUOTE(JSON_EXTRACT(invoice_items, '$[0].price')) AS plan_price"),
                 DB::raw("JSON_UNQUOTE(JSON_EXTRACT(payment_details, '$[0].payment_mode')) AS payment_mode")
             )
-            ->get(); // Retrieve the data
+            ->get(); 
     
-        // Pass the retrieved invoices to the view
         return view('invoice', compact('invoices'));
     }
     
     public function filteradInvoices(Request $request)
     {
-        // Get the search term and date range from the request
+       
         $search = $request->input('search');
         $startDate = $request->input('startDate');
         $endDate = $request->input('endDate');
-        $perPage = $request->input('show', 10); // Default entries to show
+        $perPage = $request->input('show', 10); 
     
-        // Start the query for filtering invoices
         $query = DB::table('invoices')
             ->join('partners', 'invoices.zoho_cust_id', '=', 'partners.zohocust_id')
             ->select(
                 'invoices.*',
                 'partners.company_name',
-                DB::raw("JSON_UNQUOTE(JSON_EXTRACT(invoice_items, '$[0].code')) AS plan_name"), // Extracting plan name from JSON
+                DB::raw("JSON_UNQUOTE(JSON_EXTRACT(invoice_items, '$[0].code')) AS plan_name"), 
                 DB::raw("JSON_UNQUOTE(JSON_EXTRACT(invoice_items, '$[0].price')) AS plan_price"),
                 DB::raw("JSON_UNQUOTE(JSON_EXTRACT(payment_details, '$[0].payment_mode')) AS payment_mode")
             );
-    
-        // Apply date filters if they exist
+
         if ($startDate) {
             $query->whereDate('invoice_date', '>=', $startDate);
         }
