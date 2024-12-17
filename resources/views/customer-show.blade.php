@@ -9,6 +9,27 @@
     </span> 
 </h3>
    </div>
+   {{-- Alert Messages --}}
+    <div id="alert-container" style="position: fixed; top: 20px; right: 20px; z-index: 999; width: 300px;">
+        @if($errors->any())
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <strong>Error!</strong> 
+                <ul class="mb-0">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <strong>Success!</strong> {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+    </div>
 <!--Navigation section-->
    <ul class="nav nav-tabs">
       <li class="nav-item">
@@ -41,47 +62,69 @@
          <a class="nav-link" href="#">Select Plans</a>
       </li>
    </ul>
-   <!-- Overview Section (default) -->
-   <div id="overview" class="row mt-4" style="{{ $selectedSection !== 'overview' ? 'display: none;' : '' }}">
-      <h4 class="mb-4">Overview</h4>
-      <!-- customer Section -->
-      <div class="col-lg-6">
-         <div class="card w-100 border-0 bg-clearlink rounded mb-3">
-            <div class="card-body">
-               <p class="m-0">
+ <!-- Overview Section (default) -->
+<div id="overview" class="row mt-4" style="{{ $selectedSection !== 'overview' ? 'display: none;' : '' }}">
+   <h4 class="mb-4">Overview</h4>
+   <!-- customer Section -->
+   <div class="col-lg-6">
+      <div class="card w-100 border-0 bg-clearlink rounded mb-3">
+         <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+               <!-- Customer Name Section -->
+               <div>
                   <i class="fa fa-building right-margin text-primary" aria-hidden="true"></i>
                   <strong>{{ $customer->company_name }}</strong>
-               </p>
-               <p class="m-0">
-                  <i class="fa fa-user right-margin text-primary" aria-hidden="true"></i>
-                  <strong>{{ $customer->customer_name }}</strong>
-               </p>
-               <p class="m-0">
-                  <!-- <i class="fa fa-user right-margin text-primary" aria-hidden="true"></i> -->
-                 
-               </p>
-               <h5 class="mt-4"><strong>Affiliate IDs:</strong></h5>
-               <ul>
-                  @foreach($affiliates as $affiliate)
-                  <li>{{ $affiliate->isp_affiliate_id }} ({{ $affiliate->domain_name }})</li>
-                  @endforeach
-               </ul>
-               <h5 class="mt-4"><strong>Address Details:</strong></h5>
-               <div class="d-flex flex-row mb-3">
-                  <div class="m-0">
-                     <i class="fa fa-address-card right-margin text-primary" aria-hidden="true"></i>
-                  </div>
-                  <div>
-                     {{ $customer->billing_street }}, <br>
-                     {{ $customer->billing_city }}, <br>
-                     {{ $customer->billing_state }}, <br>
-                     {{ $customer->billing_country }}<br>
-                     {{ $customer->billing_zip }}
-                  </div>
+               </div>
+           
+@if($partnerUsers->status === 'inactive')
+   
+    <form id="markAsActiveForm" method="POST" action="{{ route('customer.markActive', $customer->zohocust_id) }}">
+    @csrf
+        <button type="submit" class="btn btn-light p-1 border-0 custom-tooltip" data-bs-toggle="tooltip" data-bs-placement="top" title=" Mark as active">
+            <i class="fa fa-user-slash text-primary" aria-hidden="true"></i> 
+        </button>
+        </form>
+@elseif($partnerUsers->status === 'active' || $partnerUsers->status === null)
+ 
+    <form id="markAsInactiveForm" method="POST" action="{{ route('customer.markInactive', $customer->zohocust_id) }}">
+        @csrf
+        <button type="submit" class="btn btn-light p-1 border-0 custom-tooltip" data-bs-toggle="tooltip" data-bs-placement="top" title="Mark as Inactive">
+            <i class="fa fa-user text-primary" aria-hidden="true"></i>
+        </button>
+    </form>
+@endif
+            </div>
+            
+            <!-- Customer Name -->
+            <p class="m-0 mt-2">
+               <i class="fa fa-user right-margin text-primary" aria-hidden="true"></i>
+               <strong>{{ $customer->customer_name }}</strong>
+            </p>
+
+            <h5 class="mt-4"><strong>Affiliate IDs:</strong></h5>
+            <ul>
+               @foreach($affiliates as $affiliate)
+               <li>{{ $affiliate->isp_affiliate_id }} ({{ $affiliate->domain_name }})</li>
+               @endforeach
+            </ul>
+            
+            <h5 class="mt-4"><strong>Address Details:</strong></h5>
+            <div class="d-flex flex-row mb-3">
+               <div class="m-0">
+                  <i class="fa fa-address-card right-margin text-primary" aria-hidden="true"></i>
+               </div>
+               <div>
+                  {{ $customer->billing_street }}, <br>
+                  {{ $customer->billing_city }}, <br>
+                  {{ $customer->billing_state }}, <br>
+                  {{ $customer->billing_country }}<br>
+                  {{ $customer->billing_zip }}
                </div>
             </div>
          </div>
       </div>
+   </div>
+
   <!-- Users Section -->
 <div class="col-lg-6">
     <div class="card w-100 border-0 bg-clearlink rounded mb-3">
@@ -718,5 +761,13 @@
     });
     });
    
+
+</script>
+<script>
+    // Initialize Bootstrap tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
 </script>
 @endsection

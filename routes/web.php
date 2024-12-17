@@ -254,3 +254,8 @@ Route::post('/cancel-subscription', [ZohoController::class, 'cancelSubscription'
 Route::post('/cancel-subscription/alert', [ZohoController::class, 'Cancellation'])->name('cancel.subscription');
 
 Route::post('admin/subscribe', [ZohoController::class, 'subscribelink'])->name('subscribelink');
+
+Route::post('/customers/{id}/mark-inactive', [ZohoController::class, 'markAsInactive'])
+     ->name('customer.markInactive');
+Route::post('/customers/{id}/mark-active', [ZohoController::class, 'markAsActive'])
+     ->name('customer.markActive');

@@ -142,6 +142,17 @@
 .chosen-container .chosen-choices input {
     color: black !important;
 }
+.custom-tooltip + .tooltip > .tooltip-inner {
+    background-color: black; /* Black background */
+    color: white;            /* White text */
+    border-radius: 4px;      /* Optional: rounded corners */
+    font-size: 14px;         /* Optional: font size */
+}
+
+/* Optional: Remove the default arrow color */
+.custom-tooltip + .tooltip > .tooltip-arrow::before {
+    border-top-color: black !important;
+}
 
     </style>
 

@@ -2463,7 +2463,7 @@ public function show($zohocust_id, Request $request)
     $normalUser = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)
         ->whereNull('zoho_cpid') // Ensure zoho_cpid is null
         ->first();
-    $partnerUsers = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)->get();
+    $partnerUsers = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)->first();
   
         
     if ($normalUser) {
@@ -2687,7 +2687,7 @@ $upgradePlans = $currentSubscription
     ->get();
     $selectedSection = 'subscriptions'; 
     $plans = DB::table('plans')->select('plan_code', 'plan_name', 'plan_price')->get();
-    $partnerUsers = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)->get();
+    $partnerUsers = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)->first();
     $companyInfo = DB::table('company_info')
     ->where('zoho_cust_id', $customer->zohocust_id)
     ->first();
@@ -2770,7 +2770,7 @@ $upgradePlans = $currentSubscription
     : [];
 
     $plans = DB::table('plans')->select('plan_code', 'plan_name', 'plan_price')->get();
-    $partnerUsers = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)->get();
+    $partnerUsers = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)->first();
   
     $companyInfo = DB::table('company_info')
     ->where('zoho_cust_id', $customer->zohocust_id)
@@ -2849,7 +2849,7 @@ $upgradePlans = $currentSubscription
     : [];
  
     $plans = DB::table('plans')->select('plan_code', 'plan_name', 'plan_price')->get();
-    $partnerUsers = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)->get();
+    $partnerUsers = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)->first();
 
     $companyInfo = DB::table('company_info')
     ->where('zoho_cust_id', $customer->zohocust_id)
@@ -2934,7 +2934,7 @@ public function filterProviderDatanav(Request $request)
         : [];
  
     $plans = DB::table('plans')->select('plan_code', 'plan_name', 'plan_price')->get();
-    $partnerUsers = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)->get();
+    $partnerUsers = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)->first();
     $companyInfo = DB::table('company_info')
     ->where('zoho_cust_id', $customer->zohocust_id)
     ->first();
@@ -3443,8 +3443,59 @@ public function resendInvite(Request $request)
         return back()->withErrors('An unexpected error occurred.');
     }
 }
+public function markAsInactive($id)
+{
+    $exists = PartnerUser::where('zoho_cust_id', $id)->first(); 
+
+    if (!$exists) {
+      
+        return redirect()->back()->with('error', 'Invalid Customer ID. Access Denied.');
+    }
+    $accessToken = $this->zohoService->getAccessToken();
 
 
+    $response = Http::withHeaders([
+        'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
+        'X-com-zoho-subscriptions-organizationid' => config('services.zoho.zoho_org_id'),
+        'Content-Type' => 'application/json'
+    ])->post('https://www.zohoapis.com/billing/v1/customers/{$id}/markasinactive');
+
+    $exists->status='inactive';
+    $exists->save();
+
+    if ($response->successful()) {
+        return redirect()->back()->with('success', 'Customer marked as inactive!');
+    }
+
+    return redirect()->back()->with('error', 'Failed to mark customer as inactive. Please try again.');
+}
+
+public function markAsActive($id)
+{
+   
+    $exists = PartnerUser::where('zoho_cust_id', $id)->first();
+
+    if (!$exists) {
+        return redirect()->back()->with('error', 'Invalid Customer ID. Access Denied.');
+    }
+
+    $accessToken = $this->zohoService->getAccessToken();
+
+    $response = Http::withHeaders([
+        'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
+        'X-com-zoho-subscriptions-organizationid' => config('services.zoho.zoho_org_id'),
+        'Content-Type' => 'application/json'
+    ])->post('https://www.zohoapis.com/billing/v1/customers/{$id}/markasactive');
+
+    $exists->status = 'active';  
+    $exists->save();
+
+    if ($response->successful()) {
+        return redirect()->back()->with('success', 'Customer marked as active!');
+    }
+
+    return redirect()->back()->with('error', 'Failed to mark customer as active. Please try again.');
+}
 }
 
 
