@@ -3464,7 +3464,7 @@ public function markAsInactive($id)
     $exists->save();
 
     if ($response->successful()) {
-        return redirect()->back()->with('success', 'Customer marked as inactive!');
+        return redirect()->back()->with('success', 'Partner marked as inactive!');
     }
 
     return redirect()->back()->with('error', 'Failed to mark customer as inactive. Please try again.');
@@ -3491,7 +3491,7 @@ public function markAsActive($id)
     $exists->save();
 
     if ($response->successful()) {
-        return redirect()->back()->with('success', 'Customer marked as active!');
+        return redirect()->back()->with('success', 'Partner marked as active!');
     }
 
     return redirect()->back()->with('error', 'Failed to mark customer as active. Please try again.');
