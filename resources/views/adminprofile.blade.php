@@ -6,27 +6,25 @@
 <div id="content" class="p-3" style="background-color: #f8f9fc; margin-left: 250px; width: calc(100% - 220px);">
     <div class="container-fluid mt-3">
     <h5 class="fw-bold"><strong>Profile</strong>    </h5>
-        <!-- Profile Section -->
-        <div class="card shadow-sm border-0 rounded-lg mb-4" style="max-width: 600px;">
-            <div class="card-body bg-clearlink" >
-               
-                <div class="d-flex align-items-center mb-3">
-                    
-                    <div>
- 
-                             <p class="m-0">
-               <i class="fa fa-user right-margin text-primary" aria-hidden="true"></i>
-                  <strong>{{ $admin ->admin_name ?? '' }}</strong>
-               </p>
-               <p class="m-0">
-               <i class="fa fa-envelope right-margin text-primary" aria-hidden="true"></i>
-                  <strong>{{ $admin ->email ?? ''}}</strong>
-               </p>
-                       
-                    </div>
-                </div>
-            </div>
-        </div>
+      <!-- Profile Section -->
+<div class="card border-0 rounded-lg mb-4" style="max-width: 600px;"> <!-- Increased card width -->
+   <div class="card-body bg-clearlink">
+      <div class="d-flex flex-column ps-3"> <!-- Added padding-left for right alignment -->
+         <!-- Admin Name -->
+         <div class="d-flex align-items-center mb-3"> <!-- Increased bottom margin for spacing -->
+            <i class="fa fa-user text-primary" style="margin-right: 12px;" aria-hidden="true"></i> <!-- Slightly increased icon margin -->
+            <strong>{{ $admin->admin_name ?? '' }}</strong>
+         </div>
+         <!-- Admin Email -->
+         <div class="d-flex align-items-center">
+            <i class="fa fa-envelope text-primary" style="margin-right: 12px;" aria-hidden="true"></i> <!-- Slightly increased icon margin -->
+            <strong>{{ $admin->email ?? '' }}</strong>
+         </div>
+      </div>
+   </div>
+</div>
+
+
 
         <!-- Change Password Section -->
         <div class="card shadow-sm border-0 rounded-lg" style="max-width: 600px;">

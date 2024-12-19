@@ -4,9 +4,19 @@
    <!-- Top Navigation Tabs -->
    <div class="d-flex justify-content-between align-items-center my-3">
       <h3>{{ $customer->company_name }} 
-      <span class="badge" style="background-color: #D4EDDA; color: #155724; padding: 5px 10px;">
-      {{ $partnerUsers->status }}                     
-    </span> 
+
+      @if ($partnerUsers->status === 'inactive')
+                                        <span class="badge" style="background-color: #FFEEBA; color: #856404; padding: 5px 10px;">
+                                        Inactive
+                                        </span>
+                                    @elseif ($partnerUsers->status === 'active')
+                                        <span class="badge" style="background-color: #D4EDDA; color: #155724; padding: 5px 10px;">
+                                        Active
+                                        </span>
+                                    @else
+                                      <span> </span>
+                                    @endif
+      
 </h3>
    </div>
    {{-- Alert Messages --}}
@@ -62,69 +72,76 @@
          <a class="nav-link" href="#">Select Plans</a>
       </li>
    </ul>
- <!-- Overview Section (default) -->
+<!-- Overview Section (default) -->
 <div id="overview" class="row mt-4" style="{{ $selectedSection !== 'overview' ? 'display: none;' : '' }}">
    <h4 class="mb-4">Overview</h4>
-   <!-- customer Section -->
+   <!-- Customer Section -->
    <div class="col-lg-6">
       <div class="card w-100 border-0 bg-clearlink rounded mb-3">
          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-               <!-- Customer Name Section -->
-               <div>
-                  <i class="fa fa-building right-margin text-primary" aria-hidden="true"></i>
-                  <strong>{{ $customer->company_name }}</strong>
-               </div>
            
-@if($partnerUsers->status === 'inactive')
-   
-    <form id="markAsActiveForm" method="POST" action="{{ route('customer.markActive', $customer->zohocust_id) }}">
-    @csrf
-        <button type="submit" class="btn btn-light p-1 border-0 custom-tooltip" data-bs-toggle="tooltip" data-bs-placement="top" title=" Mark as active">
-        <i class="fa fa-user text-primary" aria-hidden="true"></i>
-        </button>
-        </form>
-@elseif($partnerUsers->status === 'active' || $partnerUsers->status === null)
- 
-    <form id="markAsInactiveForm" method="POST" action="{{ route('customer.markInactive', $customer->zohocust_id) }}">
-        @csrf
-        <button type="submit" class="btn btn-light p-1 border-0 custom-tooltip" data-bs-toggle="tooltip" data-bs-placement="top" title="Mark as Inactive">
-           
-            <i class="fa fa-user-slash text-primary" aria-hidden="true"></i> 
-        </button>
-    </form>
-@endif
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              
+            <div class="d-flex align-items-center">
+              <i class="fa fa-building text-primary me-3" aria-hidden="true"></i>
+               <strong>{{ $customer->company_name }}</strong>
             </div>
             
-            <!-- Customer Name -->
+               @if($partnerUsers->status === 'inactive')
+               <form id="markAsActiveForm" method="POST" action="{{ route('customer.markActive', $customer->zohocust_id) }}">
+                  @csrf
+                  <button type="submit" class="btn btn-light p-1 border-0 custom-tooltip" data-bs-toggle="tooltip" data-bs-placement="top" title="Mark as active">
+                     <i class="fa fa-user text-primary" aria-hidden="true"></i>
+                  </button>
+               </form>
+               @elseif($partnerUsers->status === 'active' || $partnerUsers->status === null)
+               <form id="markAsInactiveForm" method="POST" action="{{ route('customer.markInactive', $customer->zohocust_id) }}">
+                  @csrf
+                  <button type="submit" class="btn btn-light p-1 border-0 custom-tooltip" data-bs-toggle="tooltip" data-bs-placement="top" title="Mark as Inactive">
+                     <i class="fa fa-user-slash text-primary" aria-hidden="true"></i>
+                  </button>
+               </form>
+               @endif
+            </div>
+            
+           
             <p class="m-0 mt-2">
-               <i class="fa fa-user right-margin text-primary" aria-hidden="true"></i>
+               <i class="fa fa-user text-primary me-3" aria-hidden="true"></i>
                <strong>{{ $customer->customer_name }}</strong>
             </p>
 
-            <h5 class="mt-4"><strong>Affiliate IDs:</strong></h5>
-            <ul>
-               @foreach($affiliates as $affiliate)
-               <li>{{ $affiliate->isp_affiliate_id }} ({{ $affiliate->domain_name }})</li>
+            <div class="ps-3"> 
+              <h5 class="mt-4"><strong>Affiliate IDs:</strong></h5>
+              <ul class="ps-6"> 
+                @foreach($affiliates as $affiliate)
+              <li class="billing">{{ $affiliate->isp_affiliate_id }} ({{ $affiliate->domain_name }})</li>
                @endforeach
-            </ul>
-            
-            <h5 class="mt-4"><strong>Address Details:</strong></h5>
-            <div class="d-flex flex-row mb-3">
-               <div class="m-0">
-                  <i class="fa fa-address-card right-margin text-primary" aria-hidden="true"></i>
-               </div>
-               <div>
-                  {{ $customer->billing_street }}, <br>
-                  {{ $customer->billing_city }}, <br>
-                  {{ $customer->billing_state }}, <br>
-                  {{ $customer->billing_country }}<br>
-                  {{ $customer->billing_zip }}
-               </div>
-            </div>
+             </ul>
+           </div>
+
+
+           <div class="ps-3">
+   <h5 class="mt-4"><strong>Address Details:</strong></h5>
+   <div class="d-flex flex-row mb-3">
+      <div class="m-0">
+         <i class="fa fa-address-card text-primary me-2" aria-hidden="true"></i>
+      </div>
+      <div class="ps-4"> <!-- Added padding to move the address slightly right -->
+        <strong>Billing Address</strong><br>
+         {{ $customer->billing_street }}, <br>
+         {{ $customer->billing_city }}, <br>
+         {{ $customer->billing_state }}, <br>
+         {{ $customer->billing_country }}<br>
+         {{ $customer->billing_zip }}
+      </div>
+   </div>
+</div>
+
+
          </div>
       </div>
    </div>
+
 
   <!-- Users Section -->
 <div class="col-lg-6">
@@ -429,9 +446,11 @@
     <!-- Company Info Table -->
     <div class="table-responsive">
     @if(!$companyInfo)
-        <div class="text-center p-3 border" style="width: 70%; height: 100px; margin: 0 auto;">No data found</div>
+    <div class="d-flex align-items-center justify-content-center border p-3" style="width: 70%; height: 100px; margin: 0 auto; font-size: 18px;">
+   No  data found.
+</div>
         @else
-        <table class="table" style="border-collapse: collapse; width: 100%; border: 1px solid black;">
+        <table class="table" style="border-collapse: collapse; width: 90%; margin: 0 auto; border: 1px solid black;">
     <thead>
         <tr style="border-bottom: 2px solid black;">
             <th style="font-weight: bold; text-align: center;">Logo Image</th>
@@ -442,9 +461,14 @@
     </thead>
     <tbody>
         <tr>
-            <td style="border-top: 1px solid black;">       
-                <img src="{{ asset('storage/' . $companyInfo->logo_image ?? '') }}" alt="logo" style="width:110px;" id="logoPreview">
-            </td>
+        <td style="border-top: 1px solid black; text-align: center;">       
+    <img src="{{ asset('storage/' . $companyInfo->logo_image ?? '') }}" alt="logo" style="width:110px;" id="logoPreview">
+    
+    <!-- Download Button -->
+    <a href="{{ asset('storage/' . $companyInfo->logo_image ?? '') }}" download class="btn btn-primary" style="margin-left: 15px;">
+        Download
+    </a>
+</td>
             <td style="border-top: 1px solid black; text-align: center;"><a href="{{ $companyInfo->landing_page_uri }}" target="_blank">{{ $companyInfo->landing_page_uri }}</a></td>
             <td style="border-top: 1px solid black; text-align: center;"><a href="{{ $companyInfo->landing_page_url_spanish }}" target="_blank">{{ $companyInfo->landing_page_url_spanish }}</a></td>
             <td style="border-top: 1px solid black; text-align: center;">{{ $companyInfo->company_name }}</td>
@@ -504,7 +528,10 @@
     </table>
    
     @else
-    <p style="text-align: center; font-size: 18px;">No provider data found.</p>
+    <div class="d-flex align-items-center justify-content-center border p-3" style="width: 70%; height: 100px; margin: 0 auto; font-size: 18px;">
+   No provider data found.
+</div>
+        
     @endif
 </div>
 
@@ -596,7 +623,7 @@
 <!-- Modal for upload company info -->
 <div class="modal fade" id="uploadCompanyInfoModal" tabindex="-1" aria-labelledby="uploadCompanyInfoLabel" aria-hidden="true">
     <div class="modal-dialog">
-        <div class="modal-content" style="background-color: #e6f7ff;"> 
+        <div class="modal-content bg-clearlink"> 
             <div class="modal-header">
                 <h5 class="modal-title" id="uploadCompanyInfoLabel">Enter the required details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -630,7 +657,7 @@
 <!-- Modal for provider data-->
 <div class="modal fade" id="uploadProviderModal" tabindex="-1" aria-labelledby="uploadProviderModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="background-color: #e3f2fd; border-radius: 8px;">
+        <div class="modal-content bg-clearlink" style="border-radius: 8px;">
             <div class="modal-header">
                 <h5 class="modal-title fw-bold" id="uploadProviderModalLabel">Enter the required details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -643,9 +670,8 @@
                         <label for="formFile" class="form-label fw-bold">Choose file</label>
                         <input class="form-control" type="file" name="csv_file" id="csvFileInput" accept=".csv">
                     </div>
-                    <div class="d-grid">
-                        <!-- This button now triggers the form submission -->
-                        <button type="submit" class="btn btn-primary" style="width: auto;">Upload Provider Data</button>
+                    <div class="d-flex justify-content-start">
+                        <button type="submit" class="btn btn-primary" style="padding: 5px 15px;">Upload Provider Data</button>
                     </div>
                 </form>
             </div>

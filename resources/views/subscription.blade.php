@@ -43,7 +43,9 @@
 
                 <!-- Check for subscriptions -->
                 @if($subscriptions->count() == 0)
-                    <p class="text-center">No subscriptions found.</p>
+                <div class="d-flex justify-content-center align-items-center mt-5">
+                <h3>No subscriptions found.</h3>
+                   
                 @else
                     <!-- Styled Bootstrap Table -->
                     <div class="table-responsive">

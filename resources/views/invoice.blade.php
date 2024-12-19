@@ -39,7 +39,8 @@
                 <a href="{{ route('invdata') }}" class="text-decoration-none mb-3 d-inline-block text-primary">Reset</a>
 
                 @if($invoices->count() == 0)
-    <p class="text-center">No invoices found.</p>
+                <div class="d-flex justify-content-center align-items-center mt-5">
+                <h3>No invoices found.</h3>
 @else
     <div class="table-responsive">
         <table class="table table-hover text-center table-bordered">

@@ -51,8 +51,8 @@
 
         <!-- Partners Table -->
         @if ($customers->isEmpty())
-            <div class="alert  text-center">
-                No partners available.
+        <div class="d-flex justify-content-center align-items-center mt-5">
+              <h3>  No partners available. </h3>
             </div>
         @else
             <div class="table-responsive">
