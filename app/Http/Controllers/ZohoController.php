@@ -513,6 +513,7 @@ class ZohoController extends Controller
                 'email' => $validatedData['customer_email'],
                 'password' => Hash::make($defaultPassword),
                 'zoho_cust_id' => $zohoCustomerId,
+                'status'=>'active'
                
             ]);
     

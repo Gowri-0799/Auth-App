@@ -81,7 +81,7 @@
     <form id="markAsActiveForm" method="POST" action="{{ route('customer.markActive', $customer->zohocust_id) }}">
     @csrf
         <button type="submit" class="btn btn-light p-1 border-0 custom-tooltip" data-bs-toggle="tooltip" data-bs-placement="top" title=" Mark as active">
-            <i class="fa fa-user-slash text-primary" aria-hidden="true"></i> 
+        <i class="fa fa-user text-primary" aria-hidden="true"></i>
         </button>
         </form>
 @elseif($partnerUsers->status === 'active' || $partnerUsers->status === null)
@@ -89,7 +89,8 @@
     <form id="markAsInactiveForm" method="POST" action="{{ route('customer.markInactive', $customer->zohocust_id) }}">
         @csrf
         <button type="submit" class="btn btn-light p-1 border-0 custom-tooltip" data-bs-toggle="tooltip" data-bs-placement="top" title="Mark as Inactive">
-            <i class="fa fa-user text-primary" aria-hidden="true"></i>
+           
+            <i class="fa fa-user-slash text-primary" aria-hidden="true"></i> 
         </button>
     </form>
 @endif
