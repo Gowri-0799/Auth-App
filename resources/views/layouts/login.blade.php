@@ -27,7 +27,7 @@
              y.parentNode.insertBefore(t, y);
          })(window, document, "clarity", "script", "n8x5ekx79q");
       </script>
-      <script src="chrome-extension://mooikfkahbdckldjjndioackbalphokd/assets/prompt.js"></script>
+    
    </head>
    <body>
    <div id="overlay"></div>

@@ -414,7 +414,7 @@ body {
 }
 
 .line {
-    background-image: url('../../img/line.png');
+    /* background-image: url('../../img/line.png'); */
     width: 0px;
   }
 
