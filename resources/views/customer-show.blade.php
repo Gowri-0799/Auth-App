@@ -142,8 +142,7 @@
       </div>
    </div>
 
-
-  <!-- Users Section -->
+<!-- Users Section -->
 <div class="col-lg-6">
     <div class="card w-100 border-0 bg-clearlink rounded mb-3">
         <div class="card-body right-margin">
@@ -157,19 +156,47 @@
                 <div class="col-lg-1 user-icon">
                     <i style="font-size: 44px;" class="fa-solid fa-circle-user text-primary"></i>
                 </div>
-                <div class="col-lg-9 ms-3">
-                    <div class="d-flex align-items-center">
-                        <p class="p-0 m-0 me-2">
-                            <strong>{{ $customer->company_name }} (Primary)</strong>
-                        </p>
-                        <form action="{{ route('resend.invite') }}" method="POST" style="display: inline;">
-    @csrf
-    <input type="hidden" name="email" value="{{ $customer->email}}">
-    <button type="submit" 
-    class="btn button-clearlink text-primary fw-bold btn-sm resend-invite" >Resend invite</button>
-</form>
-                          </div>
-                    <p class="p-0 m-0">{{ $customer->email }}</p>
+                <div class="col-lg-11 ms-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <p class="p-0 m-0 me-2">
+                                <strong>{{ $customer->company_name }} (Primary)</strong>
+                            </p>
+                            <p class="p-0 m-0">{{ $customer->email }}</p>
+                        </div>
+                        <div class="d-flex align-items-center  justify-content-end gap-3">
+                        @if($customer->first_login == 1)
+                            <form action="{{ route('resend.invite') }}" method="POST" style="display: inline;">
+                                @csrf
+                                <input type="hidden" name="email" value="{{ $customer->email }}">
+                                <button type="submit" 
+                                    class="btn button-clearlink text-primary fw-bold btn-sm resend-invite">
+                                    Resend invite
+                                </button>
+                            </form>
+                          @else
+                          <a href="#" class="text-primary ms-auto" data-bs-toggle="modal" data-bs-target="#updateAddressModal"  title="Edit">
+                             <i class="fa-solid fa-pen-to-square" title="Edit"></i>
+                          </a>
+                          
+               @if($partnerUsers->status === 'inactive')
+               <form id="markAsActiveForm" method="POST" action="{{ route('customer.markActive', $customer->zohocust_id) }}">
+                  @csrf
+                  <button type="submit" class="btn btn-light p-1 border-0 custom-tooltip" data-bs-toggle="tooltip" data-bs-placement="top" title="Mark as active">
+                     <i class="fa fa-user text-primary" aria-hidden="true"></i>
+                  </button>
+               </form>
+               @elseif($partnerUsers->status === 'active' || $partnerUsers->status === null)
+               <form id="markAsInactiveForm" method="POST" action="{{ route('customer.markInactive', $customer->zohocust_id) }}">
+                  @csrf
+                  <button type="submit" class="btn btn-light p-1 border-0 custom-tooltip" data-bs-toggle="tooltip" data-bs-placement="top" title="Mark as Inactive">
+                     <i class="fa fa-user-slash text-primary" aria-hidden="true"></i>
+                  </button>
+               </form>
+               @endif
+                         @endif
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -182,20 +209,32 @@
                     <div class="col-lg-1 user-icon">
                         <i style="font-size: 44px;" class="fa-solid fa-circle-user text-primary"></i>
                     </div>
-                    <div class="col-lg-9 ms-3">
-                        <div class="d-flex align-items-center">
-                            <p class="p-0 m-0 me-2">
-                                <strong>{{ $user->first_name }}&nbsp;{{ $user->last_name }}</strong>
-                            </p>
-                           
-<form action="{{ route('resend.invite') }}" method="POST" style="display: inline;">
-    @csrf
-    <input type="hidden" name="email" value="{{ $user->email }}">
-    <button type="submit" 
-    class="btn button-clearlink text-primary fw-bold btn-sm resend-invite" >Resend invite</button>
-</form>
+                    <div class="col-lg-11 ms-3">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <p class="p-0 m-0 me-2">
+                                    <strong>{{ $user->first_name }} {{ $user->last_name }}</strong>
+                                </p>
+                                <p class="p-0 m-0">{{ $user->email ?? '' }}</p>
+                            </div>
+                            <div class="d-flex align-items-center  justify-content-end gap-3">
+                            @if($user->userLastLoggedin == NULL)
+                                <form action="{{ route('resend.invite') }}" method="POST" style="display: inline;">
+                                    @csrf
+                                    <input type="hidden" name="email" value="{{ $user->email }}">
+                                    <button type="submit" 
+                                        class="btn button-clearlink text-primary fw-bold btn-sm resend-invite">
+                                        Resend invite
+                                    </button>
+                                </form>
+
+                             @else
+                                    <a href="" class="ms-3 text-primary"> <!-- Adjusted ms-2 to ms-3 -->
+                                        <i class="fa-solid fa-pen-to-square" title="Edit"></i>
+                                    </a>
+                             @endif
+                            </div>
                         </div>
-                        <p class="p-0 m-0">{{ $user->email ?? '' }}</p>
                     </div>
                 </div>
                 <hr class="borders-clearlink">
@@ -203,7 +242,10 @@
             @endif
         </div>
     </div>
-</div> 
+</div>
+
+
+
 </div>
    <!-- Subscriptions Section -->
    <div id="subscriptions" class="section mt-4" style="{{ $selectedSection !== 'subscriptions' ? 'display: none;' : '' }}">
@@ -420,7 +462,7 @@
       </div>
       @endif
    </div>
-<!-- provider data Section -->
+
 <!-- Provider Data Section -->
 <div id="providerdata" class="section mt-4" style="{{ $selectedSection !== 'providerdata' ? 'display: none;' : '' }}">
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -430,13 +472,13 @@
         </div>
         
         <!-- Button for Upload or Send -->
-        <div class="d-flex align-items-center">
+        <div class="d-flex" style="align-items: flex-start;">
         @if(!$companyInfo)
-            <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadCompanyInfoModal">
+            <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadCompanyInfoModal" style="margin-right: 60px;">
               Upload Company Info
             </a>
             @else
-                <a href="#" class="btn btn-primary">
+                <a href="#" class="btn btn-primary" style="margin-right: 60px;">
                     Send Details to Admin
                 </a>
             @endif
@@ -477,17 +519,20 @@
 </table>
 
         @endif
+    </div><br>
+
+
+<!-- Provider Data Section -->
+<div class="mt-4">
+   
+    <div class="d-flex justify-content-between align-items-center">
+      
+        <span style="font-family: Arial, sans-serif; font-size: 21px; font-weight: bold;">Provider Data</span>
+
+        <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadProviderModal" style="margin-right: 60px;">Upload Provider Data</a>
     </div>
 
-
-<!-- Provider Data Table -->
-<div class="mt-4">
-    <span style="font-family: Arial, sans-serif; font-size: 21px; font-weight: bold;">Provider Data</span><br><br>
-
-    <!-- Button aligned to the right -->
-    <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadProviderModal" style="float: right; margin-top: 10px;">Upload Provider Data</a>
-
-    <form method="GET" action="{{ route('nav.provider.filter') }}" class="row mb-4 align-items-end">
+    <form method="GET" action="{{ route('nav.provider.filter') }}" class="row mt-3 mb-4 align-items-end">
         @include('partials.filter-form')
         <input type="hidden" name="zohocust_id" value="{{ $customer->zohocust_id }}">
         <input type="hidden" name="section" value="creditnote">
@@ -648,6 +693,53 @@
                         <input type="text" class="form-control" name="company_name" value="{{ $customer->company_name ?? '' }}" required>
                     </div>
                     <button type="button" class="btn btn-primary" style="width: auto;" id="submitCompanyInfoButton">Upload Company Info</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Address Update Modal -->
+<div class="modal fade" id="updateAddressModal" tabindex="-1" aria-labelledby="updateAddressModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateAddressModalLabel">Update Address</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ route('customers.addupdate', $customer->zohocust_id) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <!-- Billing Street -->
+                     <strong> Partner Name: {{$customer->customer_name}}</strong>
+                    <div class="mb-3">
+                        <label for="billing_street" class="form-label">Address*</label>
+                        <input type="text" class="form-control" id="billing_street" name="billing_street" value="{{ $customer->billing_street }}" required>
+                    </div>
+                    <!-- Zip Code -->
+                    <div class="mb-3">
+                        <label for="billing_zip" class="form-label">Zip Code*</label>
+                        <input type="text" class="form-control" id="billing_zip" name="billing_zip" value="{{ $customer->billing_zip }}" required>
+                    </div>
+                    <!-- City -->
+                    <div class="mb-3">
+                        <label for="billing_city" class="form-label">City*</label>
+                        <input type="text" class="form-control" id="billing_city" name="billing_city" value="{{ $customer->billing_city }}" required>
+                    </div>
+                    <!-- State -->
+                    <div class="mb-3">
+                        <label for="billing_state" class="form-label">State*</label>
+                        <input type="text" class="form-control" id="billing_state" name="billing_state" value="{{ $customer->billing_state }}" required>
+                    </div>
+                    <!-- Country -->
+                    <div class="mb-3">
+                        <label for="billing_country" class="form-label">Country*</label>
+                        <input type="text" class="form-control" id="billing_country" name="billing_country" value="{{ $customer->billing_country }}" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Update Address</button>
+                    </div>
                 </form>
             </div>
         </div>

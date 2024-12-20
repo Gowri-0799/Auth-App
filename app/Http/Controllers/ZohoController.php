@@ -1029,10 +1029,8 @@ public function showCustomerInvoices()
 
 public function addupdate(Request $request, $id)
     {
-        // Find the customer by ID or fail if not found
         $customer = Partner::where('zohocust_id', $id)->firstOrFail();
-    
-        // Validate the request data
+   
         $validatedData = $request->validate([
             'billing_street' => 'nullable|string',
             'billing_city' => 'nullable|string',
@@ -1040,8 +1038,7 @@ public function addupdate(Request $request, $id)
             'billing_country' => 'nullable|string',
             'billing_zip' => 'nullable|string',
         ]);
-    
-        // Update the customer in the database
+
         $customer->update([
             'billing_street' => $validatedData['billing_street'] ?? $customer->billing_street,
             'billing_city' => $validatedData['billing_city'] ?? $customer->billing_city,
@@ -1049,25 +1046,18 @@ public function addupdate(Request $request, $id)
             'billing_country' => $validatedData['billing_country'] ?? $customer->billing_country,
             'billing_zip' => $validatedData['billing_zip'] ?? $customer->billing_zip,
         ]);
-    
-        // Call Zoho API to update the customer data there
+ 
         try {
             $this->updateAddCustomerInZoho($customer); 
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Failed to update customer in Zoho: ' . $e->getMessage());
         }
 
-        // Save customer to the database
         $customer->save();
 
-        // Redirect back with success message
-        return redirect()->route('customer.details')->with('success', 'Customer updated successfully!');
+        return redirect()->back()->with('success', 'Customer updated successfully!');
 
     }
-
-    // function profile(){
-    //     return view('profile');
-    // }
 
     private function updateAddCustomerInZoho($customer)
     {
@@ -2466,7 +2456,6 @@ public function show($zohocust_id, Request $request)
         ->first();
     $partnerUsers = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)->first();
   
-        
     if ($normalUser) {
         $customer->email = $normalUser->email;
 
@@ -3439,7 +3428,7 @@ public function resendInvite(Request $request)
    
         Mail::to($partnerUser->email)->send(new CustomerInvitation($partnerUser, $password, $loginUrl));
 
-        return back()->with('success', 'File uploaded successfully!');
+        return back()->with('success', 'Invitation mail sent to the partner!');
     } catch (\Exception $e) {
         return back()->withErrors('An unexpected error occurred.');
     }
