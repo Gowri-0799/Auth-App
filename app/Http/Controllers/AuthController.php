@@ -60,7 +60,6 @@ class AuthController extends Controller
 
     public function loginPost(Request $request)
     {
-       
         $request->validate([
             "email" => "required",
             "password" => "required_if:resend_otp,0"
@@ -68,6 +67,11 @@ class AuthController extends Controller
     
         $credentials = $request->only("email", "password");
         $partnerUser = PartnerUser::where("email", $credentials["email"])->first();
+
+        
+        if ($partnerUser && $partnerUser->status !== 'active') {
+            return redirect()->back()->with('error', 'This partner is currently inactive. Please contact support.');
+        }
    
         if ($request->input('resend_otp') == '1') {
             if ($partnerUser) {

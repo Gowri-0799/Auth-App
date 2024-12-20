@@ -14,15 +14,18 @@
             <h3 class="text-primary mt-5 mb-3">
             Testlink ISP Billing Partner Portal</h3>
             @if(session()->has("success"))
-            <div class="alert alert-success">
-               {{session()->get("success")}}
-            </div>
+            <div id="notification" class="alert alert-success position-fixed" style="top: 70px; right: 20px; z-index: 1050;">
+      {{ session('success') }}
+      <button type="button" id="alert-close" class="close btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+   </div>
             @endif
             @if(session()->has("error"))
-            <div class="alert alert-danger">
+            <div id="notification" class="alert alert-danger position-fixed" style="top: 70px; right: 20px; z-index: 1050;">
                {{session()->get("error")}}
-            </div>
+               <button type="button" id="alert-close" class="close btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+               </div>
             @endif
+
             <div class="card p-4 w-100 shadow-sm border-0 rounded login-card bg-clearlink ">
                <div class="rounded p-2">
                   <form method="POST" action="{{route("login.post")}}">
