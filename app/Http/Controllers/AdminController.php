@@ -199,7 +199,6 @@ class AdminController extends Controller
 
     public function adminview(Request $request)
     {
-       
         $query = Admin::query();
     
         if ($request->filled('startDate')) {
@@ -212,7 +211,8 @@ class AdminController extends Controller
     
         if ($request->filled('search')) {
             $query->where('admin_name', 'like', '%' . $request->search . '%')
-                  ->orWhere('email', 'like', '%' . $request->search . '%');
+                  ->orWhere('email', 'like', '%' . $request->search . '%')
+                  ->orWhere('role', 'like', '%' . $request->search . '%');
         }
    
         $perPage = $request->input('show', 10); 

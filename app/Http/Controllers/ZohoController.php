@@ -1816,7 +1816,6 @@ public function downgradesub(Request $request)
         $hostedPageUrl = $hostedPageData['hostedpage']['url'];
         $hostedPageId = $hostedPageData['hostedpage']['hostedpage_id'];
 
-        // Store the hostedpage_id in the session for retrieval
         Session::put('hostedpage_id', $hostedPageId);
 
         return redirect()->to($hostedPageUrl);
@@ -1827,13 +1826,12 @@ public function downgradesub(Request $request)
 public function retrievedowntHostedPage()
     {
         $accessToken = $this->zohoService->getAccessToken();
-        $hostedPageId = Session::get('hostedpage_id'); // Retrieve the hostedpage_id from the session
+        $hostedPageId = Session::get('hostedpage_id'); 
 
         if (!$hostedPageId) {
             return back()->withErrors('Hosted page ID is missing.');
         }
 
-       
         $response = Http::withHeaders([
             'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
             'Content-Type'  => 'application/json'
@@ -1841,8 +1839,8 @@ public function retrievedowntHostedPage()
  
         if ($response->successful()) {
             $hostedPageData = $response->json();
-         
-                $this->downgradeSubscriptionData($hostedPageData); // Pass the JSON data to store it
+     
+                $this->downgradeSubscriptionData($hostedPageData); 
                 return redirect()->route('Support.Ticket');
         } else {
             return back()->withErrors('Error retrieving hosted page data: ' . $response->body());
@@ -1856,7 +1854,6 @@ public function retrievedowntHostedPage()
         $cardData = $subscriptionData['card'];
         $paymentMethodId = $cardData['card_id'] ?? ($paymentMethodData['payment_method_id'] ?? null);
     
-        // Fetch the existing subscription by Zoho subscription ID
         $existingSubscription = Subscription::where('subscription_id', $subscriptionData['subscription_id'])->first();
 
         if (!$existingSubscription) {
@@ -1883,17 +1880,17 @@ public function retrievedowntHostedPage()
            'status' => $subscriptionData['status'], 
        ]);
    }
-// Check if an invoice record with the same invoice_id already exists
+
 $existingInvoice = Invoice::where('invoice_id', $invoiceData['invoice_id'])->first();
 $invoiceItems = json_encode($invoiceData['invoice_items'] ?? []);
 $paymentItems = json_encode($invoiceData['payments'] ?? []);
 if (!$existingInvoice) {
-    // Create a new invoice record if it doesn't already exist
+
     Invoice::create([
         'invoice_id' => $invoiceData['invoice_id'],
         'invoice_date' => $invoiceData['date'],
         'invoice_number' => $invoiceData['invoice_number'],
-        'subscription_id' => $subscriptionData['subscription_id'], // Link to subscription
+        'subscription_id' => $subscriptionData['subscription_id'], 
         'credits_applied' => $invoiceData['credits_applied'],
         'discount' => $subscription->discount ?? null,
         'payment_made' => $invoiceData['payment_made'],
@@ -1905,7 +1902,7 @@ if (!$existingInvoice) {
         'status' => $invoiceData['status'],
     ]);
 } else {
-    // Optionally, update the existing record if needed
+    
     $existingInvoice->updateOrInsert([
         'invoice_date' => $invoiceData['date'],
         'invoice_number' => $invoiceData['invoice_number'],
@@ -1921,7 +1918,6 @@ if (!$existingInvoice) {
     ]);
 }
 
-  // Step 3: Store the credits from the invoice into the 'creditnotes' table
   $credits = $invoiceData['credits'] ?? [];
   if (!empty($credits)) {
       foreach ($credits as $credit) {
@@ -1932,46 +1928,45 @@ if (!$existingInvoice) {
                   'credited_date' => $credit['credited_date'] ?? null,
                   'invoice_number' => $credit['invoice_id'] ?? null,
                   'zoho_cust_id' => $subscriptionData['customer_id'],
-                  'status' => 'credited', // Assuming this is a credited status
+                  'status' => 'credited', 
                   'credited_amount' => $credit['credited_amount'],
-                  'balance' => 0, // Set the balance, or you can modify as per your requirements
+                  'balance' => 0, 
               ]
           );
       }
   }
-        // Step 4: Store payment method data in the 'payments' table (only if payment method exists)
+     
         if (!empty($paymentMethodData) && isset($subscriptionData['card'])) {
             $cardData = $subscriptionData['card'];
             
-            // Check if 'payments' exists in the 'invoice' section and is not empty
+
             $invoicePayments = $invoiceData['payments'] ?? [];
          
             if (!empty($invoicePayments)) {
-                // Extract payment mode and amount from the first payment record (assuming single payment)
+         
                 $paymentDetails = $invoicePayments[0]; 
-        
-                // Check if a payment record with the same payment_method_id already exists
+
                 $existingPayment = Payment::where('payment_method_id', $cardData['card_id'])->first();
         
                 if (!$existingPayment) {
-                    // Create a new payment record if it doesn't already exist
+                   
                     Payment::create([
-                        'payment_method_id' => $cardData['card_id'] ?? null,// Use null if card_id not present
-                        'type' => $cardData['card_type'] ?? null, // Correct field name
+                        'payment_method_id' => $cardData['card_id'] ?? null,
+                        'type' => $cardData['card_type'] ?? null, 
                         'zoho_cust_id' => $subscriptionData['customer_id'],
                         'last_four_digits' => $cardData['last_four_digits'] ?? null,
                         'expiry_year' => $cardData['expiry_year'] ?? null,
                         'expiry_month' => $cardData['expiry_month'] ?? null,
                         'payment_gateway' => $cardData['payment_gateway'] ?? null,
                         'status' => $invoiceData['status'],
-                        'payment_mode' => $paymentDetails['payment_mode'] ?? null,  // Extract payment mode from payments array
-                        'amount' => $paymentDetails['amount'] ?? null,              // Extract amount from payments array
+                        'payment_mode' => $paymentDetails['payment_mode'] ?? null,  
+                        'amount' => $paymentDetails['amount'] ?? null,    
                         'invoice_id' => $invoiceData['invoice_id'],  
                         'payment_id' =>$paymentDetails['payment_id'],
  
                     ]);
                 } else {
-                    // Optionally, update the existing record if needed
+                 
                     $existingPayment->updateOrInsert([
                         'payment_method_id' => $paymentDetails['payment_id'] ?? null,
                         'type' => $cardData['card_type'] ?? null,
@@ -2276,7 +2271,7 @@ public function updatecompanyinfo(Request $request)
     ]);
 
     $partneruser = PartnerUser::where('email', Session::get('user_email'))->first();
-   dd($partneruser);
+
     if (!$partneruser) {
         return back()->withErrors('Customer not found.');
     }
