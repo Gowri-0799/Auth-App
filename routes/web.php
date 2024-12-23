@@ -221,6 +221,8 @@ Route::post('/store-terms', [ZohoController::class, 'storeTerms'])->name('storeT
 Route::post('/addon-preview', [ZohoController::class, 'showAddonPreview'])->name('addon.preview');
 
 Route::post('/company-info/update', [ZohoController::class, 'updatecompanyinfo'])->name('company-info.update');
+Route::post('admin/company-info/update', [ZohoController::class, 'updateCompanyInfoForPartner'])->name('admin.company-info.update');
+
 
 Route::post('/upload-csv', [ZohoController::class, 'uploadCsv'])->name('provider-data.upload');
 

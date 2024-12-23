@@ -595,6 +595,7 @@
          <div class="modal-body">
             <form id="downgradeForm" action="{{ route('subscribelink') }}" method="POST">
                @csrf
+               <input type="hidden" name="email" value="{{ $customer->email }}">
                <div class="mb-3">
                   <div class="d-flex flex-column">
                      <h3 class="modal-title" id="downgradeModalLabel">Plans</h3>
@@ -628,6 +629,7 @@
             <div class="modal-body">
                 <form id="upgradeForm" action="{{ route('upgradelink') }}" method="POST">
                     @csrf
+                    <input type="hidden" name="email" value="{{ $customer->email }}">
                     <div class="mb-3">
                         <label for="upgradeSelect" class="form-label">Select an Upgrade Plan</label>
                         <div class="d-flex flex-column">
@@ -674,8 +676,9 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="uploadCompanyInfoForm" action="{{ route('company-info.update') }}" method="POST" enctype="multipart/form-data">
+                <form id="uploadCompanyInfoForm" action="{{ route('admin.company-info.update') }}" method="POST" enctype="multipart/form-data">
                     @csrf
+                    <input type="hidden" name="email" value="{{ $customer->email }}">
                     <div class="mb-3">
                         <label for="logo" class="form-label" style="font-weight: bold; color: black;">Logo*</label>
                         <input type="file" class="form-control" accept="image/*" name="logo" >
@@ -758,6 +761,7 @@
                 <!-- Form to upload CSV -->
                 <form id="providerDataForm" method="POST" enctype="multipart/form-data" action="{{ route('admin.provider-data.upload') }}">
                   @csrf
+                  <input type="hidden" name="email" value="{{ $customer->email }}">
                     <div class="mb-3">
                         <label for="formFile" class="form-label fw-bold">Choose file</label>
                         <input class="form-control" type="file" name="csv_file" id="csvFileInput" accept=".csv">

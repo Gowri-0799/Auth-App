@@ -2276,7 +2276,7 @@ public function updatecompanyinfo(Request $request)
     ]);
 
     $partneruser = PartnerUser::where('email', Session::get('user_email'))->first();
-    
+   dd($partneruser);
     if (!$partneruser) {
         return back()->withErrors('Customer not found.');
     }
@@ -2301,7 +2301,7 @@ public function updatecompanyinfo(Request $request)
         ['zoho_cust_id' => $customer->zohocust_id], 
         $data
     );
-  
+
     if (ProviderData::where('zoho_cust_id', $customer->zohocust_id)->exists()) {
         $customer->first_login = false;
         $customer->save();
@@ -2627,8 +2627,8 @@ public function filterSubscriptionsnav(Request $request)
             'subscriptions.start_date',
             'subscriptions.next_billing_at',
             'subscriptions.status'
-        );
-
+        )
+        ->where('subscriptions.zoho_cust_id', $zohocust_id);
 
     
     if ($startDate) {
@@ -2643,6 +2643,7 @@ public function filterSubscriptionsnav(Request $request)
         $query->where('plans.plan_name', 'LIKE', "%{$search}%");
     }
 
+ 
     $subscriptions = $query->paginate($perPage);
 
     $customer = Partner::where('zohocust_id', $zohocust_id)->first();
@@ -2709,8 +2710,8 @@ public function filterInvoicesnav(Request $request)
         DB::raw("JSON_UNQUOTE(JSON_EXTRACT(invoice_items, '$[0].code')) AS plan_name"), // Extracting plan name from JSON
         DB::raw("JSON_UNQUOTE(JSON_EXTRACT(invoice_items, '$[0].price')) AS plan_price"),
         DB::raw("JSON_UNQUOTE(JSON_EXTRACT(payment_details, '$[0].payment_mode')) AS payment_mode")
-    );
-
+    )
+    ->where('invoices.zoho_cust_id', $zohocust_id);
 
     // Apply the date filters if they exist
     if ($startDate) {
@@ -2806,9 +2807,6 @@ public function filtercreditnav(Request $request)
     }
 
     $creditnotes = $query->paginate($perPage);
-
-  
-
 
     $customer = Partner::where('zohocust_id', $zohocust_id)->first();
     $partnerUser = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)
@@ -3147,51 +3145,64 @@ public function cancelSubscription(Request $request)
 
     public function subscribelink(Request $request)
     {
-        $plancode = $request->input('plan_id');
+        $request->validate([
+            'email' => 'required|email|exists:partner_users,email', 
+            'plan_id' => 'required|string', 
+        ]);
     
+  
+        $plancode = $request->input('plan_id');
+        $email = $request->input('email');
+    
+       
         $accessToken = $this->zohoService->getAccessToken();
     
-        $partneruser = PartnerUser::where('email', Session::get('user_email'))->first();
+      
+        $partnerUser = PartnerUser::where('email', $email)->first();
     
-        if (!$partneruser) {
-            return redirect()->back()->withErrors('Customer not found.');
+        if (!$partnerUser) {
+            return redirect()->back()->withErrors('Partner user not found.');
         }
-    
-        $customer = Partner::where('zohocust_id', $partneruser->zoho_cust_id)->first();
+ 
+        $customer = Partner::where('zohocust_id', $partnerUser->zoho_cust_id)->first();
     
         if (!$customer) {
             return redirect()->back()->withErrors('Customer not found.');
         }
-    
+   
         $response = Http::withHeaders([
             'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
-            'Content-Type' => 'application/json'
+            'Content-Type' => 'application/json',
         ])->post(config('services.zoho.zoho_new_subscription'), [
             'organization_id' => config('services.zoho.zoho_org_id'),
             'customer_id' => $customer->zohocust_id,
             'customer' => [
                 'display_name' => $customer->customer_name,
-                'email' => $partneruser->email,
+                'email' => $email, 
             ],
             'plan' => [
-                'plan_code' => $plancode
+                'plan_code' => $plancode,
             ],
-            'redirect_url' => url('thankyou')
+            'redirect_url' => url('thankyou'),
         ]);
     
+        // Handle the API response
         if ($response->successful()) {
             $hostedPageData = $response->json();
             $hostedPageUrl = $hostedPageData['hostedpage']['url'];
     
-            Session::put('hostedpage_id', $hostedPageData['hostedpage']['hostedpage_id']); 
+            // Store the hosted page ID in the session
+            Session::put('hostedpage_id', $hostedPageData['hostedpage']['hostedpage_id']);
     
-            $this->sendSubscriptionEmail($partneruser, $customer, $hostedPageUrl, $plancode);
+            // Send the subscription email to the partner user
+            $this->sendSubscriptionEmail($partnerUser, $customer, $hostedPageUrl, $plancode);
     
             return redirect()->back()->with('success', 'Subscription email sent to the customer successfully.');
-          } else {
+        } else {
             return redirect()->back()->withErrors('Error creating subscription: ' . $response->body());
         }
     }
+    
     public function sendSubscriptionEmail($partneruser,$customer, $hostedPageUrl, $plancode)
     {
 
@@ -3213,61 +3224,59 @@ public function cancelSubscription(Request $request)
 
     public function upgradelink(Request $request)
     {
+    
+        $request->validate([
+            'email' => 'required|email|exists:partner_users,email', 
+            'plan_code' => 'required|string',
+        ]);
+ 
+        $email = $request->input('email');
+        $planCode = $request->input('plan_code');
+
         $accessToken = $this->zohoService->getAccessToken();
-    
-        // Retrieve the logged-in user's email from the session
-        $partnerUser = PartnerUser::where('email', Session::get('user_email'))->first();
+
+        $partnerUser = PartnerUser::where('email', $email)->first();
         if (!$partnerUser) {
-            return back()->withErrors('Customer not found.');
+            return back()->withErrors('Partner user not found.');
         }
-    
-        // Fetch customer and subscription details
+
         $customer = Partner::where('zohocust_id', $partnerUser->zoho_cust_id)->first();
         if (!$customer) {
             return back()->withErrors('Customer not found.');
         }
-    
+
         $subscription = Subscription::where('zoho_cust_id', $customer->zohocust_id)->first();
         if (!$subscription) {
             return back()->withErrors('Subscription not found.');
         }
-    
-        // Get the plan code from the dropdown
-        $planCode = $request->input('plan_code');
-        if (!$planCode) {
-            return back()->withErrors('Plan code is required.');
-        }
-    
-        // Make the API call to upgrade the subscription
+
         $response = Http::withHeaders([
             'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
-            'Content-Type' => 'application/json'
+            'Content-Type' => 'application/json',
         ])->post(config('services.zoho.zoho_upgrade_subscription'), [
             'organization_id' => config('services.zoho.zoho_org_id'),
             'subscription_id' => $subscription->subscription_id,
             'plan' => [
-                'plan_code' => $planCode
+                'plan_code' => $planCode,
             ],
-            'redirect_url' => url('thanks')
+            'redirect_url' => url('thanks'),
         ]);
     
         if ($response->successful()) {
             $hostedPageData = $response->json();
             $hostedPageUrl = $hostedPageData['hostedpage']['url'];
             $hostedPageId = $hostedPageData['hostedpage']['hostedpage_id'];
-    
-           
+
             Session::put('hostedpage_id', $hostedPageId);
-    
-           
+
             $this->sendupgradeEmail($partnerUser, $customer, $hostedPageUrl, $planCode);
     
             return redirect()->back()->with('success', 'Subscription upgraded successfully. Please check your email to complete the process.');
         } else {
-      
             return redirect()->back()->withErrors('Failed to upgrade subscription: ' . $response->body());
         }
     }
+    
 
     public function sendupgradeEmail($partnerUser, $customer, $hostedPageUrl, $planCode)
 {
@@ -3344,9 +3353,11 @@ public function updateFeatures(Request $request)
 
     public function aduploadCsv(Request $request)
 {
+
     try {
         $request->validate([
             'csv_file' => 'required|mimes:csv,txt|max:2048',
+            'email' => 'required|email|exists:partner_users,email',
         ]);
 
         if (!$request->hasFile('csv_file')) {
@@ -3358,13 +3369,20 @@ public function updateFeatures(Request $request)
         $fileSize = $file->getSize();
         $filePath = $file->storeAs('uploads/csv_files', $fileName, 'public');
 
-        $partneruser = PartnerUser::where('email', Session::get('user_email'))->first();
-    
-        if (!$partneruser) {
-            return back()->withErrors('Customer not found.');
-        }
-        
-        $customer = Partner::where('zohocust_id', $partneruser->zoho_cust_id)->first();
+        $partnerUser = PartnerUser::where('email', $request->email)->first();
+
+    if (!$partnerUser) {
+        return back()->withErrors('Partner user not found.');
+    }
+
+    // Fetch the corresponding partner/customer using the zoho_cust_id
+    $customer = Partner::where('zohocust_id', $partnerUser->zoho_cust_id)->first();
+
+    if (!$customer) {
+        return back()->withErrors('Customer not found.');
+    }
+
+      
 
         $lineCount = 0;
         if (($handle = fopen($file->getPathname(), 'r')) !== false) {
@@ -3486,6 +3504,65 @@ public function markAsActive($id)
 
     return redirect()->back()->with('error', 'Failed to mark customer as active. Please try again.');
 }
+
+public function updateCompanyInfoForPartner(Request $request)
+{
+   
+    $request->validate([
+        'email' => 'required|email|exists:partner_users,email', // Ensure the email exists in the partner_users table
+        'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        'company_name' => 'required|string|max:255',
+        'tune_link' => 'nullable|url',
+        'landing_page_url' => 'required|url',
+        'landing_page_url_spanish' => 'nullable|url',
+    ]);
+
+    // Find the partner user by the email passed in the hidden field
+    $partnerUser = PartnerUser::where('email', $request->email)->first();
+
+    if (!$partnerUser) {
+        return back()->withErrors('Partner user not found.');
+    }
+
+    // Fetch the corresponding partner/customer using the zoho_cust_id
+    $customer = Partner::where('zohocust_id', $partnerUser->zoho_cust_id)->first();
+
+    if (!$customer) {
+        return back()->withErrors('Customer not found.');
+    }
+
+    // Prepare the data to be updated
+    $data = [
+        'company_name' => $request->company_name,
+        'landing_page_uri' => $request->landing_page_url,
+        'landing_page_url_spanish' => $request->landing_page_url_spanish,
+        'tune_link' => $request->tune_link,
+        'uploaded_by' => Session::get('user_email'), // The admin's session email
+        'zoho_cust_id' => $customer->zohocust_id,
+    ];
+
+    // Handle file upload if a logo is provided
+    if ($request->hasFile('logo')) {
+        $logoPath = $request->file('logo')->store('logos', 'public');
+        $data['logo_image'] = $logoPath;
+    }
+
+    // Create or update the company info for the partner
+    CompanyInfo::updateOrCreate(
+        ['zoho_cust_id' => $customer->zohocust_id],
+        $data
+    );
+
+    // Update the customer's first login status if ProviderData exists
+    if (ProviderData::where('zoho_cust_id', $customer->zohocust_id)->exists()) {
+        $customer->first_login = false;
+        $customer->save();
+    }
+
+    // Redirect back with a success message
+    return redirect()->back()->with('success', 'Company information updated successfully.');
+}
+
 }
 
 
