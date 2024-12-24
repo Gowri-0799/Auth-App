@@ -36,11 +36,13 @@
                     </div>
                 </form>
 
-                <a href="{{ route('terms.log') }}" class="btn btn-link fw-bold p-0 mb-3">Reset Filters</a>
+                <a href="{{ route('terms.log') }}" class="btn btn-link fw-bold p-0 mb-3">Reset</a>
 
                 <!-- Display Table or No Data Message -->
                 @if($terms->isEmpty())
-                    <p class="text-center">No terms log data found.</p>
+                <div class="d-flex justify-content-center align-items-center mt-5">
+                <h3>No terms log data found</h3>
+                  
                 @else
                     <div class="table-responsive">
                         <table class="table table-hover table-bordered text-center" style="background-color:#fff;">

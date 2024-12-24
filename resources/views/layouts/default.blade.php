@@ -274,7 +274,7 @@
     <!-- JavaScript to handle submenu -->
 
     <script>
-document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function () {
     const settingsMenu = document.getElementById('settingsMenu');
     const settingsLink = document.querySelector('[data-bs-target="#settingsMenu"]');
 

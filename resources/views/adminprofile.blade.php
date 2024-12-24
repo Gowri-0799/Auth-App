@@ -50,9 +50,9 @@
     @csrf
     <input type="hidden" name="email" value="{{ $admin->email ?? '' }}">
     <div class="mb-3 position-relative">
-        <input type="password" name="current_password" id="current_password" class="form-control" placeholder="Current password" required />
-        <i class="fa fa-eye toggle-password" data-target="#current_password" aria-hidden="true" style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); cursor: pointer;"></i>
-    </div>
+       <input type="password" name="current_password" id="current_password" class="form-control" placeholder="Current password" required />
+       <i class="fa fa-eye toggle-password" data-target="#current_password" aria-hidden="true" style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); cursor: pointer;"></i>
+       </div>
 
     <div class="mb-3 position-relative">
         <input type="password" name="new_password" id="new_password" class="form-control" placeholder="New password" required />
@@ -103,5 +103,7 @@
         });
     });
 </script>
+
+
 @endsection
 
