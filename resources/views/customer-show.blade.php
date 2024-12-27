@@ -229,9 +229,25 @@
                                 </form>
 
                              @else
-                                    <a href="" class="ms-3 text-primary"> <!-- Adjusted ms-2 to ms-3 -->
-                                        <i class="fa-solid fa-pen-to-square" title="Edit"></i>
-                                    </a>
+
+                             <a href="#"  class="text-primary ms-auto" data-bs-toggle="modal" title="Edit" data-bs-target="#editUserModal" >
+                               <i class="fa-solid fa-pen-to-square" title="Edit"></i>
+                             </a>
+                                    @if($partnerUsers->status === 'inactive')
+               <form id="markAsActiveForm" method="POST" action="{{ route('customer.markActive', $customer->zohocust_id) }}">
+                  @csrf
+                  <button type="submit" class="btn btn-light p-1 border-0 custom-tooltip" data-bs-toggle="tooltip" data-bs-placement="top" title="Mark as active">
+                     <i class="fa fa-user text-primary" aria-hidden="true"></i>
+                  </button>
+               </form>
+               @elseif($partnerUsers->status === 'active' || $partnerUsers->status === null)
+               <form id="markAsInactiveForm" method="POST" action="{{ route('customer.markInactive', $customer->zohocust_id) }}">
+                  @csrf
+                  <button type="submit" class="btn btn-light p-1 border-0 custom-tooltip" data-bs-toggle="tooltip" data-bs-placement="top" title="Mark as Inactive">
+                     <i class="fa fa-user-slash text-primary" aria-hidden="true"></i>
+                  </button>
+               </form>
+               @endif
                              @endif
                             </div>
                         </div>
@@ -774,6 +790,44 @@
         </div>
     </div>
 </div>
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+   <div class="modal-dialog modal-dialog-centered" style="max-width: 500px;">
+      <div class="modal-content">
+         <div class="modal-header">
+            <h3 class="modal-title" id="exampleModalLabel">Edit User</h3>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+         </div>
+         <div class="modal-body">
+         <form action="{{ route('users.update') }}" method="POST">
+               @csrf
+               @method('PUT')
+               <input type="hidden" name="_token" value="{{ csrf_token() }}">
+               <input type="hidden" name="zoho_cpid" id="editzoho_cpid" value="{{ $user->zoho_cpid ?? ''}}">
+               <div class="mb-3 row">
+                  <div class="col-lg">
+                     <input name="first_name" id="editFirstName" class="ms-2 form-control" placeholder="First Name*" value="{{ $user->first_name ?? '' }}" required>
+                  </div>
+                  <div class="col-lg">
+                     <input name="last_name" id="editLastName" class="ms-2 form-control" placeholder="Last Name*" value="{{ $user->last_name ?? '' }}" required>
+                  </div>
+               </div>
+               <div class="mb-3 row">
+                  <div class="col-lg">
+                     <input name="email" id="editEmail" class="ms-2 form-control" placeholder="Email*" value="{{ $user->email ?? '' }}" required>
+                  </div>
+                  <div class="col-lg">
+                     <input name="phone_number" id="editPhoneNumber" class="ms-2 form-control" placeholder="Phone Number*" value="{{ $user->phone_number ?? '' }}" required>
+                  </div>
+               </div>
+               <input name="zoho_cust_id" id="editZohoCustId" value="{{ $customer->zohocust_id ?? '' }}" type="hidden">
+               <input type="submit" class="btn btn-primary text-white px-3 py-2 rounded" value="Save Changes">
+            </form>
+         </div>
+      </div>
+   </div>
+</div>
+
 <!-- Invite User Modal -->
 <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
    <div class="modal-dialog modal-dialog-centered" style="max-width: 500px;">

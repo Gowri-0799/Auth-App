@@ -3044,6 +3044,7 @@ public function inviteUser(Request $request)
             'zoho_cpid'        => $contactPersonId,
             'zoho_customer_id' => $customerId,
             'password'         => bcrypt($defaultPassword), 
+            'status'           =>'active',
         ]);
 
         // Prepare login URL
@@ -3448,7 +3449,7 @@ public function resendInvite(Request $request)
 }
 public function markAsInactive($id)
 {
-    $exists = PartnerUser::where('zoho_cust_id', $id)->first(); 
+    $exists = PartnerUser::where('zoho_cust_id', $id)->get(); 
 
     if (!$exists) {
       
@@ -3463,9 +3464,10 @@ public function markAsInactive($id)
         'Content-Type' => 'application/json'
     ])->post('https://www.zohoapis.com/billing/v1/customers/{$id}/markasinactive');
 
-    $exists->status='inactive';
-    $exists->save();
-
+    foreach ($exists as $exist) {
+        $exist->status = 'inactive';
+        $exist->save();
+    }
     if ($response->successful()) {
         return redirect()->back()->with('success', 'Partner marked as inactive!');
     }
@@ -3476,7 +3478,7 @@ public function markAsInactive($id)
 public function markAsActive($id)
 {
    
-    $exists = PartnerUser::where('zoho_cust_id', $id)->first();
+    $exists = PartnerUser::where('zoho_cust_id', $id)->get();
 
     if (!$exists) {
         return redirect()->back()->with('error', 'Invalid Customer ID. Access Denied.');
@@ -3490,8 +3492,10 @@ public function markAsActive($id)
         'Content-Type' => 'application/json'
     ])->post('https://www.zohoapis.com/billing/v1/customers/{$id}/markasactive');
 
-    $exists->status = 'active';  
-    $exists->save();
+    foreach ($exists as $exist) {
+        $exist->status = 'active';
+        $exist->save();
+    }
 
     if ($response->successful()) {
         return redirect()->back()->with('success', 'Partner marked as active!');
@@ -3557,6 +3561,66 @@ public function updateCompanyInfoForPartner(Request $request)
     // Redirect back with a success message
     return redirect()->back()->with('success', 'Company information updated successfully.');
 }
+
+public function updateinviteuser(Request $request)
+{
+    // Validate the incoming request
+    $validatedData = $request->validate([
+        'zoho_cpid' => 'required|exists:partner_users,zoho_cpid', 
+        'first_name' => 'required|string|max:255',
+        'last_name' => 'required|string|max:255',
+        'email' => 'required|email|max:255',
+        'phone_number' => 'required|string|max:15',
+        'zoho_cust_id' => 'required|string',
+    ]);
+
+    // Prepare data for the API call
+    $apiPayload = [
+        'first_name' => $validatedData['first_name'],
+        'last_name' => $validatedData['last_name'],
+        'email' => $validatedData['email'],
+        'phone_number' => $validatedData['phone_number'],
+    ];
+
+    // Get Zoho access token
+    $accessToken = $this->zohoService->getAccessToken();
+
+    // Make API call to Zoho
+    $response = Http::withHeaders([
+        'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
+        'X-com-zoho-subscriptions-organizationid' => config('services.zoho.zoho_org_id'),
+        'Content-Type'  => 'application/json',
+    ])->put(
+        "https://www.zohoapis.com/billing/v1/customers/{$validatedData['zoho_cust_id']}/contactpersons/{$validatedData['zoho_cpid']}",
+        $apiPayload
+    );
+ 
+    if ($response->successful()) {
+        
+        $partnerUser = PartnerUser::where('zoho_cpid', $validatedData['zoho_cpid'])->first();
+
+        if (!$partnerUser) {
+            return back()->withErrors('Partner user not found.');
+        }
+
+        $partnerUser->first_name = $validatedData['first_name'];
+        $partnerUser->last_name = $validatedData['last_name'];
+        $partnerUser->email = $validatedData['email'];
+        $partnerUser->phone_number = $validatedData['phone_number'];
+        $partnerUser->save();
+
+        return redirect()->back()->with('success', 'User updated successfully.');
+    } else {
+        // Log the error response for debugging
+        \Log::error('Zoho API Error:', [
+            'response' => $response->body(),
+            'status' => $response->status(),
+        ]);
+
+        return redirect()->back()->with('error', 'Failed to update user in Zoho. Changes were not saved in the database.');
+    }
+}
+
 
 }
 

@@ -68,9 +68,8 @@ class AuthController extends Controller
         $credentials = $request->only("email", "password");
         $partnerUser = PartnerUser::where("email", $credentials["email"])->first();
 
-        
-        if ($partnerUser && $partnerUser->status !== 'active') {
-            return redirect()->back()->with('error', 'This partner is currently inactive. Please contact support.');
+        if ($partnerUser && ($partnerUser->status == NULL || $partnerUser->status !== 'active')) {
+            return redirect()->back()->with('error', 'This partner is currently inactive or status is undefined. Please contact support.');
         }
    
         if ($request->input('resend_otp') == '1') {
