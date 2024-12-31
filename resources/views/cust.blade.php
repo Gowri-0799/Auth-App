@@ -16,16 +16,15 @@
        
         <form method="GET" action="{{ route('customer.filter') }}" class="row mb-4 align-items-end">
            
-            <div class="col-md-2">
-                <label for="start_date" class="form-label fw-bold" style="font-family: Arial, sans-serif; font-size: 14px;">Start Date</label>
-                <input type="date" name="start_date" id="start_date" class="form-control" value="{{ request('start_date') }}" style="font-family: Arial, sans-serif; font-size: 14px;">
-            </div>
+        <div class="col-md-2">
+           <label for="start_date" class="form-label fw-bold" style="font-family: Arial, sans-serif; font-size: 14px;">Start Date</label>
+             <input type="date" name="start_date" id="start_date" class="form-control" value="{{ request('start_date') }}" style="font-family: Arial, sans-serif; font-size: 14px;">
+        </div>
 
-            <div class="col-md-2">
-                <label for="end_date" class="form-label fw-bold" style="font-family: Arial, sans-serif; font-size: 14px;">End Date</label>
-                <input type="date" name="end_date" id="end_date" class="form-control" value="{{ request('end_date') }}" style="font-family: Arial, sans-serif; font-size: 14px;">
-            </div>
-
+        <div class="col-md-2">
+           <label for="end_date" class="form-label fw-bold" style="font-family: Arial, sans-serif; font-size: 14px;">End Date</label>
+            <input type="date" name="end_date" id="end_date" class="form-control" value="{{ request('end_date') }}" style="font-family: Arial, sans-serif; font-size: 14px;">
+        </div>
             <div class="col-md-2">
                 <label for="rows_to_show" class="form-label fw-bold" style="font-family: Arial, sans-serif; font-size: 14px;">Show</label>
                 <select name="rows_to_show" id="rows_to_show" class="form-select" style="font-family: Arial, sans-serif; font-size: 14px;">
@@ -94,4 +93,25 @@
         @endif
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const startDateInput = document.getElementById('start_date');
+        const endDateInput = document.getElementById('end_date');
+
+        // Update the min attribute of the End Date input when Start Date changes
+        startDateInput.addEventListener('change', function () {
+            const startDate = this.value; // Get selected start date
+            if (startDate) {
+                endDateInput.min = startDate; // Set the min attribute
+            }
+        });
+
+        // Ensure the End Date is valid if already selected
+        const currentStartDate = startDateInput.value;
+        if (currentStartDate) {
+            endDateInput.min = currentStartDate;
+        }
+    });
+</script>
 @endsection

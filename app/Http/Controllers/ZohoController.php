@@ -132,21 +132,16 @@ class ZohoController extends Controller
    
     public function plandb()
     {
-        // Fetch all plans from the 'plans' table
-        $plans = Plan::all();
-    
-        // Pass the plans to the view
+         $plans = Plan::all();
         return view('plan', compact('plans'));
     }
     public function create()
     {
-        // Return the view where the form is located
-        return view('plans.create');
+              return view('plans.create');
     }
 
     public function storeplan(Request $request)
     {
-        // Validate the request
         $validated = $request->validate([
             'plan_name' => 'required|string|max:255',
             'plan_price' => 'required|numeric',
@@ -234,7 +229,6 @@ class ZohoController extends Controller
 
                 $customerId = $customer['customer_id'];
 
-                // Get detailed customer info
                 $customerDetails = $this->zohoService->getCustomerDetails($customerId);
 
                 if ($customerDetails['code'] == 0) {
@@ -400,19 +394,16 @@ class ZohoController extends Controller
         if ($endDate) {
             $query->whereDate('invoice_date', '<=', $endDate);
         }
-    
-        // Apply search filter on the company name or invoice number
+
         if ($search) {
             $query->where(function($q) use ($search) {
                 $q->where('invoices.invoice_number', 'LIKE', "%{$search}%")
                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(invoice_items, '$[0].code')) LIKE ?", ["%{$search}%"]); // Searching plan_name from JSON
             });
         }
-    
-        // Paginate the results
+
         $invoices = $query->paginate($perPage);
-    
-        // Pass the filtered data back to the view
+
         return view('invoice', compact('invoices', 'search', 'startDate', 'endDate'));
     }
     
@@ -435,7 +426,7 @@ class ZohoController extends Controller
         $validatedData = $request->validate([
             'first_name' => 'nullable|string',
             'last_name' => 'nullable|string',
-            'customer_email' => 'required|email|unique:partner_users,email', // Ensure uniqueness only in partner_users
+            'customer_email' => 'required|email|unique:partner_users,email', 
             'company_name' => 'required|string',
             'billing_street' => 'nullable|string',
             'billing_city' => 'nullable|string',
@@ -450,8 +441,7 @@ class ZohoController extends Controller
         ]);
     
         $fullName = trim($validatedData['first_name'] . ' ' . $validatedData['last_name']);
-    
-        // Check if customer_name already exists in customers table
+
         $exists = Partner::where('customer_name', $fullName)->exists();
         if ($exists) {
             return redirect()->back()->withErrors([
@@ -478,16 +468,14 @@ class ZohoController extends Controller
                 'shipping_country' => $validatedData['billing_country'],
                 'shipping_zip' => $validatedData['billing_zip'],
             ];
-    
-            // Create customer in Zoho
+
             $zohoResponse = $this->createCustomerInZoho($customerData);
             if (!isset($zohoResponse['customer']['customer_id'])) {
                 throw new \Exception('Failed to create a customer in Zoho. No customer ID returned.');
             }
     
             $zohoCustomerId = $zohoResponse['customer']['customer_id'];
-    
-            // Save to customers table
+
             $customer = Partner::create([
                 'customer_name' => $fullName,
                 'company_name' => $validatedData['company_name'],
@@ -581,7 +569,7 @@ class ZohoController extends Controller
       
         if ($response->successful()) {
             $responseData = $response->json();
-            return $responseData; // Return the entire response for further use
+            return $responseData; 
         } else {
             throw new \Exception('Zoho API error: ' . $response->body());
         }
@@ -628,16 +616,16 @@ class ZohoController extends Controller
 
         $response = Http::withHeaders([
             'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
-            'Content-Type'  => 'application/json' // Ensure the Content-Type is JSON
+            'Content-Type'  => 'application/json' 
         ])->post(config('services.zoho.zoho_new_subscription'), [
             'organization_id' => config('services.zoho.zoho_org_id'),
-            'customer_id'  => $customer->zohocust_id, // Zoho customer ID
+            'customer_id'  => $customer->zohocust_id, 
             'customer' => [
                 'display_name' => $customer->customer_name,
                 'email'        => $partneruser->email,
             ],
             'plan' => [
-                    'plan_code' => $planId, // Plan code from the form
+                    'plan_code' => $planId, 
             ],
             'redirect_url' => url('thankyou')
         ]);
@@ -648,7 +636,7 @@ class ZohoController extends Controller
             $hostedPageId = $hostedPageData['hostedpage']['hostedpage_id'];
 
             // Session::put('subscribed_plan_code', $planId);
-            Session::put('hostedpage_id', $hostedPageId); // Save hostedpage_id for later retrieval
+            Session::put('hostedpage_id', $hostedPageId); 
             //$this->retrieveHostedPage();
             return redirect()->to($hostedPageUrl);
             //return redirect()->route('thankyou')->with('success', 'Subscription successfully completed!');
@@ -661,7 +649,7 @@ class ZohoController extends Controller
     public function retrieveHostedPage()
     {
         $accessToken = $this->zohoService->getAccessToken();
-        $hostedPageId = Session::get('hostedpage_id'); // Retrieve the hostedpage_id from the session
+        $hostedPageId = Session::get('hostedpage_id'); 
 
         if (!$hostedPageId) {
             return back()->withErrors('Hosted page ID is missing.');
@@ -678,7 +666,7 @@ class ZohoController extends Controller
            
         // dd($hostedPageData);
             //if (isset($hostedPageData['hostedpage']['data']['invoice']['payments'])) {
-                $this->storeSubscriptionData($hostedPageData); // Pass the JSON data to store it
+                $this->storeSubscriptionData($hostedPageData); 
                 return redirect()->route('thankyousub');
             /*} else {
                 return back()->withErrors('Payment method is missing in the response.');
@@ -692,7 +680,7 @@ class ZohoController extends Controller
     public function retrieveRetHostedPage()
     {
         $accessToken = $this->zohoService->getAccessToken();
-        $hostedPageId = Session::get('hostedpage_id'); // Retrieve the hostedpage_id from the session
+        $hostedPageId = Session::get('hostedpage_id'); 
 
         if (!$hostedPageId) {
             return back()->withErrors('Hosted page ID is missing.');
@@ -717,7 +705,7 @@ class ZohoController extends Controller
     
     public function storeSubscriptionData($data)
     {
-        // Step 1: Extract data from the Zoho API response
+
         $subscriptionData = $data['data']['subscription'];   
         $invoiceData = $data['data']['invoice'];       
          $paymentMethodData = $invoiceData['payments'] ?? []; 
@@ -749,17 +737,17 @@ class ZohoController extends Controller
             'status' => $subscriptionData['status'], 
         ]);
     }
-// Check if an invoice record with the same invoice_id already exists
+
 $existingInvoice = Invoice::where('invoice_id', $invoiceData['invoice_id'])->first();
 $invoiceItems = json_encode($invoiceData['invoice_items'] ?? []);
 $paymentItems = json_encode($invoiceData['payments'] ?? []);
 if (!$existingInvoice) {
-    // Create a new invoice record if it doesn't already exist
+   
     Invoice::create([
         'invoice_id' => $invoiceData['invoice_id'],
         'invoice_date' => $invoiceData['date'],
         'invoice_number' => $invoiceData['invoice_number'],
-        'subscription_id' => $subscriptionData['subscription_id'], // Link to subscription
+        'subscription_id' => $subscriptionData['subscription_id'], 
         'credits_applied' => $invoiceData['credits_applied'],
         'discount' => $subscription->discount ?? null,
         'payment_made' => $invoiceData['payment_made'],
@@ -771,7 +759,7 @@ if (!$existingInvoice) {
         'status' => $invoiceData['status'],
     ]);
 } else {
-    // Optionally, update the existing record if needed
+  
     $existingInvoice->updateOrInsert([
         'invoice_date' => $invoiceData['date'],
         'invoice_number' => $invoiceData['invoice_number'],
@@ -786,39 +774,36 @@ if (!$existingInvoice) {
         'status' => $invoiceData['status'],
     ]);
 }
-        // Step 4: Store payment method data in the 'payments' table (only if payment method exists)
+      
         if (!empty($paymentMethodData) && isset($subscriptionData['card'])) {
             $cardData = $subscriptionData['card'];
-            
-            // Check if 'payments' exists in the 'invoice' section and is not empty
+    
             $invoicePayments = $invoiceData['payments'] ?? [];
          
             if (!empty($invoicePayments)) {
-                // Extract payment mode and amount from the first payment record (assuming single payment)
+              
                 $paymentDetails = $invoicePayments[0]; 
-        
-                // Check if a payment record with the same payment_method_id already exists
                 $existingPayment = Payment::where('payment_method_id', $cardData['card_id'])->first();
         
                 if (!$existingPayment) {
-                    // Create a new payment record if it doesn't already exist
+                  
                     Payment::create([
-                        'payment_method_id' => $cardData['card_id'] ?? null,// Use null if card_id not present
-                        'type' => $cardData['card_type'] ?? null, // Correct field name
+                        'payment_method_id' => $cardData['card_id'] ?? null,
+                        'type' => $cardData['card_type'] ?? null, 
                         'zoho_cust_id' => $subscriptionData['customer_id'],
                         'last_four_digits' => $cardData['last_four_digits'] ?? null,
                         'expiry_year' => $cardData['expiry_year'] ?? null,
                         'expiry_month' => $cardData['expiry_month'] ?? null,
                         'payment_gateway' => $cardData['payment_gateway'] ?? null,
                         'status' => $invoiceData['status'],
-                        'payment_mode' => $paymentDetails['payment_mode'] ?? null,  // Extract payment mode from payments array
-                        'amount' => $paymentDetails['amount'] ?? null,              // Extract amount from payments array
+                        'payment_mode' => $paymentDetails['payment_mode'] ?? null,  
+                        'amount' => $paymentDetails['amount'] ?? null,   
                         'invoice_id' => $invoiceData['invoice_id'],  
                         'payment_id' =>$paymentDetails['payment_id'],
  
                     ]);
                 } else {
-                    // Optionally, update the existing record if needed
+          
                     $existingPayment->updateOrInsert([
                         'payment_method_id' => $paymentDetails['payment_id'] ?? null,
                         'type' => $cardData['card_type'] ?? null,
@@ -828,8 +813,8 @@ if (!$existingInvoice) {
                         'expiry_month' => $cardData['expiry_month'] ?? null,
                         'payment_gateway' => $cardData['payment_gateway'] ?? null,
                         'status' => $invoiceData['status'],
-                        'payment_mode' => $paymentDetails['payment_mode'] ?? null,  // Extract payment mode from payments array
-                        'amount' => $paymentDetails['amount'] ?? null,              // Extract amount from payments array
+                        'payment_mode' => $paymentDetails['payment_mode'] ?? null,  
+                        'amount' => $paymentDetails['amount'] ?? null,
                         'invoice_id' => $invoiceData['invoice_id'],    
                          'payment_id' =>$paymentDetails['payment_id']
                     ]);
@@ -837,7 +822,6 @@ if (!$existingInvoice) {
             }
         }
 
-        // Return success message or redirect as needed
         return redirect()->route('thankyousub')->with('success', 'Subscription successfully completed!');
     }
     public function thankyousub() {
@@ -854,13 +838,11 @@ if (!$existingInvoice) {
         if (!$subscriptions) {
             return back()->withErrors('Subscription not found.');
         }
-    
-        // Fetch the plan associated with the subscription
+   
         $plans = Plan::where('plan_id', $subscriptions->plan_id)->first();
-    
-        // Fetch invoices specifically associated with the subscription
+   
         $invoice = Invoice::where('zoho_cust_id', $customer->zohocust_id)
-                          ->where('subscription_id', $subscriptions->subscription_id) // Ensure there's a subscription_id column in your Invoice table
+                          ->where('subscription_id', $subscriptions->subscription_id) 
                           ->first();
     
         return view('thankyou', compact('subscriptions', 'plans', 'invoice'));
@@ -877,20 +859,15 @@ if (!$existingInvoice) {
      
     public function edit($zohocust_id)
     {
-        // Find the customer by customer_email or fail if not found
         $customer = Partner::where('zohocust_id', $zohocust_id)->firstOrFail();
-    
-        // Return the edit view and pass the customer object
         return view('edit', compact('customer'));
     }
 
     public function update(Request $request, $id)
     {
-        // Find the customer by ID or fail if not found
+  
         $customer = Partner::findOrFail($id);
-    
-        // Validate the request data
-        $validatedData = $request->validate([
+            $validatedData = $request->validate([
             
             'first_name' => 'nullable',
             'last_name' => 'nullable',
@@ -903,7 +880,6 @@ if (!$existingInvoice) {
             'billing_zip' => 'nullable|string',
         ]);
         $fullName = trim($validatedData['first_name'] . ' ' . $validatedData['last_name']);
-        // Update only the fields that are provided, keeping the existing data for other fields
         $customer->update([
             'customer_name' =>  $fullName ,
             'first_name' => $validatedData['first_name'] ?? $customer->first_name,
@@ -925,22 +901,15 @@ if (!$existingInvoice) {
     
         $zohoResponse = $this->updateCustomerInZoho($customer); 
         $customer->save();
-
-        // Redirect back to the customers list with a success message
         return redirect()->route('cust')->with('success', 'Customer updated successfully!');
     }
     
     private function updateCustomerInZoho($customer)
 {
-    // Get Zoho access token
     $accessToken = $this->zohoService->getAccessToken();
-
-    // Check if the customer has a Zoho customer ID
     if (!$customer->zohocust_id) {
         throw new \Exception('Zoho customer ID is missing for this customer.');
     }
-
-    // Call Zoho API to update the customer
     $response = Http::withHeaders([
         'Authorization' => 'Zoho-oauthtoken ' . $accessToken
     ])->put('https://www.zohoapis.com/billing/v1/customers/' . $customer->zohocust_id, [
@@ -968,9 +937,8 @@ if (!$existingInvoice) {
         ],
     ]);
 
-    // Handle Zoho API response
     if ($response->successful()) {
-        return true; // Customer updated successfully
+        return true; 
     } else {
         throw new \Exception('Zoho API error: ' . $response->body());
     }
@@ -984,16 +952,13 @@ public function showCustomerSubscriptions()
         return back()->withErrors('Customer not found.');
     }
 
-    // Fetch subscriptions for the customer
     $subscriptions = Subscription::where('zoho_cust_id', $customer->zoho_cust_id)->first();
-    
-    // Check if subscriptions exist and fetch corresponding plan details
+ 
     $plans = null;
     if ($subscriptions) {
         $plans = Plan::where('plan_id', $subscriptions->plan_id)->first();
     }
 
-    // Get downgrade plans if subscription exists
     $downgradePlans = $plans ? Plan::where('plan_price', '<', $plans->plan_price)->get() : [];
     $upgradePlans = $plans ? Plan::where('plan_price', '>', $plans->plan_price)->get() : [];
     return view('customerSubscriptions', compact('subscriptions', 'plans', 'downgradePlans','upgradePlans'));
@@ -1002,23 +967,19 @@ public function showCustomerSubscriptions()
 
 public function showCustomerInvoices()
 {
-    // Get the logged-in customer's email from the session
+   
     $customer = PartnerUser::where('email', Session::get('user_email'))->first();
 
     if (!$customer) { 
         return back()->withErrors('Customer not found.');
     }
 
-    // Fetch invoices for the customer
     $invoices = Invoice::where('zoho_cust_id', $customer->zoho_cust_id)->get();
 
-    // Fetch the customer's subscription if it exists
     $subscriptions = Subscription::where('zoho_cust_id', $customer->zoho_cust_id)->first();
 
-    // Initialize $plans to null in case there is no subscription
     $plans = null;
-    
-    // Only fetch the plan if a subscription exists
+
     if ($subscriptions) {
         $plans = Plan::where('plan_id', $subscriptions->plan_id)->first();
     }
@@ -1061,10 +1022,9 @@ public function addupdate(Request $request, $id)
 
     private function updateAddCustomerInZoho($customer)
     {
-        // Get Zoho access token
+ 
         $accessToken = $this->zohoService->getAccessToken();
 
-        // Call Zoho API to update the customer
         $response = Http::withHeaders([
             'Authorization' => 'Zoho-oauthtoken ' . $accessToken
         ])->put('https://www.zohoapis.com/billing/v1/customers/' . $customer->zohocust_id, [
@@ -1078,8 +1038,7 @@ public function addupdate(Request $request, $id)
                 'zip' => $customer->billing_zip,
             ],
         ]);
-   
-        // Handle Zoho API response
+
         if (!$response->successful()) {
             throw new \Exception('Zoho API error: ' . $response->body());
         }
@@ -1090,7 +1049,6 @@ public function addupdate(Request $request, $id)
     {
         $zoho_cust_id=Route::getCurrentRoute()->zoho_cust_id;
      
-        // Zoho API credentials
         $accessToken = $this->zohoService->getAccessToken();
 
         $response = Http::withHeaders([ 'Authorization' => 'Zoho-oauthtoken ' .$accessToken,
@@ -1115,40 +1073,34 @@ public function addupdate(Request $request, $id)
     
     public function handleZohoCallback(Request $request)
     {
-        // Get the hostedpage_id from the callback query parameters
+
         $hostedPageId = $request->query('hostedpage_id');
         
         $accessToken = $this->zohoService->getAccessToken();
     
-        // Fetch the hosted page details from Zoho
         $response = Http::withHeaders([
             'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
             'Content-Type' => 'application/json'
         ])->get('https://www.zohoapis.com/billing/v1/hostedpages/' . $hostedPageId);
-    
-        // Convert the response to JSON
+
         $hostedPageData = $response->json();
-    
-        // Check if the 'data' and 'payment_method' keys exist in the response
+
         if (!isset($hostedPageData['data']['payment_method'])) {
             return redirect()->route('profile')->with('error', 'Failed to retrieve payment method details from Zoho.');
         }
-    
-        // Extract the payment method details
+
         $paymentMethodData = $hostedPageData['data']['payment_method'];
-    
-        // Find the payment record by Zoho customer ID
+
         $payment = Payment::where('zoho_cust_id', $paymentMethodData['customer']['customer_id'])->first();
     
         if ($payment) {
-            // Update the payment details in the local database
+        
             $payment->payment_method_id = $paymentMethodData['payment_method_id'] ?? $payment->payment_method_id;
             $payment->expiry_year = $paymentMethodData['expiry_year'] ?? $payment->expiry_year;
             $payment->expiry_month = $paymentMethodData['expiry_month'] ?? $payment->expiry_month;
             $payment->last_four_digits = $paymentMethodData['last_four_digits'] ?? $payment->last_four_digits;
             
-            // Save the updated payment details
-            $payment->save();
+          $payment->save();
     
             return redirect()->route('customer.details')->with('success', 'Payment details updated successfully!');
         } else {
@@ -1168,11 +1120,11 @@ public function addupdate(Request $request, $id)
 
     Term::create([
         'zoho_cust_id' => $validated['zoho_cust_id'],
-        'zoho_cpid' => null,  // Set Zoho CPID as null for now
+        'zoho_cpid' => null,  
         'subscription_number' => $validated['subscription_number'],
-        'ip_address' => $request->ip(),  // Get the IP address of the user
-        'browser_agent' => $request->header('User-Agent'),  // Get the browser agent
-        'consent' => $validated['consent'],  // Store the consent value
+        'ip_address' => $request->ip(), 
+        'browser_agent' => $request->header('User-Agent'),  
+        'consent' => $validated['consent'], 
         'plan_name' => $validated['plan_name'],
         'amount' => $validated['amount'],
     ]);
@@ -1209,8 +1161,7 @@ public function addupdate(Request $request, $id)
             $hostedPageData = $response->json();
             $hostedPageUrl = $hostedPageData['hostedpage']['url'];
             $hostedPageId = $hostedPageData['hostedpage']['hostedpage_id'];
-   
-            // Store the hostedpage_id in the session for retrieval
+
             Session::put('hostedpage_id', $hostedPageId);
     
             return redirect()->to($hostedPageUrl);
@@ -1227,8 +1178,7 @@ public function addupdate(Request $request, $id)
         if (!$hostedPageId) {
             return back()->withErrors('Hosted page ID is missing.');
         }
-    
-        // Retrieve the hosted page details from Zoho
+
         $response = Http::withHeaders([
             'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
             'Content-Type' => 'application/json'
@@ -1236,8 +1186,7 @@ public function addupdate(Request $request, $id)
     
         if ($response->successful()) {
             $hostedPageData = $response->json();
-           
-            // Store the subscription, invoice, and payment details
+
             $this->upgradeSubscriptionData($hostedPageData);
             //return view('customerSubscriptions');
     
@@ -1255,8 +1204,7 @@ public function addupdate(Request $request, $id)
         $paymentMethodData = $invoiceData['payments'] ?? [];
         $cardData = $subscriptionData['card'];
         $paymentMethodId = $cardData['card_id'] ?? ($paymentMethodData['payment_method_id'] ?? null);
-    
-        // Fetch the existing subscription by Zoho subscription ID
+
         $existingSubscription = Subscription::where('subscription_id', $subscriptionData['subscription_id'])->first();
         
       
@@ -1287,17 +1235,17 @@ public function addupdate(Request $request, $id)
            'addon' => 0,
        ]);
    }
-// Check if an invoice record with the same invoice_id already exists
+
 $existingInvoice = Invoice::where('invoice_id', $invoiceData['invoice_id'])->first();
 $invoiceItems = json_encode($invoiceData['invoice_items'] ?? []);
 $paymentItems = json_encode($invoiceData['payments'] ?? []);
 if (!$existingInvoice) {
-    // Create a new invoice record if it doesn't already exist
+
     Invoice::create([
         'invoice_id' => $invoiceData['invoice_id'],
         'invoice_date' => $invoiceData['date'],
         'invoice_number' => $invoiceData['invoice_number'],
-        'subscription_id' => $subscriptionData['subscription_id'], // Link to subscription
+        'subscription_id' => $subscriptionData['subscription_id'], 
         'credits_applied' => $invoiceData['credits_applied'],
         'discount' => $subscription->discount ?? null,
         'payment_made' => $invoiceData['payment_made'],
@@ -1309,7 +1257,7 @@ if (!$existingInvoice) {
         'status' => $invoiceData['status'],
     ]);
 } else {
-    // Optionally, update the existing record if needed
+ 
     $existingInvoice->updateOrInsert([
         'invoice_date' => $invoiceData['date'],
         'invoice_number' => $invoiceData['invoice_number'],
@@ -1325,7 +1273,7 @@ if (!$existingInvoice) {
     ]);
 }
 
-  // Step 3: Store the credits from the invoice into the 'creditnotes' table
+
   $credits = $invoiceData['credits'] ?? [];
   if (!empty($credits)) {
       foreach ($credits as $credit) {
@@ -1336,46 +1284,44 @@ if (!$existingInvoice) {
                   'credited_date' => $credit['credited_date'] ?? null,
                   'invoice_number' => $credit['invoice_id'] ?? null,
                   'zoho_cust_id' => $subscriptionData['customer_id'],
-                  'status' => 'credited', // Assuming this is a credited status
+                  'status' => 'credited', 
                   'credited_amount' => $credit['credited_amount'],
-                  'balance' => 0, // Set the balance, or you can modify as per your requirements
+                  'balance' => 0, 
               ]
           );
       }
   }
-        // Step 4: Store payment method data in the 'payments' table (only if payment method exists)
+
         if (!empty($paymentMethodData) && isset($subscriptionData['card'])) {
             $cardData = $subscriptionData['card'];
-            
-            // Check if 'payments' exists in the 'invoice' section and is not empty
+         
             $invoicePayments = $invoiceData['payments'] ?? [];
          
             if (!empty($invoicePayments)) {
-                // Extract payment mode and amount from the first payment record (assuming single payment)
+           
                 $paymentDetails = $invoicePayments[0]; 
         
-                // Check if a payment record with the same payment_method_id already exists
+             
                 $existingPayment = Payment::where('payment_method_id', $cardData['card_id'])->first();
         
                 if (!$existingPayment) {
-                    // Create a new payment record if it doesn't already exist
+    
                     Payment::create([
-                        'payment_method_id' => $cardData['card_id'] ?? null,// Use null if card_id not present
-                        'type' => $cardData['card_type'] ?? null, // Correct field name
+                        'payment_method_id' => $cardData['card_id'] ?? null,
+                        'type' => $cardData['card_type'] ?? null,
                         'zoho_cust_id' => $subscriptionData['customer_id'],
                         'last_four_digits' => $cardData['last_four_digits'] ?? null,
                         'expiry_year' => $cardData['expiry_year'] ?? null,
                         'expiry_month' => $cardData['expiry_month'] ?? null,
                         'payment_gateway' => $cardData['payment_gateway'] ?? null,
                         'status' => $invoiceData['status'],
-                        'payment_mode' => $paymentDetails['payment_mode'] ?? null,  // Extract payment mode from payments array
-                        'amount' => $paymentDetails['amount'] ?? null,              // Extract amount from payments array
+                        'payment_mode' => $paymentDetails['payment_mode'] ?? null,  
+                        'amount' => $paymentDetails['amount'] ?? null,       
                         'invoice_id' => $invoiceData['invoice_id'],  
                         'payment_id' =>$paymentDetails['payment_id'],
  
                     ]);
                 } else {
-                    // Optionally, update the existing record if needed
                     $existingPayment->updateOrInsert([
                         'payment_method_id' => $paymentDetails['payment_id'] ?? null,
                         'type' => $cardData['card_type'] ?? null,
@@ -1385,8 +1331,8 @@ if (!$existingInvoice) {
                         'expiry_month' => $cardData['expiry_month'] ?? null,
                         'payment_gateway' => $cardData['payment_gateway'] ?? null,
                         'status' => $invoiceData['status'],
-                        'payment_mode' => $paymentDetails['payment_mode'] ?? null,  // Extract payment mode from payments array
-                        'amount' => $paymentDetails['amount'] ?? null,              // Extract amount from payments array
+                        'payment_mode' => $paymentDetails['payment_mode'] ?? null,  
+                        'amount' => $paymentDetails['amount'] ?? null, 
                         'invoice_id' => $invoiceData['invoice_id'],    
                          'payment_id' =>$paymentDetails['payment_id']
                     ]);
@@ -1394,7 +1340,7 @@ if (!$existingInvoice) {
             }
         }
 
-        // Return success message or redirect as needed
+     
         return redirect()->route('thanksup')->with('success', 'Subscription successfully completed!');
     }
     public function thanksup(){
@@ -1415,7 +1361,7 @@ if (!$existingInvoice) {
         }
 
         $invoice = Invoice::where('zoho_cust_id', $customer->zohocust_id)
-        ->where('subscription_id', $subscriptions->subscription_id) // Ensure there's a subscription_id column in your Invoice table
+        ->where('subscription_id', $subscriptions->subscription_id) 
         ->first();
 
         return view('thanks', compact('subscriptions', 'plans','invoice'));
@@ -1455,11 +1401,9 @@ if (!$existingInvoice) {
         if ($search) {
             $query->where('plans.plan_name', 'LIKE', "%{$search}%");
         }
-    
-        // Paginate the results
+  
         $subscriptions = $query->paginate($perPage);
     
-        // Pass the data back to the view
         return view('subscription', compact('subscriptions', 'search', 'startDate', 'endDate'));
     }
     
@@ -1504,7 +1448,6 @@ if (!$existingInvoice) {
 
 public function showCustomerCredits()
 {
-    // Get the logged-in customer's email from the session
     $partneruser= PartnerUser::where('email', Session::get('user_email'))->first();
 
     if (!$partneruser) {
@@ -1514,13 +1457,10 @@ public function showCustomerCredits()
     $customer = Partner::where('zohocust_id', $partneruser->zoho_cust_id)->first();
     $creditnotes = Creditnote::where('zoho_cust_id', $customer->zohocust_id)->get();
     
-    // Check if there are any credit notes
-    if ($creditnotes->isEmpty()) {
-        // No credit notes found
-        $customers = null;
+       if ($creditnotes->isEmpty()) {
+              $customers = null;
     } else {
-        // Fetch customer details based on the first credit note
-        $customers = Partner::where('zohocust_id', $creditnotes->first()->zoho_cust_id)->first();
+                $customers = Partner::where('zohocust_id', $creditnotes->first()->zoho_cust_id)->first();
     }
 
     return view('creditnotes', compact('creditnotes', 'customers'));
@@ -1551,7 +1491,7 @@ function pdfdownload($creditnote_id)
 
 public function filtercredits(Request $request)
 {
-    // Get the logged-in customer based on their email
+
     $partneruser = PartnerUser::where('email', Session::get('user_email'))->first();
     
     if (!$partneruser) {
@@ -1562,7 +1502,6 @@ public function filtercredits(Request $request)
 
     $query = Creditnote::where('zoho_cust_id', $customer->zohocust_id);
 
-    // Apply filters based on user input
     if ($request->has('startDate') && $request->startDate) {
         $query->where('credited_date', '>=', $request->startDate);
     }
@@ -1580,11 +1519,10 @@ public function filtercredits(Request $request)
         });
     }
 
-    // Apply limit for number of results (show entries)
-    $showEntries = $request->input('show', 10); // Default to 10
+  
+    $showEntries = $request->input('show', 10); 
     $creditnotes = $query->paginate($showEntries);
     $customers = Partner::where('zohocust_id', $customer->zohocust_id)->first();
-    // Pass filtered credit notes and customer details to the view
     return view('creditnotes', compact('creditnotes', 'customers'));
 }
 public function showCustomerSupport(Request $request)
@@ -1617,11 +1555,8 @@ public function showCustomerSupport(Request $request)
     return view('support', compact('supports', 'customer'));
 }
 
-
-
 public function ticketstore(Request $request)
 {
-
     $request->validate([
         'message' => 'required|string|max:1000',
     ]);
@@ -1687,11 +1622,10 @@ public function downgrade(Request $request)
         ->first();
 
     if ($openTicket) {
-        // Return with an error message if an open ticket exists
+        
         return back()->withErrors('An open downgrade request already exists');
     }
 
-    // Create a new support ticket for downgrade
     Support::create([
         'date' => now(),
         'request_type' => 'Downgrade', 
@@ -1702,7 +1636,6 @@ public function downgrade(Request $request)
         'zoho_cpid' =>  $partneruser->zoho_cpid, 
     ]);
 
-    // Redirect with a success message
     return redirect()->route('show.support')->with('success', 'Downgrade request submitted successfully.');
 }
 public function supportticket()
@@ -1721,8 +1654,8 @@ public function supportticket()
         DB::raw('CASE WHEN subscriptions.subscription_number IS NULL THEN "No Subscription" ELSE subscriptions.subscription_number END as subscription_status') // Handle empty subscription_number
     )
     ->where(function ($query) {
-        $query->whereNull('partner_users.zoho_cpid') // No zoho_cpid in partner_users
-            ->orWhere('supports.zoho_cpid', '=', 'partner_users.zoho_cpid'); // zoho_cpid matches
+        $query->whereNull('partner_users.zoho_cpid') 
+            ->orWhere('supports.zoho_cpid', '=', 'partner_users.zoho_cpid'); 
     })
     ->get();
 
@@ -1760,15 +1693,13 @@ public function supportticketfilter(Request $request)
     $endDate = $request->input('endDate');
     $search = $request->input('search');
     $show = $request->input('show', 10); 
-
-  
+ 
     $query = DB::table('supports')
         ->join('partners', 'supports.zoho_cust_id', '=', 'partners.zohocust_id')
         ->select(
             'supports.*', 
             'partners.company_name' 
         );
-
    
     if ($startDate) {
         $query->whereDate('supports.date', '>=', $startDate);
@@ -2102,8 +2033,7 @@ if (!$existingInvoice) {
         $paymentMethodData = $invoiceData['payments'] ?? [];
         $cardData = $subscriptionData['card'];
         $paymentMethodId = $cardData['card_id'] ?? ($paymentMethodData['payment_method_id'] ?? null);
-        
-        
+
         $existingSubscription = Subscription::where('subscription_id', $subscriptionData['subscription_id'])->first();
     
         if (!$existingSubscription) {
@@ -2132,15 +2062,13 @@ if (!$existingInvoice) {
                 'addon' => 1, 
             ]);
         }
-    
-    
+
         return redirect()->route('customer.subscriptions')->with('success', 'Subscription successfully completed!');
     }
 
-    public function updatePasswordinprofile(Request $request)
-{
-   
-    $request->validate([
+public function updatePasswordinprofile(Request $request)
+  {
+       $request->validate([
         'email' => 'required|email',
         'current_password' => 'required',
         'new_password' => 'required|confirmed|min:6',
@@ -2155,7 +2083,6 @@ if (!$existingInvoice) {
     }
 
    $partneruser->password = Hash::make($request->new_password);
-   
 
     if ($partneruser->save()) {
         return redirect()->route('customer.details')->with('success', 'Your password has been successfully updated.');
@@ -2346,7 +2273,7 @@ public function uploadCsv(Request $request)
 
         $lineCount = 0;
         if (($handle = fopen($file->getPathname(), 'r')) !== false) {
-            // Skip the header row
+         
             $headerSkipped = false;
             while (($data = fgetcsv($handle)) !== false) {
                 if (!$headerSkipped) {
@@ -2436,7 +2363,7 @@ public function show($zohocust_id, Request $request)
     $customer = Partner::where('zohocust_id', $zohocust_id)->firstOrFail();
 
     $partnerUser = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)
-        ->whereNotNull('zoho_cpid') // Ensure zoho_cpid is not null
+        ->whereNotNull('zoho_cpid') 
         ->get();
 
         $companyInfo = DB::table('company_info')
@@ -2447,7 +2374,7 @@ public function show($zohocust_id, Request $request)
     $providerData = ProviderData::where('zoho_cust_id', $customer->zohocust_id)->paginate(10);
 
     $normalUser = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)
-        ->whereNull('zoho_cpid') // Ensure zoho_cpid is null
+        ->whereNull('zoho_cpid') 
         ->first();
     $partnerUsers = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)->first();
   
@@ -2458,7 +2385,6 @@ public function show($zohocust_id, Request $request)
     
     $selectedSection = $request->query('section', 'overview');
 
-    // Fetch the current subscription and its associated plan
     $subscriptions = DB::table('subscriptions')
         ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
         ->join('partners', 'subscriptions.zoho_cust_id', '=', 'partners.zohocust_id')
@@ -2481,8 +2407,7 @@ public function show($zohocust_id, Request $request)
         ->where('subscriptions.zoho_cust_id', $customer->zohocust_id)
         ->select('plans.plan_price', 'plans.plan_id')
         ->first();
-    
-    // Fetch plans with a higher price than the current subscribed plan
+
     $upgradePlans = $currentSubscription 
         ? Plan::where('plan_price', '>', $currentSubscription->plan_price)->get() 
         : [];
@@ -2520,15 +2445,13 @@ public function show($zohocust_id, Request $request)
 
 public function customfilter(Request $request)
 {
-    // Start building the query for customers
+ 
     $customerQuery = Partner::query();
 
-    // Apply the zohocust_id filter if provided
     if ($request->filled('zohocust_id')) {
         $customerQuery->where('zohocust_id', $request->zohocust_id);
     }
 
-    // Apply date filters if provided
     if ($request->filled('start_date')) {
         $customerQuery->whereDate('created_at', '>=', $request->start_date);
     }
@@ -2537,15 +2460,12 @@ public function customfilter(Request $request)
         $customerQuery->whereDate('created_at', '<=', $request->end_date);
     }
 
-    // Apply search filter for company name if provided
     if ($request->filled('search')) {
         $customerQuery->where('company_name', 'like', '%' . $request->search . '%');
     }
 
-    // Paginate results based on user input, default is 10
     $customers = $customerQuery->paginate($request->input('rows_to_show', 10));
 
-    // Pass the customer data to the view
     return view('cust', compact('customers'));
 }
 
@@ -2655,7 +2575,6 @@ public function filterSubscriptionsnav(Request $request)
     ->select('plans.plan_price', 'plans.plan_id')
     ->first();
 
-// Fetch plans with a higher price than the current subscribed plan
 $upgradePlans = $currentSubscription 
     ? Plan::where('plan_price', '>', $currentSubscription->plan_price)->get() 
     : [];
@@ -2680,7 +2599,6 @@ $upgradePlans = $currentSubscription
 
     $providerData = ProviderData::where('zoho_cust_id', $customer->zohocust_id)->first();
 
- 
     return view('customer-show', compact('customer','partnerUsers', 
     'subscriptions','selectedSection', 'affiliates', 'search', 'startDate',
      'endDate', 'invoices','creditnotes', 'partnerUser','plans','upgradePlans' ,'companyInfo',
@@ -2690,7 +2608,7 @@ $upgradePlans = $currentSubscription
     
 public function filterInvoicesnav(Request $request)
 {
-    // Get the search term and dates
+
     $zohocust_id = $request->input('zohocust_id');
     $search = $request->input('search');
     $startDate = $request->input('start_date');
@@ -2708,28 +2626,26 @@ public function filterInvoicesnav(Request $request)
     )
     ->where('invoices.zoho_cust_id', $zohocust_id);
 
-    // Apply the date filters if they exist
-    if ($startDate) {
+     if ($startDate) {
         $query->whereDate('invoice_date', '>=', $startDate);
     }
     if ($endDate) {
         $query->whereDate('invoice_date', '<=', $endDate);
     }
 
-    // Apply the search filter on the plan name within the JSON field 'invoice_items'
+   
     if ($search) {
         $query->where(function($q) use ($search) {
             $q->where('invoices.invoice_number', 'LIKE', "%{$search}%")
-              ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(invoice_items, '$[0].code')) LIKE ?", ["%{$search}%"]); // Searching plan_name from JSON
+              ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(invoice_items, '$[0].code')) LIKE ?", ["%{$search}%"]); 
         });
     }
 
-    // Paginate the results
     $invoices = $query->paginate($perPage);
 
     $customer = Partner::where('zohocust_id', $zohocust_id)->first();
     $partnerUser = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)
-    ->whereNotNull('zoho_cpid') // Ensure zoho_cpid is not null
+    ->whereNotNull('zoho_cpid') 
     ->get();
 
     $subscriptions = Subscription::where('zoho_cust_id', $customer->zohocust_id)->get();
@@ -2750,7 +2666,6 @@ public function filterInvoicesnav(Request $request)
     ->select('plans.plan_price', 'plans.plan_id')
     ->first();
 
-// Fetch plans with a higher price than the current subscribed plan
 $upgradePlans = $currentSubscription 
     ? Plan::where('plan_price', '>', $currentSubscription->plan_price)->get() 
     : [];
@@ -2763,7 +2678,7 @@ $upgradePlans = $currentSubscription
     ->first();
 
     $providerData = ProviderData::where('zoho_cust_id', $customer->zohocust_id)->first();
-    // Pass the data back to the view
+  
     return view('customer-show', compact('customer','partnerUsers',
      'subscriptions','selectedSection', 'affiliates', 'search', 'startDate', 'endDate',
       'invoices','creditnotes', 'partnerUser','plans','upgradePlans', 'companyInfo',
@@ -2826,7 +2741,6 @@ public function filtercreditnav(Request $request)
     ->select('plans.plan_price', 'plans.plan_id')
     ->first();
 
-// Fetch plans with a higher price than the current subscribed plan
 $upgradePlans = $currentSubscription 
     ? Plan::where('plan_price', '>', $currentSubscription->plan_price)->get() 
     : [];
@@ -2848,14 +2762,13 @@ $upgradePlans = $currentSubscription
 
 public function filterProviderDatanav(Request $request)
 {
-    // Retrieve input values
+
     $zohocust_id = $request->input('zohocust_id');
     $search = $request->input('search');
     $startDate = $request->input('start_date');
     $endDate = $request->input('end_date');
-    $perPage = $request->input('rows_to_show', 10);  // Default to 10 rows per page
+    $perPage = $request->input('rows_to_show', 10); 
 
-    // Build the query for provider data
     $query = DB::table('provider_data')
         ->join('partners', 'provider_data.zoho_cust_id', '=', 'partners.zohocust_id')
         ->select(
@@ -2864,7 +2777,6 @@ public function filterProviderDatanav(Request $request)
         )
         ->where('provider_data.zoho_cust_id', $zohocust_id);
 
-    // Apply filters for date range if provided
     if ($startDate) {
         $query->whereDate('provider_data.created_at', '>=', $startDate);
     }
@@ -2872,7 +2784,6 @@ public function filterProviderDatanav(Request $request)
         $query->whereDate('provider_data.created_at', '<=', $endDate);
     }
 
-    // Apply search filter if provided
     if ($search) {
         $query->where(function($q) use ($search) {
             $q->where('provider_data.file_name', 'LIKE', "%{$search}%")
@@ -2880,7 +2791,6 @@ public function filterProviderDatanav(Request $request)
         });
     }
 
-    // Fetch filtered provider data with pagination
     $providerData = $query->paginate($perPage);
     \Log::info($providerData);
     $customer = Partner::where('zohocust_id', $zohocust_id)->first();
@@ -2888,7 +2798,6 @@ public function filterProviderDatanav(Request $request)
         ->whereNotNull('zoho_cpid') 
         ->get();
 
-    // Additional data (subscriptions, invoices, affiliates, etc.)
     $subscriptions = Subscription::where('zoho_cust_id', $zohocust_id)->get();
     $creditnotes = Creditnote::where('zoho_cust_id', $customer->zohocust_id)->get();
     $invoices = Invoice::where('zoho_cust_id', $customer->zohocust_id)->get();
@@ -2902,16 +2811,14 @@ public function filterProviderDatanav(Request $request)
         )
         ->get();
 
-    $selectedSection = 'providerdata';  // Change section name to "providerdata"
-    
-    // Fetch subscription plans
+    $selectedSection = 'providerdata';  
+
     $currentSubscription = DB::table('subscriptions')
         ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
         ->where('subscriptions.zoho_cust_id', $customer->zohocust_id)
         ->select('plans.plan_price', 'plans.plan_id')
         ->first();
 
-    // Fetch plans with a higher price than the current subscribed plan
     $upgradePlans = $currentSubscription 
         ? Plan::where('plan_price', '>', $currentSubscription->plan_price)->get() 
         : [];
@@ -3034,7 +2941,6 @@ public function inviteUser(Request $request)
         $contactPersonId = $responseData['contactperson']['contactperson_id'] ?? null;
         $customerId      = $responseData['contactperson']['customer_id'] ?? null;
 
-        // Save user data into the database
         $partnerUser = PartnerUser::create([
             'first_name'       => $validated['first_name'],
             'last_name'        => $validated['last_name'],
@@ -3047,10 +2953,9 @@ public function inviteUser(Request $request)
             'status'           =>'active',
         ]);
 
-        // Prepare login URL
+     
         $loginUrl = route('login');
 
-        // Send email with login details
         try {
             Mail::to($partnerUser->email)->send(new CustomerInvitation($partnerUser, $defaultPassword, $loginUrl));
         } catch (\Exception $e) {
@@ -3181,16 +3086,13 @@ public function cancelSubscription(Request $request)
             ],
             'redirect_url' => url('thankyou'),
         ]);
-    
-        // Handle the API response
+
         if ($response->successful()) {
             $hostedPageData = $response->json();
             $hostedPageUrl = $hostedPageData['hostedpage']['url'];
     
-            // Store the hosted page ID in the session
             Session::put('hostedpage_id', $hostedPageData['hostedpage']['hostedpage_id']);
     
-            // Send the subscription email to the partner user
             $this->sendSubscriptionEmail($partnerUser, $customer, $hostedPageUrl, $plancode);
     
             return redirect()->back()->with('success', 'Subscription email sent to the customer successfully.');
@@ -3290,7 +3192,6 @@ public function cancelSubscription(Request $request)
         'is_upgrade' => 'yes',
     ];
 
-    // Send the email using the Mailable
     Mail::to($partnerUser->email)->send(new UpgradeEmail($emailData));
 }
 public function view($id)
@@ -3305,14 +3206,12 @@ public function view($id)
 
     if (!$feature) {
         $feature = (object)[
-            'features_json' => json_encode([]), // Ensure this is a JSON string
+            'features_json' => json_encode([]),  
         ];
     }
 
-    // Ensure features_json is a string before decoding
     $featuresJson = is_string($feature->features_json) ? $feature->features_json : json_encode($feature->features_json);
 
-    // Decode the JSON string
     $features = json_decode($featuresJson, true);
 
     return view('plan-features', compact('plan', 'features'));
@@ -3335,8 +3234,8 @@ public function updateFeatures(Request $request)
         ];
 
         $feature = Feature::firstOrCreate(
-            ['plan_code' => $request->input('plan_code')], // Match or create based on plan_code
-            ['features_json' => json_encode($featuresJson)] // Initial value if new
+            ['plan_code' => $request->input('plan_code')], 
+            ['features_json' => json_encode($featuresJson)] 
         );
 
     
@@ -3371,7 +3270,6 @@ public function updateFeatures(Request $request)
         return back()->withErrors('Partner user not found.');
     }
 
-    // Fetch the corresponding partner/customer using the zoho_cust_id
     $customer = Partner::where('zohocust_id', $partnerUser->zoho_cust_id)->first();
 
     if (!$customer) {
@@ -3382,7 +3280,7 @@ public function updateFeatures(Request $request)
 
         $lineCount = 0;
         if (($handle = fopen($file->getPathname(), 'r')) !== false) {
-            // Skip the header row
+       
             $headerSkipped = false;
             while (($data = fgetcsv($handle)) !== false) {
                 if (!$headerSkipped) {
@@ -3508,7 +3406,7 @@ public function updateCompanyInfoForPartner(Request $request)
 {
    
     $request->validate([
-        'email' => 'required|email|exists:partner_users,email', // Ensure the email exists in the partner_users table
+        'email' => 'required|email|exists:partner_users,email', 
         'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         'company_name' => 'required|string|max:255',
         'tune_link' => 'nullable|url',
@@ -3516,55 +3414,47 @@ public function updateCompanyInfoForPartner(Request $request)
         'landing_page_url_spanish' => 'nullable|url',
     ]);
 
-    // Find the partner user by the email passed in the hidden field
     $partnerUser = PartnerUser::where('email', $request->email)->first();
 
     if (!$partnerUser) {
         return back()->withErrors('Partner user not found.');
     }
 
-    // Fetch the corresponding partner/customer using the zoho_cust_id
     $customer = Partner::where('zohocust_id', $partnerUser->zoho_cust_id)->first();
 
     if (!$customer) {
         return back()->withErrors('Customer not found.');
     }
 
-    // Prepare the data to be updated
     $data = [
         'company_name' => $request->company_name,
         'landing_page_uri' => $request->landing_page_url,
         'landing_page_url_spanish' => $request->landing_page_url_spanish,
         'tune_link' => $request->tune_link,
-        'uploaded_by' => Session::get('user_email'), // The admin's session email
+        'uploaded_by' => Session::get('user_email'), 
         'zoho_cust_id' => $customer->zohocust_id,
     ];
 
-    // Handle file upload if a logo is provided
     if ($request->hasFile('logo')) {
         $logoPath = $request->file('logo')->store('logos', 'public');
         $data['logo_image'] = $logoPath;
     }
-
-    // Create or update the company info for the partner
     CompanyInfo::updateOrCreate(
         ['zoho_cust_id' => $customer->zohocust_id],
         $data
     );
 
-    // Update the customer's first login status if ProviderData exists
     if (ProviderData::where('zoho_cust_id', $customer->zohocust_id)->exists()) {
         $customer->first_login = false;
         $customer->save();
     }
 
-    // Redirect back with a success message
     return redirect()->back()->with('success', 'Company information updated successfully.');
 }
 
 public function updateinviteuser(Request $request)
 {
-    // Validate the incoming request
+
     $validatedData = $request->validate([
         'zoho_cpid' => 'required|exists:partner_users,zoho_cpid', 
         'first_name' => 'required|string|max:255',
@@ -3574,7 +3464,6 @@ public function updateinviteuser(Request $request)
         'zoho_cust_id' => 'required|string',
     ]);
 
-    // Prepare data for the API call
     $apiPayload = [
         'first_name' => $validatedData['first_name'],
         'last_name' => $validatedData['last_name'],
@@ -3582,10 +3471,8 @@ public function updateinviteuser(Request $request)
         'phone_number' => $validatedData['phone_number'],
     ];
 
-    // Get Zoho access token
     $accessToken = $this->zohoService->getAccessToken();
 
-    // Make API call to Zoho
     $response = Http::withHeaders([
         'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
         'X-com-zoho-subscriptions-organizationid' => config('services.zoho.zoho_org_id'),
@@ -3602,7 +3489,7 @@ public function updateinviteuser(Request $request)
         if (!$partnerUser) {
             return back()->withErrors('Partner user not found.');
         }
-
+ 
         $partnerUser->first_name = $validatedData['first_name'];
         $partnerUser->last_name = $validatedData['last_name'];
         $partnerUser->email = $validatedData['email'];
@@ -3611,7 +3498,7 @@ public function updateinviteuser(Request $request)
 
         return redirect()->back()->with('success', 'User updated successfully.');
     } else {
-        // Log the error response for debugging
+   
         \Log::error('Zoho API Error:', [
             'response' => $response->body(),
             'status' => $response->status(),

@@ -23,7 +23,7 @@ class AdminController extends Controller
 
     public function showLoginForm()
     {
-        return view('auth.admin');  // Create a separate login view for admins
+        return view('auth.admin');  
     }
 
     public function login(Request $request)
@@ -80,30 +80,27 @@ class AdminController extends Controller
         $sessionOtp = Session::get('otp');
         $inputOtp = $request->input('otp');
 
-        // Check if the session OTP exists and matches the input OTP
+       
         if ($sessionOtp && $sessionOtp == $inputOtp) {
-            // OTP is valid, redirect to admin dashboard or intended route
-            return redirect()->route('admin.dashboard'); // Change to your desired route
+           
+            return redirect()->route('admin.dashboard'); 
         }
 
-        // If OTP is invalid, redirect back with an error message
         return redirect()->back()->with('error', 'Invalid OTP, please try again.');
     }
 
     public function adminresendOtp(Request $request)
     {
-        // Get the email from the session
+       
         $email = Session::get('user_email');
-        // Find the admin using the email
+
         $admin = Admin::where('email', $email)->first();
 
-        // Check if the admin exists
         if ($admin) {
-            $otp = rand(100000, 999999); // Generate a new OTP
-            Session::put('otp', $otp); // Store the new OTP
+            $otp = rand(100000, 999999); 
+            Session::put('otp', $otp); 
 
-            // Resend OTP email
-            Mail::to($admin->email)->send(new OtpMail($otp, $admin->name)); // Make sure to adjust this based on your Admin model
+            Mail::to($admin->email)->send(new OtpMail($otp, $admin->name)); 
 
             return redirect()->back()->with('success', 'A new OTP has been sent to your email.');
         } else {
@@ -126,24 +123,17 @@ class AdminController extends Controller
 
     public function adsendPasswordResetEmail(Request $request)
     {
-    // Validate the request data
+
     $request->validate(['email' => 'required|email']);
     $credentials = $request->only("email");
 
-    // Find the admin by email
     $admin = Admin::where("email", $credentials["email"])->first();
     
         if ($admin) {
-            // Generate a password reset token
+           
             $token = Str::random(60); 
-
-            // Create the reset URL
             $resetUrl = route('adpassword.reset', ['token' => $token, 'email' => $admin->email]);
-
-            // Send the reset password email
             Mail::to($admin->email)->send(new ResetPasswordMail($admin->admin_name, $resetUrl));
-
-            // Redirect to a success page
             return redirect(route("ademailsend"))->with("success", "Password reset email sent successfully.");
         } else {
             return back()->withErrors(['email' => 'This email does not exist in our records.']);
@@ -246,8 +236,7 @@ class AdminController extends Controller
         if ($admin->receive_mail_notifications) {
        
             $loginUrl = route('adminlogin'); 
-            
-            // Send the invitation email to the admin
+
             Mail::to($admin->email)->send(new AdminInvitation($admin,  $randomPassword, $loginUrl));
         }
 
@@ -285,8 +274,6 @@ public function update(Request $request, $id)
     ]);
 if ($admin->receive_mail_notifications) {
         $loginUrl = route('adminlogin'); 
-        
-        // Send the invitation email with the new password
         Mail::to($admin->email)->send(new AdminInvitation($admin, $randomPassword, $loginUrl));
     }
     return redirect()->route('admin.index')->with('success', 'Admin updated successfully.');

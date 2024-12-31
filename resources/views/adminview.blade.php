@@ -131,4 +131,25 @@
         });
     });
 </script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const startDateInput = document.getElementById('start_date');
+        const endDateInput = document.getElementById('end_date');
+
+        // Update the min attribute of the End Date input when Start Date changes
+        startDateInput.addEventListener('change', function () {
+            const startDate = this.value; // Get selected start date
+            if (startDate) {
+                endDateInput.min = startDate; // Set the min attribute
+            }
+        });
+
+        // Ensure the End Date is valid if already selected
+        const currentStartDate = startDateInput.value;
+        if (currentStartDate) {
+            endDateInput.min = currentStartDate;
+        }
+    });
+</script>
 @endsection

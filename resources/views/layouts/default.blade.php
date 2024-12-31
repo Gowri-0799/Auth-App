@@ -78,7 +78,7 @@
 
         .sidebar-logo {
             padding: 10px 0; /* Add padding to the top and bottom */
-            border-bottom: 1px solid #ddd; /* Optional: add a separator line */
+            border-bottom: none; /* Optional: add a separator line */
         }
 
         .credit-card {
@@ -165,8 +165,8 @@
     <div class="scrollable blurred-bg">
         <!-- Sidebar -->
         <div class="wrapper">
-            <aside id="sidebar" class="expand">
-                <div class="sidebar-logo text-center py-3">
+            <aside id="sidebar" class="expand">  
+            <div class="sidebar-logo text-center py-3">
                     <img src="{{ asset('assets/images/Ln_logo.png') }}" alt="Testlink Logo" class="img-fluid" style="width: 50%; height: 80%;">
                 </div>
                 <ul class="sidebar-nav">
