@@ -143,20 +143,19 @@
 
 <script>
     $(document).ready(function() {
-        // Click event to show the create ticket form
+      
         $('#createTicketBtn').click(function(e) {
             e.preventDefault();
-            console.log('Create Ticket button clicked'); // Debugging log to ensure the button is working
-            $('#overlay').show();  // Show the overlay
-            $('#createTicketForm').show();  // Show the modal form
+            console.log('Create Ticket button clicked'); 
+            $('#overlay').show(); 
+            $('#createTicketForm').show();  
         });
 
-        // Click event to close the create ticket form
         $('#closeFormBtn, #overlay').click(function(e) {
             e.preventDefault();
-            console.log('Close button clicked'); // Debugging log to ensure close button works
-            $('#overlay').hide();  // Hide the overlay
-            $('#createTicketForm').hide();  // Hide the modal form
+            console.log('Close button clicked'); 
+            $('#overlay').hide(); 
+            $('#createTicketForm').hide(); 
         });
     });
 </script>
@@ -167,15 +166,14 @@
         const startDateInput = document.getElementById('start_date');
         const endDateInput = document.getElementById('end_date');
 
-        // Update the min attribute of the End Date input when Start Date changes
+       
         startDateInput.addEventListener('change', function () {
-            const startDate = this.value; // Get selected start date
+            const startDate = this.value; 
             if (startDate) {
-                endDateInput.min = startDate; // Set the min attribute
+                endDateInput.min = startDate;
             }
         });
 
-        // Ensure the End Date is valid if already selected
         const currentStartDate = startDateInput.value;
         if (currentStartDate) {
             endDateInput.min = currentStartDate;

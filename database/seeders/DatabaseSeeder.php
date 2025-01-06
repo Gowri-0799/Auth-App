@@ -32,5 +32,7 @@ class DatabaseSeeder extends Seeder
             'password' => 'Socxo@123',
             'role'=>'Super Admin'
         ]);
+
+        $this->call(FakeClicksTableSeeder::class);
     }
 }

@@ -184,12 +184,10 @@
 </style>
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    // Attach event listener to all elements with the "add-comment" class
+   
     document.querySelectorAll('.add-comment').forEach(button => {
         button.addEventListener('click', function () {
-            // Get the ticket ID from the data-id attribute
             const zohoCustId = this.getAttribute('data-id');
-            // Set the zoho_cust_id in the hidden input inside the modal
             document.getElementById('zoho_cust_id').value = zohoCustId;
         });
     });
@@ -201,15 +199,13 @@
         const startDateInput = document.getElementById('start_date');
         const endDateInput = document.getElementById('end_date');
 
-        // Update the min attribute of the End Date input when Start Date changes
         startDateInput.addEventListener('change', function () {
-            const startDate = this.value; // Get selected start date
+            const startDate = this.value; 
             if (startDate) {
-                endDateInput.min = startDate; // Set the min attribute
+                endDateInput.min = startDate; 
             }
         });
 
-        // Ensure the End Date is valid if already selected
         const currentStartDate = startDateInput.value;
         if (currentStartDate) {
             endDateInput.min = currentStartDate;
