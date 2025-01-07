@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Plan;
 use App\Models\Addon;
+use App\Models\Click;
 use App\Models\Term;
 use App\Models\CompanyInfo;
 use App\Models\ProviderData;
@@ -34,6 +35,8 @@ use Illuminate\Support\Str;
 use App\Models\Feature;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Collection;
+use Carbon\CarbonPeriod;
+use IcehouseVentures\LaravelChartjs\Facades\Chartjs;
 
 class ZohoController extends Controller
 {
@@ -52,6 +55,7 @@ class ZohoController extends Controller
     protected $providerdata;
     protected $affiliate;
     protected $partneruser;
+    protected $click;
 
     public function __construct(ZohoService $zohoService)
     {
@@ -69,6 +73,7 @@ class ZohoController extends Controller
         $this->providerdata=new ProviderData();
         $this->affiliate=new Affiliate();
         $this->partneruser= new PartnerUser();
+        $this->click=new Click();
     }
 
     public function getAllPlans()
@@ -3507,6 +3512,27 @@ public function updateinviteuser(Request $request)
         return redirect()->back()->with('error', 'Failed to update user in Zoho. Changes were not saved in the database.');
     }
 }
+
+public function showChart()
+    {
+         // Get the first date of the current month and today's date
+         $startOfMonth = Carbon::now()->startOfMonth(); // 1st of the current month
+         $endOfMonth = Carbon::now(); // Today's date
+ 
+         // Fetch the total number of clicks between the 1st of the current month and today
+         $clicksData = DB::table('clicks')
+             ->select(DB::raw('DATE(click_ts) as date'), DB::raw('COUNT(*) as total_clicks'))
+             ->whereBetween(DB::raw('DATE(click_ts)'), [$startOfMonth->toDateString(), $endOfMonth->toDateString()])
+             ->groupBy(DB::raw('DATE(click_ts)'))
+             ->orderBy(DB::raw('DATE(click_ts)'))
+             ->get();
+ 
+         // Extract the dates and total clicks
+         $dates = $clicksData->pluck('date');
+         $totalClicks = $clicksData->pluck('total_clicks');
+
+        return view("chart", compact('dates', 'totalClicks'));
+    }
 
 
 }

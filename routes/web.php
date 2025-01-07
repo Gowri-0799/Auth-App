@@ -263,3 +263,8 @@ Route::post('/customers/{id}/mark-active', [ZohoController::class, 'markAsActive
      ->name('customer.markActive');
 
      Route::put('/users/update', [ZohoController::class, 'updateinviteuser'])->name('users.update');
+
+
+
+     Route::get("/usagereports", [ZohoController::class, "showChart"])
+    ->name("usagereports");
