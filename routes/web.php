@@ -268,3 +268,6 @@ Route::post('/customers/{id}/mark-active', [ZohoController::class, 'markAsActive
 
      Route::get("/usagereports", [ZohoController::class, "showChart"])
     ->name("usagereports");
+
+
+    

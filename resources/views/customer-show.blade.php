@@ -152,53 +152,48 @@
             </div>
 
             <!-- Primary User Section -->
-            <div class="d-flex flex-row mb-4">
-                <div class="col-lg-1 user-icon">
-                    <i style="font-size: 44px;" class="fa-solid fa-circle-user text-primary"></i>
-                </div>
-                <div class="col-lg-11 ms-3">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <p class="p-0 m-0 me-2">
-                                <strong>{{ $customer->company_name }} (Primary)</strong>
-                            </p>
-                            <p class="p-0 m-0">{{ $customer->email }}</p>
-                        </div>
-                        <div class="d-flex align-items-center  justify-content-end gap-3">
-                        @if($customer->first_login == 1)
-                            <form action="{{ route('resend.invite') }}" method="POST" style="display: inline;">
-                                @csrf
-                                <input type="hidden" name="email" value="{{ $customer->email }}">
-                                <button type="submit" 
-                                    class="btn button-clearlink text-primary fw-bold btn-sm resend-invite">
-                                    Resend invite
-                                </button>
-                            </form>
-                          @else
-                          <a href="#" class="text-primary ms-auto" data-bs-toggle="modal" data-bs-target="#updateAddressModal"  title="Edit">
-                             <i class="fa-solid fa-pen-to-square" title="Edit"></i>
-                          </a>
-                          
-               @if($partnerUsers->status === 'inactive')
-               <form id="markAsActiveForm" method="POST" action="{{ route('customer.markActive', $customer->zohocust_id) }}">
-                  @csrf
-                  <button type="submit" class="btn btn-light p-1 border-0 custom-tooltip" data-bs-toggle="tooltip" data-bs-placement="top" title="Mark as active">
-                     <i class="fa fa-user text-primary" aria-hidden="true"></i>
-                  </button>
-               </form>
-               @elseif($partnerUsers->status === 'active' || $partnerUsers->status === null)
-               <form id="markAsInactiveForm" method="POST" action="{{ route('customer.markInactive', $customer->zohocust_id) }}">
-                  @csrf
-                  <button type="submit" class="btn btn-light p-1 border-0 custom-tooltip" data-bs-toggle="tooltip" data-bs-placement="top" title="Mark as Inactive">
-                     <i class="fa fa-user-slash text-primary" aria-hidden="true"></i>
-                  </button>
-               </form>
-               @endif
-                         @endif
-                        </div>
-                    </div>
-                </div>
+<div class="d-flex flex-row mb-4">
+    <div class="col-lg-1 user-icon">
+        <i style="font-size: 44px;" class="fa-solid fa-circle-user text-primary"></i>
+    </div>
+    <div class="col-lg-11 ms-3">
+        <div class="d-flex align-items-center justify-content-between">
+            <!-- User Details -->
+            <div>
+                <p class="p-0 m-0 me-2">
+                    <strong>{{ $customer->company_name }} (Primary)</strong>
+                </p>
+                <p class="p-0 m-0">{{ $customer->email }}</p>
             </div>
+            <!-- Action Buttons -->
+            <div class="d-flex align-items-center gap-3">
+                <!-- Resend Invite -->
+                <form action="{{ route('resend.invite') }}" method="POST" style="display: inline;">
+                    @csrf
+                    <input type="hidden" name="email" value="{{ $customer->email }}">
+                    <button type="submit" class="btn button-clearlink text-primary fw-bold btn-sm resend-invite">
+                        Resend invite
+                    </button>
+                </form>
+                <!-- Edit Address -->
+                <a href="#" class="text-primary" data-bs-toggle="modal" data-bs-target="#updateAddressModal" title="Edit">
+                    <i class="fa-solid fa-pen-to-square" title="Edit"></i>
+                </a>
+                <!-- User Status -->
+                <form id="statusToggleForm" method="POST" 
+                    action="{{ $partnerUsers->status === 'inactive' ? route('customer.markActive', $customer->zohocust_id) : route('customer.markInactive', $customer->zohocust_id) }}">
+                    @csrf
+                    <button type="submit" class="btn btn-light p-1 border-0 custom-tooltip" 
+                        data-bs-toggle="tooltip" data-bs-placement="top" 
+                        title="{{ $partnerUsers->status === 'inactive' ? 'Mark as Active' : 'Mark as Inactive' }}">
+                        <i class="{{ $partnerUsers->status === 'inactive' ? 'fa fa-user' : 'fa fa-user-slash' }} text-primary" aria-hidden="true"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 
             <!-- Secondary Users Section -->
             @if($partnerUser->count() == 0)
@@ -218,7 +213,7 @@
                                 <p class="p-0 m-0">{{ $user->email ?? '' }}</p>
                             </div>
                             <div class="d-flex align-items-center  justify-content-end gap-3">
-                            @if($user->userLastLoggedin == NULL)
+                           
                                 <form action="{{ route('resend.invite') }}" method="POST" style="display: inline;">
                                     @csrf
                                     <input type="hidden" name="email" value="{{ $user->email }}">
@@ -228,7 +223,7 @@
                                     </button>
                                 </form>
 
-                             @else
+                            
 
                              <a href="#"  class="text-primary ms-auto" data-bs-toggle="modal" title="Edit" data-bs-target="#editUserModal" >
                                <i class="fa-solid fa-pen-to-square" title="Edit"></i>
@@ -248,7 +243,7 @@
                   </button>
                </form>
                @endif
-                             @endif
+                            
                             </div>
                         </div>
                     </div>
@@ -730,8 +725,11 @@
                 <form action="{{ route('customers.addupdate', $customer->zohocust_id) }}" method="POST">
                     @csrf
                     @method('PUT')
-                    <!-- Billing Street -->
-                     <strong> Partner Name: {{$customer->customer_name}}</strong>
+                                      <!-- Partner Name -->
+                    <div class="mb-3">
+                          <label for="customer_name" class="form-label">Partner Name*</label>
+                         <input type="text" class="form-control" id="customer_name" name="customer_name" value="{{ $customer->customer_name }}" required>
+                    </div>
                     <div class="mb-3">
                         <label for="billing_street" class="form-label">Address*</label>
                         <input type="text" class="form-control" id="billing_street" name="billing_street" value="{{ $customer->billing_street }}" required>

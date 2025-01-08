@@ -994,62 +994,67 @@ public function showCustomerInvoices()
 
 
 public function addupdate(Request $request, $id)
-    {
-        $customer = Partner::where('zohocust_id', $id)->firstOrFail();
-   
-        $validatedData = $request->validate([
-            'billing_street' => 'nullable|string',
-            'billing_city' => 'nullable|string',
-            'billing_state' => 'nullable|string',
-            'billing_country' => 'nullable|string',
-            'billing_zip' => 'nullable|string',
-        ]);
+{
+    $customer = Partner::where('zohocust_id', $id)->firstOrFail();
 
-        $customer->update([
-            'billing_street' => $validatedData['billing_street'] ?? $customer->billing_street,
-            'billing_city' => $validatedData['billing_city'] ?? $customer->billing_city,
-            'billing_state' => $validatedData['billing_state'] ?? $customer->billing_state,
-            'billing_country' => $validatedData['billing_country'] ?? $customer->billing_country,
-            'billing_zip' => $validatedData['billing_zip'] ?? $customer->billing_zip,
-        ]);
- 
-        try {
-            $this->updateAddCustomerInZoho($customer); 
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to update customer in Zoho: ' . $e->getMessage());
-        }
+    // Validate all inputs including customer_name
+    $validatedData = $request->validate([
+        'customer_name' => 'required|string|max:255',
+        'billing_street' => 'nullable|string',
+        'billing_city' => 'nullable|string',
+        'billing_state' => 'nullable|string',
+        'billing_country' => 'nullable|string',
+        'billing_zip' => 'nullable|string',
+    ]);
 
-        $customer->save();
+    // Update customer details
+    $customer->update([
+        'customer_name' => $validatedData['customer_name'],
+        'billing_attention' => $validatedData['customer_name'],
+        'shipping_attention'=> $validatedData['customer_name'],
+        'billing_street' => $validatedData['billing_street'] ?? $customer->billing_street,
+        'billing_city' => $validatedData['billing_city'] ?? $customer->billing_city,
+        'billing_state' => $validatedData['billing_state'] ?? $customer->billing_state,
+        'billing_country' => $validatedData['billing_country'] ?? $customer->billing_country,
+        'billing_zip' => $validatedData['billing_zip'] ?? $customer->billing_zip,
+    ]);
 
-        return redirect()->back()->with('success', 'Customer updated successfully!');
-
+    try {
+        $this->updateAddCustomerInZoho($customer); 
+    } catch (\Exception $e) {
+        return redirect()->back()->with('error', 'Failed to update customer in Zoho: ' . $e->getMessage());
     }
 
-    private function updateAddCustomerInZoho($customer)
-    {
- 
-        $accessToken = $this->zohoService->getAccessToken();
+    return redirect()->back()->with('success', 'Customer updated successfully!');
+}
 
-        $response = Http::withHeaders([
-            'Authorization' => 'Zoho-oauthtoken ' . $accessToken
-        ])->put('https://www.zohoapis.com/billing/v1/customers/' . $customer->zohocust_id, [
-            'organization_id' => config('services.zoho.organization_id'),
-            'display_name' => $customer->customer_name,
-            'billing_address' => [
-                'street' => $customer->billing_street,
-                'city' => $customer->billing_city,
-                'state' => $customer->billing_state,
-                'country' => $customer->billing_country,
-                'zip' => $customer->billing_zip,
-            ],
-        ]);
+private function updateAddCustomerInZoho($customer)
+{
+    $accessToken = $this->zohoService->getAccessToken();
 
-        if (!$response->successful()) {
-            throw new \Exception('Zoho API error: ' . $response->body());
-        }
+    $response = Http::withHeaders([
+        'Authorization' => 'Zoho-oauthtoken ' . $accessToken
+    ])->put('https://www.zohoapis.com/billing/v1/customers/' . $customer->zohocust_id, [
+        'organization_id' => config('services.zoho.organization_id'),
+        'display_name' => $customer->customer_name,
+        'first_name' => $customer->customer_name,
+       
+        'billing_address' => [
+            'billing_attention'=>$customer->customer_name,
+            'street' => $customer->billing_street,
+            'city' => $customer->billing_city,
+            'state' => $customer->billing_state,
+            'country' => $customer->billing_country,
+            'zip' => $customer->billing_zip,
+        ],
+    ]);
 
-        return true;
+    if (!$response->successful()) {
+        throw new \Exception('Zoho API error: ' . $response->body());
     }
+
+    return true;
+}
     public function editPayment()
     {
         $zoho_cust_id=Route::getCurrentRoute()->zoho_cust_id;
@@ -3513,26 +3518,36 @@ public function updateinviteuser(Request $request)
     }
 }
 
-public function showChart()
-    {
-         // Get the first date of the current month and today's date
-         $startOfMonth = Carbon::now()->startOfMonth(); // 1st of the current month
-         $endOfMonth = Carbon::now(); // Today's date
- 
-         // Fetch the total number of clicks between the 1st of the current month and today
-         $clicksData = DB::table('clicks')
-             ->select(DB::raw('DATE(click_ts) as date'), DB::raw('COUNT(*) as total_clicks'))
-             ->whereBetween(DB::raw('DATE(click_ts)'), [$startOfMonth->toDateString(), $endOfMonth->toDateString()])
-             ->groupBy(DB::raw('DATE(click_ts)'))
-             ->orderBy(DB::raw('DATE(click_ts)'))
-             ->get();
- 
-         // Extract the dates and total clicks
-         $dates = $clicksData->pluck('date');
-         $totalClicks = $clicksData->pluck('total_clicks');
+public function showChart(Request $request)
+{
+    // Default date range: current month's start to today
+    $defaultStartDate = Carbon::now()->startOfMonth()->toDateString();
+    $defaultEndDate = Carbon::now()->toDateString();
 
-        return view("chart", compact('dates', 'totalClicks'));
-    }
+    // Get the startDate and endDate from the request, with defaults
+    $startDate = $request->input('startDate', $defaultStartDate);
+    $endDate = $request->input('endDate', $defaultEndDate);
+
+    // Fetch the total number of clicks between the specified dates
+    $clicksData = DB::table('clicks')
+        ->select(DB::raw('DATE(click_ts) as date'), DB::raw('COUNT(*) as total_clicks'))
+        ->whereBetween(DB::raw('DATE(click_ts)'), [$startDate, $endDate])
+        ->groupBy(DB::raw('DATE(click_ts)'))
+        ->orderBy(DB::raw('DATE(click_ts)'))
+        ->get();
+
+    // Extract the dates and format them to 'd M Y'
+    $dates = $clicksData->pluck('date')->map(function ($date) {
+        return \Carbon\Carbon::parse($date)->format('d M Y');
+    });
+
+    // Extract the total clicks
+    $totalClicks = $clicksData->pluck('total_clicks');
+
+    // Pass variables to the view
+    return view("chart", compact('dates', 'totalClicks', 'defaultStartDate', 'defaultEndDate'));
+}
+
 
 
 }

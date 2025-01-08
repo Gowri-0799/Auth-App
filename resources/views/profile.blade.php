@@ -132,6 +132,10 @@
                         @method('PUT')
                         <!-- Billing Street -->
                         <div class="mb-3">
+                          <label for="customer_name" class="form-label">Partner Name*</label>
+                         <input type="text" class="form-control" id="customer_name" name="customer_name" value="{{ $customer->customer_name }}" required>
+                    </div>
+                        <div class="mb-3">
                             <label for="billing_street" class="form-label">Address*</label>
                             <input type="text" class="form-control" id="billing_street" name="billing_street" value="{{ $customer->billing_street }}" required>
                         </div>
