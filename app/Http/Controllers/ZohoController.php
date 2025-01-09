@@ -3517,18 +3517,69 @@ public function updateinviteuser(Request $request)
         return redirect()->back()->with('error', 'Failed to update user in Zoho. Changes were not saved in the database.');
     }
 }
-
 public function showChart(Request $request)
 {
-    // Default date range: current month's start to today
-    $defaultStartDate = Carbon::now()->startOfMonth()->toDateString();
-    $defaultEndDate = Carbon::now()->toDateString();
+    $filter = $request->input('filter', 'month_to_date');
+    $defaultStartDate = Carbon::now()->startOfMonth();
+    $defaultEndDate = Carbon::now();
 
-    // Get the startDate and endDate from the request, with defaults
-    $startDate = $request->input('startDate', $defaultStartDate);
-    $endDate = $request->input('endDate', $defaultEndDate);
+    $filterLabel = ''; // Label for the selected filter
+    switch ($filter) {
+        case 'this_month':
+            $startDate = Carbon::now()->startOfMonth();
+            $endDate = Carbon::now();
+            $filterLabel = 'This Month';
+            break;
 
-    // Fetch the total number of clicks between the specified dates
+        case 'last_12_months':
+            $startDate = Carbon::now()->subMonths(12)->startOfMonth();
+            $endDate = Carbon::now();
+            $filterLabel = 'Last 12 Months';
+            break;
+
+        case 'last_6_months':
+            $startDate = Carbon::now()->subMonths(6)->startOfMonth();
+            $endDate = Carbon::now();
+            $filterLabel = 'Last 6 Months';
+            break;
+
+        case 'last_3_months':
+            $startDate = Carbon::now()->subMonths(3)->startOfMonth();
+            $endDate = Carbon::now();
+            $filterLabel = 'Last 3 Months';
+            break;
+
+        case 'last_1_month':
+            $startDate = Carbon::now()->subMonth()->startOfMonth();
+            $endDate = Carbon::now();
+            $filterLabel = 'Last 1 Month';
+            break;
+
+        case 'last_month':
+            $startDate = Carbon::now()->subMonth()->startOfMonth();
+            $endDate = Carbon::now()->subMonth()->endOfMonth();
+            $filterLabel = 'Last Month';
+            break;
+
+        case 'last_7_days':
+            $startDate = Carbon::now()->subDays(7);
+            $endDate = Carbon::now();
+            $filterLabel = 'Last 7 Days';
+            break;
+
+        case 'custom_range':
+            $startDate = $request->input('startDate', $defaultStartDate);
+            $endDate = $request->input('endDate', $defaultEndDate);
+            $filterLabel = 'Custom Range';
+            break;
+
+        default:
+            $startDate = $defaultStartDate;
+            $endDate = $defaultEndDate;
+            $filterLabel = 'Month to Date';
+            break;
+    }
+
     $clicksData = DB::table('clicks')
         ->select(DB::raw('DATE(click_ts) as date'), DB::raw('COUNT(*) as total_clicks'))
         ->whereBetween(DB::raw('DATE(click_ts)'), [$startDate, $endDate])
@@ -3536,17 +3587,15 @@ public function showChart(Request $request)
         ->orderBy(DB::raw('DATE(click_ts)'))
         ->get();
 
-    // Extract the dates and format them to 'd M Y'
     $dates = $clicksData->pluck('date')->map(function ($date) {
         return \Carbon\Carbon::parse($date)->format('d M Y');
     });
 
-    // Extract the total clicks
     $totalClicks = $clicksData->pluck('total_clicks');
 
-    // Pass variables to the view
-    return view("chart", compact('dates', 'totalClicks', 'defaultStartDate', 'defaultEndDate'));
+    return view("chart", compact('dates', 'totalClicks', 'startDate', 'endDate', 'filter', 'filterLabel'));
 }
+
 
 
 
