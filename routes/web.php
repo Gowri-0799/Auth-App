@@ -202,6 +202,9 @@ Route ::get('nav/subscriptions/filter', [ZohoController::class, 'filterSubscript
 Route::get('nav/invoices/filter', [ZohoController::class, 'filterInvoicesnav'])->name('nav.invoice.filter');
 Route::get('nav/creditnote/filter', [ZohoController::class, 'filtercreditnav'])->name('nav.creditnote.filter');
 Route::get('nav/providerdata/filter', [ZohoController::class, 'filterProviderDatanav'])->name('nav.provider.filter');
+Route::get('nav/clicks/filter', [ZohoController::class, 'filterclicksnav'])->name('nav.clicks.filter');
+
+
 
 
 
@@ -263,11 +266,14 @@ Route::post('/customers/{id}/mark-active', [ZohoController::class, 'markAsActive
      ->name('customer.markActive');
 
      Route::put('/users/update', [ZohoController::class, 'updateinviteuser'])->name('users.update');
-
+     Route::get("admin/clicks-data", [ZohoController::class, "adminshowChart"])
+     ->name("adminusagereports");
 
 
      Route::get("/usagereports", [ZohoController::class, "showChart"])
     ->name("usagereports");
+
+    
 
 
     

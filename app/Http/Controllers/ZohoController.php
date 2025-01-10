@@ -2393,7 +2393,7 @@ public function show($zohocust_id, Request $request)
 
     }
     
-    $selectedSection = $request->query('section', 'overview');
+    $selectedSection = $request->query('section', 'overview','clicksdata');
 
     $subscriptions = DB::table('subscriptions')
         ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
@@ -2434,6 +2434,79 @@ public function show($zohocust_id, Request $request)
         ->get();
 
     $plans = DB::table('plans')->select('plan_code', 'plan_name', 'plan_price')->get();
+    $filter = $request->input('filter', 'month_to_date');
+    $defaultStartDate = Carbon::now()->startOfMonth();
+    $defaultEndDate = Carbon::now();
+
+    $filterLabel = ''; // Label for the selected filter
+    switch ($filter) {
+        case 'this_month':
+            $startDate = Carbon::now()->startOfMonth();
+            $endDate = Carbon::now();
+            $filterLabel = 'This Month';
+            break;
+
+        case 'last_12_months':
+            $startDate = Carbon::now()->subMonths(12)->startOfMonth();
+            $endDate = Carbon::now();
+            $filterLabel = 'Last 12 Months';
+            break;
+
+        case 'last_6_months':
+            $startDate = Carbon::now()->subMonths(6)->startOfMonth();
+            $endDate = Carbon::now();
+            $filterLabel = 'Last 6 Months';
+            break;
+
+        case 'last_3_months':
+            $startDate = Carbon::now()->subMonths(3)->startOfMonth();
+            $endDate = Carbon::now();
+            $filterLabel = 'Last 3 Months';
+            break;
+
+        case 'last_1_month':
+            $startDate = Carbon::now()->subMonth()->startOfMonth();
+            $endDate = Carbon::now();
+            $filterLabel = 'Last 1 Month';
+            break;
+
+        case 'last_month':
+            $startDate = Carbon::now()->subMonth()->startOfMonth();
+            $endDate = Carbon::now()->subMonth()->endOfMonth();
+            $filterLabel = 'Last Month';
+            break;
+
+        case 'last_7_days':
+            $startDate = Carbon::now()->subDays(7);
+            $endDate = Carbon::now();
+            $filterLabel = 'Last 7 Days';
+            break;
+
+        case 'custom_range':
+            $startDate = $request->input('startDate', $defaultStartDate);
+            $endDate = $request->input('endDate', $defaultEndDate);
+            $filterLabel = 'Custom Range';
+            break;
+
+        default:
+            $startDate = $defaultStartDate;
+            $endDate = $defaultEndDate;
+            $filterLabel = 'Month to Date';
+            break;
+    }
+
+    $clicksData = DB::table('clicks')
+        ->select(DB::raw('DATE(click_ts) as date'), DB::raw('COUNT(*) as total_clicks'))
+        ->whereBetween(DB::raw('DATE(click_ts)'), [$startDate, $endDate])
+        ->groupBy(DB::raw('DATE(click_ts)'))
+        ->orderBy(DB::raw('DATE(click_ts)'))
+        ->get();
+
+    $dates = $clicksData->pluck('date')->map(function ($date) {
+        return \Carbon\Carbon::parse($date)->format('d M Y');
+    });
+
+    $totalClicks = $clicksData->pluck('total_clicks');
 
     return view('customer-show', compact(
         'customer',
@@ -2447,7 +2520,7 @@ public function show($zohocust_id, Request $request)
          'upgradePlans',
          'partnerUsers',
          'companyInfo',
-         'providerData'
+         'providerData','dates', 'totalClicks','startDate', 'endDate', 'filter', 'filterLabel'
 
     ));
 }
@@ -2539,7 +2612,6 @@ public function filterSubscriptionsnav(Request $request)
     $endDate = $request->input('end_date');
     $perPage = $request->input('rows_to_show', 10); 
 
- 
     $query = DB::table('subscriptions')
         ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
         ->join('partners', 'subscriptions.zoho_cust_id', '=', 'partners.zohocust_id')
@@ -2585,7 +2657,7 @@ public function filterSubscriptionsnav(Request $request)
     ->select('plans.plan_price', 'plans.plan_id')
     ->first();
 
-$upgradePlans = $currentSubscription 
+   $upgradePlans = $currentSubscription 
     ? Plan::where('plan_price', '>', $currentSubscription->plan_price)->get() 
     : [];
 
@@ -2609,10 +2681,25 @@ $upgradePlans = $currentSubscription
 
     $providerData = ProviderData::where('zoho_cust_id', $customer->zohocust_id)->first();
 
+    // Get the first date of the current month and today's date
+   $startOfMonth = Carbon::now()->startOfMonth(); // 1st of the current month
+   $endOfMonth = Carbon::now(); // Today's date
+
+    $clicksData = DB::table('clicks')
+    ->select(DB::raw('DATE(click_ts) as date'), DB::raw('COUNT(*) as total_clicks'))
+    ->whereBetween(DB::raw('DATE(click_ts)'), [$startOfMonth->toDateString(), $endOfMonth->toDateString()])
+    ->groupBy(DB::raw('DATE(click_ts)'))
+    ->orderBy(DB::raw('DATE(click_ts)'))
+    ->get();
+
+// Extract the dates and total clicks
+$dates = $clicksData->pluck('date');
+$totalClicks = $clicksData->pluck('total_clicks');
+
     return view('customer-show', compact('customer','partnerUsers', 
     'subscriptions','selectedSection', 'affiliates', 'search', 'startDate',
      'endDate', 'invoices','creditnotes', 'partnerUser','plans','upgradePlans' ,'companyInfo',
-     'providerData'));
+     'providerData','dates', 'totalClicks'));
 }   
 
     
@@ -2688,11 +2775,26 @@ $upgradePlans = $currentSubscription
     ->first();
 
     $providerData = ProviderData::where('zoho_cust_id', $customer->zohocust_id)->first();
+
+    // Get the first date of the current month and today's date
+   $startOfMonth = Carbon::now()->startOfMonth(); // 1st of the current month
+   $endOfMonth = Carbon::now(); // Today's date
+
+    $clicksData = DB::table('clicks')
+    ->select(DB::raw('DATE(click_ts) as date'), DB::raw('COUNT(*) as total_clicks'))
+    ->whereBetween(DB::raw('DATE(click_ts)'), [$startOfMonth->toDateString(), $endOfMonth->toDateString()])
+    ->groupBy(DB::raw('DATE(click_ts)'))
+    ->orderBy(DB::raw('DATE(click_ts)'))
+    ->get();
+
+// Extract the dates and total clicks
+$dates = $clicksData->pluck('date');
+$totalClicks = $clicksData->pluck('total_clicks');
   
     return view('customer-show', compact('customer','partnerUsers',
      'subscriptions','selectedSection', 'affiliates', 'search', 'startDate', 'endDate',
       'invoices','creditnotes', 'partnerUser','plans','upgradePlans', 'companyInfo',
-      'providerData'));
+      'providerData','dates', 'totalClicks'));
 }
 
 public function filtercreditnav(Request $request)
@@ -2764,16 +2866,32 @@ $upgradePlans = $currentSubscription
 
     $providerData = ProviderData::where('zoho_cust_id', $customer->zohocust_id)->first();
 
+    // Get the first date of the current month and today's date
+   $startOfMonth = Carbon::now()->startOfMonth(); // 1st of the current month
+   $endOfMonth = Carbon::now(); // Today's date
+
+    $clicksData = DB::table('clicks')
+    ->select(DB::raw('DATE(click_ts) as date'), DB::raw('COUNT(*) as total_clicks'))
+    ->whereBetween(DB::raw('DATE(click_ts)'), [$startOfMonth->toDateString(), $endOfMonth->toDateString()])
+    ->groupBy(DB::raw('DATE(click_ts)'))
+    ->orderBy(DB::raw('DATE(click_ts)'))
+    ->get();
+
+// Extract the dates and total clicks
+$dates = $clicksData->pluck('date');
+$totalClicks = $clicksData->pluck('total_clicks');
+
     return view('customer-show', compact('customer','partnerUsers', 'subscriptions', 
     'selectedSection', 'affiliates','invoices', 'search', 'startDate', 'endDate', 
     'creditnotes','partnerUser','plans','upgradePlans', 'companyInfo',
-    'providerData'));
+    'providerData','dates', 'totalClicks'));
 }
 
 public function filterProviderDatanav(Request $request)
 {
 
     $zohocust_id = $request->input('zohocust_id');
+
     $search = $request->input('search');
     $startDate = $request->input('start_date');
     $endDate = $request->input('end_date');
@@ -2839,11 +2957,202 @@ public function filterProviderDatanav(Request $request)
     ->where('zoho_cust_id', $customer->zohocust_id)
     ->first();
 
+    // Get the first date of the current month and today's date
+   $startOfMonth = Carbon::now()->startOfMonth(); // 1st of the current month
+   $endOfMonth = Carbon::now(); // Today's date
+
+    $clicksData = DB::table('clicks')
+    ->select(DB::raw('DATE(click_ts) as date'), DB::raw('COUNT(*) as total_clicks'))
+    ->whereBetween(DB::raw('DATE(click_ts)'), [$startOfMonth->toDateString(), $endOfMonth->toDateString()])
+    ->groupBy(DB::raw('DATE(click_ts)'))
+    ->orderBy(DB::raw('DATE(click_ts)'))
+    ->get();
+
+// Extract the dates and total clicks
+$dates = $clicksData->pluck('date');
+$totalClicks = $clicksData->pluck('total_clicks');
+
     return view('customer-show', compact('customer','partnerUsers', 
     'subscriptions','selectedSection', 'affiliates', 'search', 'startDate','creditnotes',
      'endDate', 'invoices', 'partnerUser','plans','upgradePlans' ,'companyInfo',
-     'providerData'));
+     'providerData','dates', 'totalClicks'));
 }   
+
+public function filterclicksnav(Request $request)
+{
+    $zohocust_id = $request->input('zohocust_id');
+    $search = $request->input('search');
+    $startDate = $request->input('start_date');
+    $endDate = $request->input('end_date');
+    $perPage = $request->input('rows_to_show', 10);
+    $filter = $request->input('filter', 'month_to_date');
+
+    $defaultStartDate = Carbon::now()->startOfMonth();
+    $defaultEndDate = Carbon::now();
+    $filterLabel = '';
+
+    // Determine the date range for clicks based on the selected filter
+    switch ($filter) {
+        case 'this_month':
+            $startDate = Carbon::now()->startOfMonth();
+            $endDate = Carbon::now();
+            $filterLabel = 'This Month';
+            break;
+
+        case 'last_12_months':
+            $startDate = Carbon::now()->subMonths(12)->startOfMonth();
+            $endDate = Carbon::now();
+            $filterLabel = 'Last 12 Months';
+            break;
+
+        case 'last_6_months':
+            $startDate = Carbon::now()->subMonths(6)->startOfMonth();
+            $endDate = Carbon::now();
+            $filterLabel = 'Last 6 Months';
+            break;
+
+        case 'last_3_months':
+            $startDate = Carbon::now()->subMonths(3)->startOfMonth();
+            $endDate = Carbon::now();
+            $filterLabel = 'Last 3 Months';
+            break;
+
+        case 'last_1_month':
+            $startDate = Carbon::now()->subMonth()->startOfMonth();
+            $endDate = Carbon::now();
+            $filterLabel = 'Last 1 Month';
+            break;
+
+        case 'last_month':
+            $startDate = Carbon::now()->subMonth()->startOfMonth();
+            $endDate = Carbon::now()->subMonth()->endOfMonth();
+            $filterLabel = 'Last Month';
+            break;
+
+        case 'last_7_days':
+            $startDate = Carbon::now()->subDays(7);
+            $endDate = Carbon::now();
+            $filterLabel = 'Last 7 Days';
+            break;
+
+        case 'custom_range':
+            $startDate = $request->input('startDate', $defaultStartDate);
+            $endDate = $request->input('endDate', $defaultEndDate);
+            $filterLabel = 'Custom Range';
+            break;
+
+        default:
+            $startDate = $defaultStartDate;
+            $endDate = $defaultEndDate;
+            $filterLabel = 'Month to Date';
+            break;
+    }
+
+    $query = DB::table('subscriptions')
+        ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
+        ->join('partners', 'subscriptions.zoho_cust_id', '=', 'partners.zohocust_id')
+        ->select(
+            'subscriptions.subscription_id',
+            'subscriptions.subscription_number',
+            'partners.company_name',
+            'plans.plan_name',
+            'plans.plan_price',
+            'subscriptions.start_date',
+            'subscriptions.next_billing_at',
+            'subscriptions.status'
+        )
+        ->where('subscriptions.zoho_cust_id', $zohocust_id);
+
+    if ($startDate) {
+        $query->whereDate('subscriptions.start_date', '>=', $startDate);
+    }
+    if ($endDate) {
+        $query->whereDate('subscriptions.start_date', '<=', $endDate);
+    }
+
+    if ($search) {
+        $query->where('plans.plan_name', 'LIKE', "%{$search}%");
+    }
+
+    $subscriptions = $query->paginate($perPage);
+
+    $customer = Partner::where('zohocust_id', $zohocust_id)->first();
+
+    $partnerUser = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)
+        ->whereNotNull('zoho_cpid')
+        ->get();
+
+    $invoices = Invoice::where('zoho_cust_id', $customer->zohocust_id)->get();
+
+    $currentSubscription = DB::table('subscriptions')
+        ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
+        ->where('subscriptions.zoho_cust_id', $customer->zohocust_id)
+        ->select('plans.plan_price', 'plans.plan_id')
+        ->first();
+
+    $upgradePlans = $currentSubscription
+        ? Plan::where('plan_price', '>', $currentSubscription->plan_price)->get()
+        : [];
+
+    $creditnotes = Creditnote::where('zoho_cust_id', $customer->zohocust_id)->get();
+
+    $affiliates = DB::table('partner_affiliates')
+        ->join('affiliates', 'partner_affiliates.affiliate_id', '=', 'affiliates.id')
+        ->where('partner_affiliates.partner_id', $customer->zohocust_id)
+        ->select(
+            'affiliates.isp_affiliate_id',
+            'affiliates.domain_name'
+        )
+        ->get();
+
+    // Query to fetch clicks data within the selected range
+    $clicksData = DB::table('clicks')
+        ->select(DB::raw('DATE(click_ts) as date'), DB::raw('COUNT(*) as total_clicks'))
+        ->whereBetween(DB::raw('DATE(click_ts)'), [$startDate, $endDate])
+        ->groupBy(DB::raw('DATE(click_ts)'))
+        ->orderBy(DB::raw('DATE(click_ts)'))
+        ->get();
+
+    // Format the dates and extract total clicks
+    $dates = $clicksData->pluck('date')->map(function ($date) {
+        return \Carbon\Carbon::parse($date)->format('d M Y');
+    });
+    $totalClicks = $clicksData->pluck('total_clicks');
+
+    $selectedSection = 'clicks';
+
+    $plans = DB::table('plans')->select('plan_code', 'plan_name', 'plan_price')->get();
+    $partnerUsers = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)->first();
+    $companyInfo = DB::table('company_info')
+        ->where('zoho_cust_id', $customer->zohocust_id)
+        ->first();
+
+    $providerData = ProviderData::where('zoho_cust_id', $customer->zohocust_id)->first();
+
+    return view('customer-show', compact(
+        'customer',
+        'partnerUsers',
+        'subscriptions',
+        'selectedSection',
+        'affiliates',
+        'search',
+        'startDate',
+        'endDate',
+        'invoices',
+        'creditnotes',
+        'partnerUser',
+        'plans',
+        'upgradePlans',
+        'companyInfo',
+        'providerData',
+        'dates',
+        'totalClicks',
+        'filter',
+        'filterLabel'
+    ));
+
+}
+
 
 
 public function customenterprise(Request $request)
