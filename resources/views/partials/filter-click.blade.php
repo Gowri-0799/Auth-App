@@ -27,9 +27,9 @@
         <div class="col-md-1">
     <button type="submit" class="btn button-clearlink text-primary fw-bold">Submit</button>
 </div>
-<a href="{{ url()->current() }}" class="text-decoration-none text-primary d-inline-block" onclick="resetFilters(event)">Reset</a>
+<a href="{{ url()->current() }}" class="text-decoration-none text-primary d-inline-block" onclick="resetFilter(event)">Reset</a>
 <script>
-    function resetFilters(event) {
+    function resetFilter(event) {
         event.preventDefault(); // Prevent the default link behavior
         
         // Reset the dropdown and date fields
