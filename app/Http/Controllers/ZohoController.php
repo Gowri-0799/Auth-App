@@ -3829,10 +3829,13 @@ public function updateinviteuser(Request $request)
 public function showChart(Request $request)
 {
     $filter = $request->input('filter', 'month_to_date');
+    $showBy = $request->input('showBy', 'day');
     $defaultStartDate = Carbon::now()->startOfMonth();
     $defaultEndDate = Carbon::now();
 
     $filterLabel = ''; // Label for the selected filter
+    $groupByColumn = 'DATE(click_ts)';
+
     switch ($filter) {
         case 'this_month':
             $startDate = Carbon::now()->startOfMonth();
@@ -3889,21 +3892,63 @@ public function showChart(Request $request)
             break;
     }
 
+    switch ($showBy) {
+        case 'month':
+            $groupByColumn = DB::raw('YEAR(click_ts), MONTH(click_ts)');
+            break;
+        case 'week':
+            $groupByColumn = DB::raw('YEAR(click_ts), WEEK(click_ts)');
+            break;
+        case 'day':
+            $groupByColumn = DB::raw('DATE(click_ts)');
+            break;
+    }
+
     $clicksData = DB::table('clicks')
-        ->select(DB::raw('DATE(click_ts) as date'), DB::raw('COUNT(*) as total_clicks'))
+    ->select(
+        $groupByColumn,
+        DB::raw('COUNT(*) as total_clicks')
+        )
         ->whereBetween(DB::raw('DATE(click_ts)'), [$startDate, $endDate])
-        ->groupBy(DB::raw('DATE(click_ts)'))
-        ->orderBy(DB::raw('DATE(click_ts)'))
+        ->groupBy($groupByColumn)
+        ->orderBy($groupByColumn)
         ->get();
 
-    $dates = $clicksData->pluck('date')->map(function ($date) {
-        return \Carbon\Carbon::parse($date)->format('d M Y');
-    });
+    if ($showBy == 'month') {
+        // Format each period as 'M Y' (e.g., 'Jan 2023')
+        $dates = $clicksData->map(function ($monthData) {
+            // Access the year and month directly
+            $year = $monthData->{'YEAR(click_ts)'};
+            $month = $monthData->{'MONTH(click_ts)'};
+
+            // Format the month using the first day of the month
+            return Carbon::create($year, $month, 1)->format('M Y');
+        });
+    } elseif ($showBy == 'week') {
+        // Format each period as 'Week X, Y'
+        $dates = $clicksData->map(function ($weekData) {
+            // Access the year and week directly
+            $year = $weekData->{'YEAR(click_ts)'};
+            $week = $weekData->{'WEEK(click_ts)'};
+
+            // Get the start date of the week
+            $startOfWeek = Carbon::now()->setISODate($year, $week)->startOfWeek();
+
+            return 'Week ' . $week . ', ' . $year . ' (' . $startOfWeek->format('d M Y') . ')';
+        });
+    } else {
+        // Day-based grouping
+        // Directly format each day as 'd M Y' (e.g., '01 Jan 2023')
+        $dates = $clicksData->map(function ($date) {
+            return Carbon::parse($date->{'DATE(click_ts)'})->format('d M Y');
+        });
+    }
 
     $totalClicks = $clicksData->pluck('total_clicks');
 
-    return view("chart", compact('dates', 'totalClicks', 'startDate', 'endDate', 'filter', 'filterLabel'));
+    return view("chart", compact('dates', 'totalClicks', 'startDate', 'endDate', 'filter', 'filterLabel', 'showBy'));
 }
+
 
 
 

@@ -16,6 +16,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&amp;display=swap" rel="stylesheet">
     <link href="/assets/css/plan.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <!-- Font Awesome CSS -->
     <script async="" src="https://www.clarity.ms/s/0.7.49/clarity.js"></script><script async="" src="https://www.clarity.ms/tag/n8x5ekx79q"></script><script type="text/javascript">
         (function(c, l, a, r, i, t, y) {
