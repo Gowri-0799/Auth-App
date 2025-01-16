@@ -53,8 +53,12 @@
         <label class="d-block">&nbsp;</label>
         <button class="btn button-clearlink text-primary fw-bold" type="submit">Submit</button>
     </div>
+    
 </form>
-
+<!-- Add "Download CSV" Button -->
+<div>
+    <a href="{{ route('usagereports.download') }}" class="btn button-clearlink text-primary fw-bold">Download CSV</a>
+</div>
 
 
     <a href="{{ route('usagereports') }}" class="text-decoration-none mb-3 d-inline-block text-primary" style="margin-bottom: 20px;">Reset</a>

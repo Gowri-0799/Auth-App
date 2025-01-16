@@ -36,6 +36,7 @@ use App\Models\Feature;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Collection;
 use Carbon\CarbonPeriod;
+use Illuminate\Support\Facades\Response;
 use IcehouseVentures\LaravelChartjs\Facades\Chartjs;
 
 class ZohoController extends Controller
@@ -699,7 +700,7 @@ class ZohoController extends Controller
        
         if ($response->successful()) {
             $hostedPageData = $response->json();
-         
+        
                 $this->upgradeSubscriptionData($hostedPageData); 
                 return redirect()->route('thanksup');
               
@@ -1169,6 +1170,7 @@ private function updateAddCustomerInZoho($customer)
         ]);
         if ($response->successful()) {
             $hostedPageData = $response->json();
+           
             $hostedPageUrl = $hostedPageData['hostedpage']['url'];
             $hostedPageId = $hostedPageData['hostedpage']['hostedpage_id'];
 
@@ -2423,7 +2425,13 @@ public function show($zohocust_id, Request $request)
         : [];
    
     $invoices = Invoice::where('zoho_cust_id', $customer->zohocust_id)->get();
+ 
     $creditnotes = Creditnote::where('zoho_cust_id', $customer->zohocust_id)->get();
+
+    $refunds = DB::table('refunds')
+    ->where('zoho_cust_id', $customer->zohocust_id)
+    ->get();
+
     $affiliates = DB::table('partner_affiliates')
         ->join('affiliates', 'partner_affiliates.affiliate_id', '=', 'affiliates.id')  
         ->where('partner_affiliates.partner_id', $customer->zohocust_id)  
@@ -2517,11 +2525,10 @@ public function show($zohocust_id, Request $request)
         'selectedSection',
         'partnerUser',
         'plans',
-         'upgradePlans',
-         'partnerUsers',
-         'companyInfo',
-         'providerData','dates', 'totalClicks','startDate', 'endDate', 'filter', 'filterLabel'
-
+        'upgradePlans',
+        'partnerUsers',
+        'companyInfo',
+        'providerData','dates', 'totalClicks','startDate', 'endDate', 'filter', 'filterLabel','refunds',
     ));
 }
 
@@ -3949,6 +3956,182 @@ public function showChart(Request $request)
     return view("chart", compact('dates', 'totalClicks', 'startDate', 'endDate', 'filter', 'filterLabel', 'showBy'));
 }
 
+public function downloadCsv(Request $request)
+{
+    // Fetch the same filtered data as in the showChart function
+    $filter = $request->input('filter', 'month_to_date');
+    $showBy = $request->input('showBy', 'day');
+    $defaultStartDate = Carbon::now()->startOfMonth();
+    $defaultEndDate = Carbon::now();
+
+    $startDate = $defaultStartDate;
+    $endDate = $defaultEndDate;
+    $groupByColumn = DB::raw('DATE(click_ts)');
+
+    switch ($filter) {
+        case 'this_month':
+            $startDate = Carbon::now()->startOfMonth();
+            $endDate = Carbon::now();
+            break;
+
+        case 'last_12_months':
+            $startDate = Carbon::now()->subMonths(12)->startOfMonth();
+            $endDate = Carbon::now();
+            break;
+
+        case 'last_6_months':
+            $startDate = Carbon::now()->subMonths(6)->startOfMonth();
+            $endDate = Carbon::now();
+            break;
+
+        case 'last_3_months':
+            $startDate = Carbon::now()->subMonths(3)->startOfMonth();
+            $endDate = Carbon::now();
+            break;
+
+        case 'last_1_month':
+            $startDate = Carbon::now()->subMonth()->startOfMonth();
+            $endDate = Carbon::now();
+            break;
+
+        case 'last_month':
+            $startDate = Carbon::now()->subMonth()->startOfMonth();
+            $endDate = Carbon::now()->subMonth()->endOfMonth();
+            break;
+
+        case 'last_7_days':
+            $startDate = Carbon::now()->subDays(7);
+            $endDate = Carbon::now();
+            break;
+
+        case 'custom_range':
+            $startDate = Carbon::parse($request->input('startDate', $defaultStartDate));
+            $endDate = Carbon::parse($request->input('endDate', $defaultEndDate));
+            break;
+    }
+
+    switch ($showBy) {
+        case 'month':
+            $groupByColumn = DB::raw('YEAR(click_ts), MONTH(click_ts)');
+            break;
+
+        case 'week':
+            $groupByColumn = DB::raw('YEAR(click_ts), WEEK(click_ts)');
+            break;
+
+        case 'day':
+        default:
+            $groupByColumn = DB::raw('DATE(click_ts)');
+            break;
+    }
+
+    $clicksData = DB::table('clicks')
+        ->select($groupByColumn, DB::raw('COUNT(*) as total_clicks'))
+        ->whereBetween(DB::raw('DATE(click_ts)'), [$startDate, $endDate])
+        ->groupBy($groupByColumn)
+        ->orderBy($groupByColumn)
+        ->get();
+
+    // Prepare CSV Data
+    $csvData = [['Date Range', 'Number of Clicks']];
+    foreach ($clicksData as $data) {
+        if ($showBy == 'month') {
+            $dateRange = Carbon::create($data->{'YEAR(click_ts)'}, $data->{'MONTH(click_ts)'}, 1)->format('M Y');
+        } elseif ($showBy == 'week') {
+            $year = $data->{'YEAR(click_ts)'};
+            $week = $data->{'WEEK(click_ts)'};
+            $startOfWeek = Carbon::now()->setISODate($year, $week)->startOfWeek()->format('d M Y');
+            $endOfWeek = Carbon::now()->setISODate($year, $week)->endOfWeek()->format('d M Y');
+            $dateRange = "$startOfWeek - $endOfWeek";
+        } else {
+            $dateRange = Carbon::parse($data->{'DATE(click_ts)'})->format('d M Y');
+        }
+
+        $csvData[] = [$dateRange, $data->total_clicks];
+    }
+
+    // Convert to CSV Format
+    $filename = 'usage_reports_' . Carbon::now()->format('Y_m_d_His') . '.csv';
+    $handle = fopen('php://output', 'w');
+    ob_start();
+
+    foreach ($csvData as $row) {
+        fputcsv($handle, $row);
+    }
+
+    fclose($handle);
+    $output = ob_get_clean();
+
+    // Return CSV as Download
+    return Response::make($output, 200, [
+        'Content-Type' => 'text/csv',
+        'Content-Disposition' => "attachment; filename=\"$filename\"",
+    ]);
+}
+public function refundPayment(Request $request)
+{
+    // Validate the incoming request
+    $validated = $request->validate([
+        'invoice_number' => 'required',
+        'amount' => 'required|numeric',
+        'description' => 'required|string',
+        'zohocust_id' => 'required|string',
+    ]);
+
+    // Retrieve Zoho access token
+    $accessToken = $this->zohoService->getAccessToken();
+
+    // Ensure the payment_id is provided
+    $paymentId = $request->input('payment_id'); 
+    if (!$paymentId) {
+        return back()->withErrors('Payment ID is required for the refund.');
+    }
+
+    // Make the API request
+    $response = Http::withHeaders([
+        'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
+        'X-com-zoho-subscriptions-organizationid' => config('services.zoho.zoho_org_id'),
+        'Content-Type' => 'application/json',
+    ])->post("https://www.zohoapis.com/billing/v1/payments/{$paymentId}/refunds", [
+        'amount' => $validated['amount'],
+        'description' => $validated['description'],
+    ]);
+
+    // Parse the response
+    $responseData = $response->json();
+
+    if ($response->successful() && isset($responseData['refund'])) {
+        $refundData = $responseData['refund'];
+        $creditnote = $refundData['creditnote'] ?? [];
+        $autotransaction = $refundData['autotransaction'] ?? [];
+
+        // Insert refund data into the database
+        \DB::table('refunds')->insert([
+            'date' => $refundData['date'] ?? now(),
+            'refund_id' => $refundData['refund_id'] ?? null,
+            'creditnote_id' => $creditnote['creditnote_id'] ?? null,
+            'creditnote_number' => $creditnote['creditnote_number'] ?? null,
+            'balance_amount' => $creditnote['balance_amount'] ?? 0,
+            'refund_amount' => $refundData['amount'] ?? 0,
+            'description' => $refundData['description'] ?? '',
+            'zoho_cust_id' => $refundData['customer_id'] ?? null,
+            'parent_payment_id' => $autotransaction['autotransaction_id'] ?? null,
+            'status' => $refundData['status'] ?? 'pending',
+            'gateway_transaction_id' => $autotransaction['gateway_transaction_id'] ?? null,
+            'refund_mode' => $refundData['refund_mode'] ?? 'unknown',
+            'payment_method_id' => $autotransaction['card_id'] ?? null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Redirect with a success message
+        return redirect()->back()->with('success', 'Refund processed and saved successfully.');
+    } else {
+        // Handle API error
+        $errorMessage = $responseData['message'] ?? 'An unknown error occurred.';
+        return redirect()->back()->with('error', 'Failed to process the refund: ' . $errorMessage);
+    }
+}
 
 
 

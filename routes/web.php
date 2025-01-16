@@ -204,8 +204,9 @@ Route::get('nav/creditnote/filter', [ZohoController::class, 'filtercreditnav'])-
 Route::get('nav/providerdata/filter', [ZohoController::class, 'filterProviderDatanav'])->name('nav.provider.filter');
 Route::get('nav/clicks/filter', [ZohoController::class, 'filterclicksnav'])->name('nav.clicks.filter');
 
+Route::post('/refund-payment', [ZohoController::class, 'refundPayment'])->name('refund.payment');
 
-
+Route::get('/usagereports/download', [ZohoController::class, 'downloadCsv'])->name('usagereports.download');
 
 
 Route ::get('/pdt/{creditnote_id}', [ZohoController::class, 'pdfdownload'])->name('pdf.download');

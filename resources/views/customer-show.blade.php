@@ -60,8 +60,9 @@
       <a class="nav-link {{ $selectedSection === 'creditnote' ? 'active' : '' }}" 
          href="{{ route('customers.show', $customer->zohocust_id) }}?section=creditnote">Credit Notes</a>
    </li>
-   <li class="nav-item">
-      <a class="nav-link" href="#">Refunds</a>
+   <li class="nav-item"> 
+      <a class="nav-link {{ $selectedSection === 'refunds' ? 'active' : '' }}" 
+         href="{{ route('customers.show', $customer->zohocust_id) }}?section=refunds">Refunds</a>
    </li>
    <li class="nav-item" >
       <a class="nav-link {{ $selectedSection === 'providerdata' ? 'active' : '' }}"
@@ -592,6 +593,67 @@
         <canvas id="myChart"></canvas>
     </div>
 </div>
+<!-- Refunds -->
+<div id="refunds" class="section mt-4" style="{{ $selectedSection !== 'refunds' ? 'display: none;' : '' }}">
+<div class="d-flex justify-content-between align-items-center">
+    <span style="font-family: Arial, sans-serif; font-size: 21px; font-weight: bold;">Refunds</span>
+    <a href="#" class="btn btn-primary" style="margin-right: 100px;" data-bs-toggle="modal" data-bs-target="#refundModal">
+    Refund a Payment
+</a>
+</div>
+
+    <br>
+    <!-- <form method="GET" action="" class="row mb-4 align-items-end">
+      @include('partials.filter-form')
+      <input type="hidden" name="zohocust_id" value="{{ $customer->zohocust_id }}">
+      <input type="hidden" name="section" value="refunds">
+    </form> -->
+   
+    @if($refunds->count() == 0)
+    <div class="d-flex align-items-center justify-content-center border p-3" style="width: 70%; height: 100px; margin: 0 auto; font-size: 20px;">
+      No Refunds found.
+    </div>
+    @else
+    <div class="table-responsive">
+      <table class="table table-hover text-center table-bordered" style="background-color:#fff; width: 100%; max-width: 100%;">
+         <thead class="table-light">
+            <tr>
+               <th style="background-color:#EEF3FB;">#</th>
+               <th style="background-color:#EEF3FB;">Date</th>
+               <th style="background-color:#EEF3FB;">Refund ID</th>
+               <th style="background-color:#EEF3FB;">Credit Note #</th>
+               <th style="background-color:#EEF3FB;">Refund Amount (USD)</th>
+               <th style="background-color:#EEF3FB;">Balance (USD)</th>
+               <th style="background-color:#EEF3FB;">Status</th>
+               <th style="background-color:#EEF3FB;">Description</th>
+           
+            </tr>
+         </thead>
+         <tbody>
+            @foreach($refunds as $index => $refund)
+            <tr>
+               <td>{{ (int)$index + 1 }}</td>
+               <td>{{ \Carbon\Carbon::parse($refund->date)->format('d-M-Y') }}</td>
+               <td>{{ $refund->refund_id }}</td>
+               <td>{{ $refund->creditnote_number }}</td>
+               <td>{{ number_format($refund->refund_amount, 2) }}</td>
+               <td>{{ number_format($refund->balance_amount, 2) }}</td>
+               <td class="p-2 status">
+                  @if(strtolower($refund->status) == 'completed')
+                  <span class="badge-success">Completed</span>
+                  @else
+                  <span class="badge-fail">Pending</span>
+                  @endif
+               </td>
+               <td>{{ $refund->description }}</td>
+              
+            </tr>
+            @endforeach
+         </tbody>
+      </table>
+    </div>
+    @endif
+</div>
 
 <!-- Create subscription model-->
 <div class="modal fade" id="downgradeModal" tabindex="-1" aria-labelledby="downgradeModalLabel" aria-hidden="true">
@@ -711,6 +773,53 @@
       </div>
    </div>
 </div>
+
+<!-- Refund a Payment Modal -->
+<div class="modal fade" id="refundModal" tabindex="-1" aria-labelledby="refundModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="refundModalLabel">Refund a Payment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+            <form action="{{ route('refund.payment') }}" method="POST">
+                    @csrf
+                    <div class="mb-3">
+                        <label for="invoice-number" class="form-label">Invoice Number*</label>
+                        <select class="form-select" id="invoice-number" name="invoice_number" required>
+                            <option value="">Select an Invoice</option>
+                            <!-- Populate dynamically -->
+                            @foreach ($invoices as $invoice)
+                            <option value="{{ $invoice->invoice_number }}">{{ $invoice->invoice_number }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="amount" class="form-label">Amount*</label>
+                        <input type="number" class="form-control" id="amount" name="amount" placeholder="Enter the amount" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description*</label>
+                        <textarea class="form-control" id="description" name="description" placeholder="Description" required></textarea>
+                    </div>
+                    <input type="hidden" name="zohocust_id" value="{{ $customer->zohocust_id }}">
+                    
+                    @foreach ($invoices as $invoice)
+                        @php
+                            $paymentDetails = json_decode($invoice->payment_details, true);
+                        @endphp
+                        @if ($paymentDetails && count($paymentDetails) > 0)
+                            <input type="hidden" name="payment_id" value="{{ $paymentDetails[0]['payment_id'] }}">
+                        @endif
+                    @endforeach                
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Address Update Modal -->
 <div class="modal fade" id="updateAddressModal" tabindex="-1" aria-labelledby="updateAddressModalLabel" aria-hidden="true">
    <div class="modal-dialog">
@@ -865,6 +974,7 @@
        document.getElementById('creditnote').style.display = 'none';
        document.getElementById('providerdata').style.display = 'none';
        document.getElementById('clicks').style.display = 'none';
+       document.getElementById('refunds').style.display = 'none';
        document.getElementById(sectionId).style.display = 'block';
    
        // Remove active class from all tabs
