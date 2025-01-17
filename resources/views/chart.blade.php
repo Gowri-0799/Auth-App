@@ -1,7 +1,7 @@
 @extends("layouts.admin")
 @section('title', "Usage Reports")
 @section('content')
-<div id="content" style="box-sizing: border-box; margin-left:300px; width:70%;" class="p-3">
+<div id="content" class="p-3" style="box-sizing: border-box; margin-left:300px; width:70%;" >
    <div class="card shadow-sm border-0 rounded-lg">
       <div class="card-header">
          <!-- Title with margin-bottom -->
@@ -11,7 +11,7 @@
       <!-- Date Filter Form -->
 <form method="GET" action="{{ route('usagereports') }}" class="d-flex align-items-center mb-4">
     <!-- Filter Dropdown -->
-    <div class="me-2">
+   <div class="col-12 col-md-3">
             <label for="filter" class="form-label fw-bold" style="font-family: Arial, sans-serif; font-size: 14px;">Filter</label>
         <select id="filter" name="filter" class="form-select" style="width: 150px;">
             <option value="month_to_date" {{ request('filter') == 'month_to_date' ? 'selected' : '' }}>Month to Date</option>
@@ -27,7 +27,7 @@
          </div>
 
     <!-- Show Data By Dropdown -->
-    <div class="me-2">
+     <div class="col-12 col-md-3">
         <label for="showBy" class="form-label fw-bold" style="font-family: Arial, sans-serif; font-size: 14px;">Show Data By</label>
         <select id="showBy" name="showBy" class="form-select" style="width: 150px;">
             <option value="month" {{ request('showBy') == 'month' ? 'selected' : '' }}>Month</option>
@@ -36,27 +36,27 @@
         </select>
     </div>
          <!-- Start Date Field -->
-    <div class="me-2">
+   <div class="col-12 col-md-2">
             <label for="startDate" class="form-label fw-bold" style="font-family: Arial, sans-serif; font-size: 14px;">Start Date</label>
             <input type="date" id="startDate" name="startDate" class="form-control" 
             value="{{ request('startDate', \Carbon\Carbon::parse($startDate)->toDateString()) }}" style="width: 130px;" disabled>
          </div>
          <!-- End Date Field -->
-    <div class="me-2">
+     <div class="col-12 col-md-2">
             <label for="endDate" class="form-label fw-bold" style="font-family: Arial, sans-serif; font-size: 14px;">End Date</label>
             <input type="date" id="endDate" name="endDate" class="form-control" 
             value="{{ request('endDate', \Carbon\Carbon::parse($endDate)->toDateString()) }}" style="width: 130px;" disabled>
     </div>
 
     <!-- Submit Button -->
-    <div>
+   <div class="col-12 col-md-2">
         <label class="d-block">&nbsp;</label>
         <button class="btn button-clearlink text-primary fw-bold" type="submit">Submit</button>
     </div>
     
 </form>
 <!-- Add "Download CSV" Button -->
-<div>
+<div class="col-12 col-md-2">
     <a href="{{ route('usagereports.download') }}" class="btn button-clearlink text-primary fw-bold">Download CSV</a>
 </div>
 
@@ -65,7 +65,7 @@
 
     <!-- Display Date Range -->
     <div class="mb-4 text-center">
-        <p style="font-family: Arial, sans-serif; font-size: 16px;">
+        <p style="font-family: Arial, sans-serif; font-size: 16px;" class="fw-bold">
             Date From: 
             <span class="fw-bold">{{ \Carbon\Carbon::parse($startDate)->format('d M Y') }}</span>
             to 
@@ -73,7 +73,7 @@
          </p>
       </div>
       <!-- Chart -->
-      <div style="width:90%; height:80%">
+       <div style="width:100%; height:400px;">
          <canvas id="myChart"></canvas>
       </div>
    </div>

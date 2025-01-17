@@ -130,8 +130,8 @@
             </aside>
         </div>
 
-        <!-- Content -->
-        <div class="content">
+        <!-- Content Section -->
+        <div class="content p-4" style="flex-grow: 1;">
             @yield('content')
         </div>
     </div>
