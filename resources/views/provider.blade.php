@@ -134,37 +134,38 @@
 
     </div>
     @if($providerData->count() == 0)
-    <!-- Show message if no data found -->
-    <div class=" text-center">
-        No data found for this Partner.
-    </div>
-@else
-    <!-- Show table if data exists -->
-    <table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Date</th>
-            <th>File Name</th>
-            <th>File Size</th>
-            <th>ZIP Count</th>
-            <th>CSV File URL</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach($providerData as $data)
-            <tr>
-                <td>{{ \Carbon\Carbon::parse($data->created_at)->format('Y-m-d') }}</td>
-                <td>{{ $data->file_name }}</td>
-                <td>{{ $data->file_size }} KB</td>
-                <td>{{ $data->zip_count ?? 0 }}</td>
-                <td>
-                    <a class="btn btn-primary btn-sm" href="{{ Storage::url($data->url) }}" download>Download</a>
-                </td>
-            </tr>
-        @endforeach
-    </tbody>
-</table>
-@endif
+            <div class="text-center">
+                No data found for this Partner.
+            </div>
+        @else
+            <!-- Responsive Table -->
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>File Name</th>
+                            <th>File Size</th>
+                            <th>ZIP Count</th>
+                            <th>CSV File URL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($providerData as $data)
+                            <tr>
+                                <td>{{ \Carbon\Carbon::parse($data->created_at)->format('Y-m-d') }}</td>
+                                <td>{{ $data->file_name }}</td>
+                                <td>{{ $data->file_size }} KB</td>
+                                <td>{{ $data->zip_count ?? 0 }}</td>
+                                <td>
+                                    <a class="btn btn-primary btn-sm" href="{{ Storage::url($data->url) }}" download>Download</a>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div> 
+        @endif
     
     <div class="mt-2 mb-5 paginate">
         <div class="row">

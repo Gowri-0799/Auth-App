@@ -3,40 +3,43 @@
 @section('title', "Credit Notes")
 
 @section('content')
-<div id="content" class="p-3" style="background-color: #f8f9fc; margin-left: 240px; width: calc(100% - 220px);">
-    <div class="container-fluid mt-3">
-        <!-- Card Wrapper for the Table -->
+<div id="content" class="container-fluid mt-3" style="box-sizing: border-box; margin-left:250px; width:100%;" >
+    <div class="row">
+    
+
+        <!-- Main Content -->
+        <div class="col-12 col-lg-10">
         <div class="card shadow-sm border-0 rounded-lg">
             <div class="card-header">
-                <h2 class="mb-5" style="font-size: 30px;">Credit Notes</h2> <!-- Title updated -->
+                <h2 class="mb-4 text-center text-lg-start" style="font-size: 28px;">Credit Notes</h2> <!-- Title updated -->
             </div>
 
             <div class="card-body p-3">
                 <!-- Table Filters Section -->
-                <form class="row mb-4 align-items-end" method="GET" action="{{ route('creditnotes.filter') }}"> <!-- Route updated -->
-                    <div class="col-md-2">
-                        <label for="startDate" class=" fw-bold" style="font-family: Arial, sans-serif; font-size: 14px;">Start Date</label>
-                        <input type="date" id="startDate" name="startDate" class="form-control" value="{{ request('startDate') }}" style="font-family: Arial, sans-serif; font-size: 14px;">
+                <form class="row g-3 mb-4" method="GET" action="{{ route('creditnotes.filter') }}"> <!-- Route updated -->
+                    <div class="col-12 col-md-6 col-lg-3">
+                        <label for="startDate" class="form-label fw-bold" >Start Date</label>
+                        <input type="date" id="startDate" name="startDate" class="form-control" value="{{ request('startDate') }}" >
                     </div>
-                    <div class="col-md-2">
-                        <label for="endDate" class=" fw-bold" style="font-family: Arial, sans-serif; font-size: 14px;">End Date</label>
-                        <input type="date" id="endDate" name="endDate" class="form-control" value="{{ request('endDate') }}" style="font-family: Arial, sans-serif; font-size: 14px;">
+                    <div class="col-12 col-md-6 col-lg-3">
+                        <label for="endDate" class="form-label fw-bold">End Date</label>
+                        <input type="date" id="endDate" name="endDate" class="form-control" value="{{ request('endDate') }}" >
                     </div>
-                    <div class="col-md-2">
-                        <label for="showEntries" class=" fw-bold" style="font-family: Arial, sans-serif; font-size: 14px;">Show</label>
-                        <select id="showEntries" name="show" class="form-select" style="font-family: Arial, sans-serif; font-size: 14px;">
+                    <div class="col-12 col-md-6 col-lg-2">
+                        <label for="showEntries" class="form-label fw-bold" >Show</label>
+                        <select id="showEntries" name="show" class="form-select">
                             <option value="10" {{ request('show') == 10 ? 'selected' : '' }}>10</option>
                             <option value="25" {{ request('show') == 25 ? 'selected' : '' }}>25</option>
                             <option value="50" {{ request('show') == 50 ? 'selected' : '' }}>50</option>
                         </select>
                     </div>
-                    <div class="col-md-3">
-                        <label for="search" class=" fw-bold" style="font-family: Arial, sans-serif; font-size: 14px;">Search</label>
-                        <input type="text" id="search" name="search" class="form-control" placeholder="Search here..." value="{{ request('search') }}" style="font-family: Arial, sans-serif; font-size: 14px;">
+                     <div class="col-12 col-md-6 col-lg-3">
+                        <label for="search" class="form-label fw-bold">Search</label>
+                        <input type="text" id="search" name="search" class="form-control" placeholder="Search here..." value="{{ request('search') }}">
                     </div>
-                    <div class="col-md-1">
-                    <button class="btn button-clearlink text-primary fw-bold" type="submit">Submit</button>
-                        <!-- <button type="submit" class="btn btn-primary w-100" style="min-width: 80px; font-family: Arial, sans-serif; font-size: 14px; background-color:#DCE9FE">Submit</button> -->
+                    <div class="col-12 col-md-6 col-lg-1 d-flex align-items-end">
+                    <button class="btn btn-primary w-100" type="submit">Submit</button>
+                        
                     </div>
                 </form>
 
@@ -48,8 +51,8 @@
                     <h3>No credit notes found.</h3>
                 @else
                     <!-- Styled Bootstrap Table -->
-                    <div class="table-responsive">
-                        <table class="table table-hover text-center table-bordered" style="background-color:#fff; width: 100%; max-width: 100%;">
+                    <div class="table-responsive"  style="overflow-x: auto;">
+                        <table class="table table-hover text-center table-bordered">
                             <thead class="table-light">
                                 <tr>
                                     <th style="background-color:#EEF3FB;">#</th>
@@ -99,16 +102,12 @@
     document.addEventListener('DOMContentLoaded', function () {
         const startDateInput = document.getElementById('start_date');
         const endDateInput = document.getElementById('end_date');
-
-        // Update the min attribute of the End Date input when Start Date changes
         startDateInput.addEventListener('change', function () {
-            const startDate = this.value; // Get selected start date
+            const startDate = this.value; 
             if (startDate) {
-                endDateInput.min = startDate; // Set the min attribute
+                endDateInput.min = startDate; 
             }
         });
-
-        // Ensure the End Date is valid if already selected
         const currentStartDate = startDateInput.value;
         if (currentStartDate) {
             endDateInput.min = currentStartDate;
