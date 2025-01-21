@@ -2,7 +2,8 @@
 @section('title', "Provider Data")
 
 @section('content')
-<div id="content" style="box-sizing: border-box; margin-left:300px; width:80%" class="p-3">
+<div id="content" style="box-sizing: border-box;" class="p-3">
+
 <div class="col-md-12">
 
 <div class="mb-2 w-100">

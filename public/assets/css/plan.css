@@ -210,6 +210,9 @@ padding: 8px 17px 8px 17px;
 
 .wrapper {
     display: flex;
+    position: relative; /* Ensure it's positioned relative to allow child positioning */
+    z-index: 1;         /* Ensure it's beneath the sidebar */
+    overflow: visible;  /* Prevent clipping of the sidebar */
 }
 
 .alert-margin{
@@ -259,10 +262,6 @@ padding: 8px 17px 8px 17px;
    
 }
 
-.sidebar-nav {
-    padding: 0.5rem 0;
-    flex: 1 1 auto;
-}
 
 .sidebar-link-footer {
     font-size: 0.8rem;
@@ -310,7 +309,6 @@ a.sidebar-link:hover {
     margin:5px;
 }
 
-
 .sidebar-item {
     position: relative;
 }
@@ -322,9 +320,9 @@ border-radius: 6px;
 }
 
 .navbar {
-    background-color: #f8f9fa;
-    padding: 10px;
-    display: none;
+    margin: 0; /* Removes unnecessary margins */
+    padding: 0; /* Adjust padding as needed */
+    z-index: 1050; /* Keeps it above the sidebar */
 }
 
 .sidebar-sm-header {
@@ -629,10 +627,6 @@ div#alert {
       margin: 0; /* Optional - if you need to center the text box */
   }
   
-  /* For Firefox */
-  input[type=number] {
-      -moz-appearance: textfield; /* Removes default Firefox style */
-  }
 
   /* Hide default file input */
   .partner-card{
@@ -792,14 +786,6 @@ div#alert {
 
     .bottom-footer{
         margin-bottom: 100px;
-    }
-
-    #sidebar {
-        width: 100%;
-        text-align: left;
-        z-index: 1000;
-        display: none;
-        background-color: white;
     }
 
     a.sidebar-link {
@@ -1087,4 +1073,48 @@ div#alert {
     background-color: #ddd;
   }
  
-       
+
+#sidebar::-webkit-scrollbar {
+    width: 10px;
+}
+
+#sidebar::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 5px;
+}
+
+.sidebar-link {
+    display: block;
+    padding: 10px 20px;
+    font-size: 1rem;
+    color: #0d6efd;
+    text-decoration: none;
+    border-left: 3px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.sidebar-link:hover {
+    background-color: rgba(122, 121, 121, 0.075);
+    border-left: 3px solid #0d6efd;
+}
+
+.sidebar-logo {
+    text-align: center;
+    padding: 20px;
+}
+
+.sidebar-logo img {
+    max-width: 180px;
+    height: auto;
+}
+
+/* Content and Overlay Adjustments */
+.content {
+    margin-left: 0;
+    transition: margin-left 0.3s ease-in-out;
+}
+
+#sidebar.show ~ .content {
+    margin-left: 260px;
+}
+

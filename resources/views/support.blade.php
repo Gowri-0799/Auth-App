@@ -2,17 +2,15 @@
 @section('title', "Support Tickets")
 
 @section('content')
-<div id="content" class="container-fluid mt-3" style="box-sizing: border-box; margin-left:250px; width:100%;" >
-    
+<div id="content" class="container-fluid mt-3" style="box-sizing: border-box; min-height: 100vh; padding-bottom: 20px;">
     <div class="row">
-       
         <!-- Main Content -->
-        <div class="col-12 col-lg-10">
+        <div class="col-12">
             <!-- Alert Messages -->
-            <div id="alert-container" style="position: relative;">
+            <div id="alert-container">
                 @if($errors->any())
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <strong>Error!</strong> 
+                        <strong>Error!</strong>
                         <ul class="mb-0">
                             @foreach ($errors->all() as $error)
                                 <li>{{ $error }}</li>
@@ -40,7 +38,7 @@
                 </div>
                 <div class="card-body p-3">
                     <!-- Filters -->
-                    <form class="row g-3 mb-4" method="GET" action="{{ route('customer.support') }}">
+                    <form class="row gy-3 gx-3 mb-4" method="GET" action="{{ route('customer.support') }}">
                         <div class="col-12 col-md-6 col-lg-3">
                             <label for="startDate" class="fw-bold">Start Date</label>
                             <input type="date" id="startDate" name="startDate" class="form-control" value="{{ request('startDate') }}">
@@ -62,7 +60,7 @@
                             <input type="text" id="search" name="search" class="form-control" placeholder="Search here..." value="{{ request('search') }}">
                         </div>
                         <div class="col-12 col-md-6 col-lg-1 d-flex align-items-end">
-                            <button class="btn btn-primary w-100" type="submit">Submit</button>
+                            <button class="btn button-clearlink text-primary fw-bold w-100" type="submit">Submit</button>
                         </div>
                     </form>
 
@@ -110,6 +108,7 @@
                             </table>
                         </div>
 
+                        <!-- Pagination -->
                         <div class="mt-4">
                             {{ $supports->appends(request()->query())->links() }}
                         </div>
@@ -123,9 +122,9 @@
 <!-- Create New Ticket Modal -->
 <div class="modal fade" id="createTicketForm" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-sm">
-        <div class="modal-content text-dark bg-popup">
+        <div class="modal-content">
             <div class="modal-header border-0">
-                <h1 class="modal-title fs-5" id="exampleModalLabel">Enter the request message</h1>
+                <h5 class="modal-title" id="exampleModalLabel">Enter the request message</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -133,55 +132,32 @@
                     @csrf
                     <label class="fw-bold">Message*</label>
                     <textarea class="form-control" name="message" rows="4" required></textarea>
-                    <input type="submit" class="btn btn-primary mt-3 w-100" value="Submit">
+                    <button type="submit" class="btn btn-primary mt-3 w-100">Submit</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Ensure jQuery is included -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-<script>
-    $(document).ready(function() {
-      
-        $('#createTicketBtn').click(function(e) {
-            e.preventDefault();
-            console.log('Create Ticket button clicked'); 
-            $('#overlay').show(); 
-            $('#createTicketForm').show();  
-        });
-
-        $('#closeFormBtn, #overlay').click(function(e) {
-            e.preventDefault();
-            console.log('Close button clicked'); 
-            $('#overlay').hide(); 
-            $('#createTicketForm').hide(); 
-        });
-    });
-</script>
-
-
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const startDateInput = document.getElementById('start_date');
-        const endDateInput = document.getElementById('end_date');
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
 
-       
         startDateInput.addEventListener('change', function () {
-            const startDate = this.value; 
+            const startDate = this.value;
             if (startDate) {
                 endDateInput.min = startDate;
             }
         });
 
-        const currentStartDate = startDateInput.value;
-        if (currentStartDate) {
-            endDateInput.min = currentStartDate;
+        if (startDateInput.value) {
+            endDateInput.min = startDateInput.value;
         }
     });
 </script>
+
+
 
 <style>
     .overlay {

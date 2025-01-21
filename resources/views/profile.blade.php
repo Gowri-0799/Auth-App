@@ -2,7 +2,7 @@
 @section('title', 'Dashboard') 
 @section('content') 
 
-<div id="content" style="box-sizing: border-box; margin-left: 300px; width: auto; max-width: 1200px;" class="p-3">
+<div id="content" style="box-sizing: border-box;" class="p-3">
   <div class="inner">
     <div class="mb-4 w-100">
       <h2 class="mt-2">Profile</h2>

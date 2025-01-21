@@ -2,7 +2,7 @@
 @section('title', "Usage Reports")
 @section('content')
 
-<div id="content" class="container-fluid mt-3" style="box-sizing: border-box; margin-left:300px; width:70%;" >
+<div id="content" class="container-fluid mt-3" style="box-sizing: border-box;" >
     <div class="row">
         <!-- Main Content -->
         <div class="col-12">

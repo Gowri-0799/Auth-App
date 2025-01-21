@@ -2,7 +2,7 @@
 @section('title', "Company Info")
 
 @section('content')
-<div id="content" style="box-sizing: border-box; margin-left:300px; width:100%" class="p-3">
+<div id="content" style="box-sizing: border-box;" class="p-3">
     <div class="mb-2 w-100">
         <h2 class="mt-2 mb-5">Company Info</h2>
     </div>

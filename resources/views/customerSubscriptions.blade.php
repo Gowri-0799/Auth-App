@@ -1,8 +1,8 @@
 @extends("layouts.admin")
 @section('title', "My Subscriptions")
 @section('content')
-<div id="content" style="box-sizing: border-box; margin-left:300px;" class="p-3">
-   <div class="d-flex justify-content-center align-items-center">
+<div id="content" style="box-sizing: border-box;" class="p-3">
+   <div class="d-flex justify-content-center align-items-center flex-wrap">
    {{-- Alert Messages --}}
     <div id="alert-container" style="position: fixed; top: 20px; right: 20px; z-index: 999; width: 300px;">
         @if($errors->any())
@@ -28,7 +28,7 @@
       <div style="width:100%;" class="row mb-0 border shadow">
          @if(!$subscriptions || !$plans)
          {{-- Display a message if no subscription is found --}}
-         <div style="flex: 1; padding: 50px; background-color: #eaf1fc; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); display: flex; justify-content: center; align-items: center; text-align: center; min-height: 300px;">
+         <div style="flex: 1; padding: 50px; background-color: #eaf1fc; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); display: flex; justify-content: center; align-items: center; text-align: center; min-height: 300px;" class="w-100">
             <h3 style="font-size: 24px; color: #333;">No Subscription Found</h3>
          </div>
          @else
@@ -98,10 +98,10 @@
                <div id="carouselExampleControls" class="carousel slide carousel-fade pointer-event" data-bs-ride="carousel">
                   {{-- Main Content --}}
                   <div class="text-start w-full p-3 border-0 bg-clearlink">
-                     <div style="display: flex; width: 100%;">
+                     <div style="display: flex; flex-wrap: wrap; width: 100%;">
                         {{-- Left Card with Subscription Details --}}
                         @if($subscriptions->status == 'Cancelled')
-<div style="flex: 1; padding: 20px; background-color: #eaf1fc; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); margin-right: 20px; position: relative;">
+<div style="flex: 1; padding: 20px; background-color: #eaf1fc; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); margin-right: 20px; position: relative; min-width: 280px;">
     {{-- Live Badge Positioned on the Top Right --}}
     <h3 style="font-size: 24px; font-weight: bold; color: #004085; margin-bottom: 15px;">
         {{ $plans->plan_name }}
@@ -118,7 +118,7 @@
     <span class="badge-fail" style="font-size: 25px;">Cancelled</span>
    </div>
 @else
-<div style="flex: 1; padding: 20px; background-color: #eaf1fc; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); margin-right: 20px; position: relative;">
+<div style="flex: 1; padding: 20px; background-color: #eaf1fc; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); margin-right: 20px; position: relative; min-width: 280px;">
     {{-- Live Badge Positioned on the Top Right --}}
     <span class="sub-status p-1 badge-success mt-3 fs-5"
         id="status-span"
@@ -138,7 +138,7 @@
         @endif
     </span>
     {{-- Buttons for Add-On and Upgrade --}}
-    <div style="margin-top: 25px; display: flex; justify-content: space-between;">
+    <div style="margin-top: 25px; display: flex; flex-wrap: wrap; justify-content: space-between;">
         @if($subscriptions->addon == 1)
         <p class="mt-3 w-50 text-dark">You have also Subscribed to: <span>{{$plans->addon_code}}</span> for the current month</p>
         @else  
@@ -166,7 +166,7 @@
         @endif
     </div>
     {{-- Downgrade and Cancellation Links --}}
-    <div style="margin-top: 20px; display: flex; justify-content: space-between;">
+    <div style="margin-top: 20px; display: flex; flex-wrap: wrap; justify-content: space-between;">
         <a href="#" data-bs-toggle="modal" data-bs-target="#cancelSubscription" style="color: #007bff; text-decoration: underline; font-size: 16px;">
             Cancellation
         </a>                            
@@ -182,7 +182,7 @@
                    
 
                         {{-- Right Card with Payment Details --}}
-                        <div style="flex: 1; padding: 20px; background-color: #eaf1fc; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                        <div style="flex: 1; padding: 20px; background-color: #eaf1fc; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; justify-content: center; align-items: center; min-width: 280px;">
                            <div class="credit-card acct" style="text-align: center; width: 100%; display: flex; flex-direction: column; justify-content: flex-end; height: 100%;">
                               <div class="card-details" style="margin-top: auto;">
                                  <div class="card-number" style="font-size: 18px; margin-bottom: 15px;">XXXX XXXX XXXX 4242</div>
@@ -206,8 +206,6 @@
             </div>
          </div>
   
-
-
             {{-- FAQ Section --}}
                <div class="mt-5">
                   <h2 class="fw-bold">FAQ's</h2>
@@ -276,7 +274,7 @@
 </div>
  <!-- Modal contact us -->
  <div class="modal fade" id="contactModal" tabindex="-1" aria-labelledby="contactModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog">
             <div class="modal-content terms-title bg-popup">
                 <div class="modal-header border-0">
                     <h3 class="modal-title" id="contactModalLabel">Contact Us</h3>

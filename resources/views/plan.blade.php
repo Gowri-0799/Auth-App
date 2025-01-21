@@ -2,7 +2,9 @@
 @section('title', "Plans")
 
 @section('content')
-<div id="content" class="p-3" style="background-color: #f8f9fc; margin-left: 240px; width: calc(100% - 220px);">
+<!-- <div id="content" class="p-3" style="background-color: #f8f9fc; margin-left: 240px; width: calc(100% - 220px);"> -->
+<div id="content" class="container-fluid mt-3" style="box-sizing: border-box; background-color: #f8f9fc; margin-left:240px; width:80%;" >
+
     <div class="container-fluid mt-3">
         <!-- Card Wrapper for the Table -->
         <div class="card shadow-sm border-0 rounded-lg">
@@ -14,16 +16,13 @@
             </div>
             
             <div class="card-body p-3">
-
                 @if($plans->count() == 0)
-                  
                     <div class="d-flex justify-content-center">
                         <a href="{{ route('plans') }}" class="btn btn-primary" style="background-color: #007bff; border-color: #007bff;">Add Plan</a>
                     </div>
                 @else
-               
                     <div class="table-responsive">
-                        <div class="col-md-8 mx-auto"> <!-- Centered and limited width -->
+                        <div class="col-md-10 col-lg-8 mx-auto"> <!-- Centered and responsive width -->
                             <table class="table table-hover text-center table-bordered" style="background-color: #fff;">
                                 <thead class="table-light">
                                     <tr>
@@ -33,7 +32,6 @@
                                         <th style="font-family: Arial, sans-serif; font-size: 16px;background-color:#EEF1F4;">Addon Name</th>
                                         <th style="font-family: Arial, sans-serif; font-size: 16px;background-color:#EEF1F4;">Addon Price $</th>
                                         <th style="font-family: Arial, sans-serif; font-size: 16px;background-color:#EEF1F4;">Action</th>
-
                                     </tr>
                                 </thead>
                                 <tbody>

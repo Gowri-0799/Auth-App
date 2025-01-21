@@ -3,17 +3,17 @@
 
 @section('content')
 
-<div id="content" class="container-fluid mt-3" style="box-sizing: border-box; margin-left:250px; width:100%;" >
+<div id="content" class="container-fluid mt-3" style="box-sizing: border-box; min-height: 100vh; padding-bottom: 20px;">
     <div class="row">
-    <!-- Main Content -->
-        <div class="col-12 col-lg-10">
+        <!-- Main Content -->
+        <div class="col-12">
             <div class="card shadow-sm border-0 rounded-lg">
                 <div class="card-header">
                     <h2 class="mb-4 text-center text-lg-start" style="font-size: 28px;">Invoices</h2>
                 </div>
                 <div class="card-body p-3">
                     <!-- Table Filters Section -->
-                    <form class="row g-3 mb-4" method="GET" action="{{ route('invoices.filter') }}">
+                    <form class="row gy-3 gx-3 mb-4" method="GET" action="{{ route('invoices.filter') }}">
                         <div class="col-12 col-md-6 col-lg-3">
                             <label for="startDate" class="form-label fw-bold">Start Date</label>
                             <input type="date" id="startDate" name="startDate" class="form-control" value="{{ request('startDate') }}">
@@ -35,8 +35,7 @@
                             <input type="text" id="search" name="search" class="form-control" placeholder="Search here..." value="{{ request('search') }}">
                         </div>
                         <div class="col-12 col-md-6 col-lg-1 d-flex align-items-end">
-                            <button class="btn btn-primary w-100" type="submit">Submit</button>
-                        </div>
+                        <button class="btn button-clearlink text-primary fw-bold w-100" type="submit">Submit</button>                        </div>
                     </form>
 
                     <!-- Reset link -->
@@ -49,7 +48,7 @@
                         </div>
                     @else
                         <!-- Responsive Table -->
-                        <div class="table-responsive" style="overflow-x: auto;">
+                        <div class="table-responsive">
                             <table class="table table-hover text-center table-bordered">
                                 <thead class="table-light">
                                     <tr>
@@ -101,7 +100,6 @@
         </div>
     </div>
 </div>
-
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {

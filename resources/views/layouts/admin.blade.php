@@ -20,35 +20,111 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- Font Awesome CSS -->
-    <script async="" src="https://www.clarity.ms/s/0.7.49/clarity.js"></script><script async="" src="https://www.clarity.ms/tag/n8x5ekx79q"></script><script type="text/javascript">
-        (function(c, l, a, r, i, t, y) {
-            c[a] = c[a] || function() {
-                (c[a].q = c[a].q || []).push(arguments)
-            };
-            t = l.createElement(r);
-            t.async = 1;
-            t.src = "https://www.clarity.ms/tag/" + i;
-            y = l.getElementsByTagName(r)[0];
-            y.parentNode.insertBefore(t, y);
-        })(window, document, "clarity", "script", "n8x5ekx79q");
-    </script>
+    <style>
+        /* Sidebar Styles */
+        #sidebar {
+            position: fixed;
+            top: 0; /* Aligns the sidebar with the top of the viewport */
+            left: 0;
+            height: 100%;
+            width: 250px;
+            background: #f8f9fa;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-in-out;
+            z-index: 1040;
+            overflow-y: auto;
+            padding: 0; /* Removes any padding inside the sidebar */
+            margin: 0; /* Ensures no margin offsets the sidebar */
+        }
+        
+        #sidebar.show {
+            transform: translateX(0);
+        }
 
-    
+        .content {
+            transition: margin-left 0.3s ease-in-out;
+        }
+
+        #sidebar.show ~ .content {
+            margin-left: 250px;
+        }
+
+        @media (min-width: 992px) {
+            #sidebar {
+                transform: translateX(0);
+            }
+
+            .content {
+                margin-left: 250px;
+            }
+        }
+
+        .wrapper {
+            display: flex;
+            position: relative;
+            z-index: 1;
+            overflow: visible;
+        }
+
+        /* Sidebar Menu Styling */
+        .sidebar-nav {
+            display: block;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-item {
+            margin: 0;
+            display: list-item;
+        }
+
+        .sidebar-link {
+            display: block;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #333;
+            text-decoration: none;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .sidebar-link:hover {
+            background-color: rgba(0, 0, 0, 0.1);
+            color: #0d6efd;
+        }
+
+        .sidebar-dropdown {
+            margin-left: 20px;
+            list-style: none;
+        }
+
+        .sidebar-dropdown .sidebar-item {
+            margin-top: 10px;
+        }
+    </style>
+
+</head>
 
 <body>
+    <!-- Navbar for Mobile View -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light d-lg-none">
+        <div class="container-fluid">
+            <button class="navbar-toggler" type="button" id="sidebarToggle">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <a class="navbar-brand" href="#">Testlink</a>
+        </div>
+    </nav>
+
     <div class="scrollable blurred-bg">
         <!-- Sidebar -->
-        <div class="wrapper">
-            <aside id="sidebar" class="expand">
+            <aside id="sidebar">
                 <div class="sidebar-logo text-center py-3">
                     <img src="{{ asset('assets/images/Ln_logo.png') }}" alt="Testlink Logo" class="img-fluid" style="width: 70%; height: 100%;">
                 </div>
                 <ul class="sidebar-nav">
                     <li class="sidebar-item">
-                        <a href="{{ route('customer.provider') }}" class="sidebar-link">
-                            <span>Provider Data</span>
-                        </a>
+                        <a href="{{ route('customer.provider') }}" class="sidebar-link">Provider Data</a>
                     </li>
                     <li class="sidebar-item">
                         <a href="{{ route('customer.companyinfo') }}" class="sidebar-link">
@@ -76,7 +152,7 @@
                         </a>
 
                         <!-- Submenu for Plan Management (show by default) -->
-                        <ul id="planManagement" class="ms-5 sidebar-dropdown list-unstyled collapse show" data-bs-parent="#sidebar">
+                        <ul id="planManagement" class="ms-5 sidebar-dropdown list-unstyled collapse show">
                             <li class="sidebar-item">
                                 <a href="{{ route('showplan') }}" class="sidebar-link">
                                     - Plan Options
@@ -129,7 +205,6 @@
                     </div>
                 </div>
             </aside>
-        </div>
 
         <!-- Content Section -->
         <div class="content p-4" style="flex-grow: 1;">
@@ -139,26 +214,24 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- JavaScript to handle submenu -->
+    <!-- Sidebar Toggle Script -->
     <script>
-       document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('Script loaded');
 
-    const sidebarLinks = document.querySelectorAll('.sidebar-link'); 
+            const sidebar = document.getElementById('sidebar');
+            const toggleButton = document.getElementById('sidebarToggle');
 
-    function removeActiveClass() {
-        sidebarLinks.forEach(function(link) {
-            link.classList.remove('active');
+            toggleButton.addEventListener('click', function () {
+                console.log('Inside Click');
+                sidebar.classList.toggle('show');
+
+                  // Debugging Sidebar Content
+                const sidebarNav = document.querySelector('.sidebar-nav');
+                console.log('Sidebar Nav Exists:', !!sidebarNav);
+
+            });
         });
-    }
-
-    sidebarLinks.forEach(function(link) {
-        link.addEventListener('click', function(e) {
-            removeActiveClass();
-            this.classList.add('active');
-        });
-    });
-});
     </script>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
