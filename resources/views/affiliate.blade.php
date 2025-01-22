@@ -2,7 +2,7 @@
 @section('title', "Affiliates")
 
 @section('content')
-<div id="content" class="p-3" style="background-color: #f8f9fc; margin-left: 240px; width: calc(100% - 220px);">
+<div id="content" class="p-3" style="background-color: #f8f9fc;">
     <div class="container-fluid mt-3">
         <div class="card shadow-sm border-0 rounded-lg">
             <div class="card-header d-flex justify-content-between align-items-center" style="margin-bottom: 20px;"> <!-- Added margin-bottom -->

@@ -50,14 +50,36 @@
         }
 
         @media (min-width: 992px) {
-            #sidebar {
-                transform: translateX(0);
-            }
+    #sidebar {
+        transform: translateX(0); /* Sidebar is always visible */
+    }
 
-            .content {
-                margin-left: 250px;
-            }
-        }
+    .content {
+        margin-left: 250px; /* Adjust content margin to account for the sidebar */
+        display: block; /* Ensure content is always visible */
+    }
+    #closeSidebar {
+        display: block; /* Show on mobile view */
+    }
+}
+
+@media (max-width: 991.98px) {
+    #sidebar {
+        transform: translateX(-100%);
+        z-index: 1050; /* Ensure it's above other elements */
+    }
+
+    #sidebar.show {
+        transform: translateX(0);
+    }
+
+    .content {
+        display: block; /* Default content visibility */
+    }
+    #closeSidebar {
+        display: block; /* Show on mobile view */
+    }
+}
 
         .wrapper {
             display: flex;
@@ -112,13 +134,15 @@
             <button class="navbar-toggler" type="button" id="sidebarToggle">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <a class="navbar-brand" href="#">Testlink</a>
+            <a class="navbar-brand" href="#"> </a>
         </div>
     </nav>
 
     <div class="scrollable blurred-bg">
         <!-- Sidebar -->
             <aside id="sidebar">
+            <button id="closeSidebar" class="btn-close d-lg-none" aria-label="Close" style="position: absolute; top: 20px; right: 20px;"></button>
+
                 <div class="sidebar-logo text-center py-3">
                     <img src="{{ asset('assets/images/Ln_logo.png') }}" alt="Testlink Logo" class="img-fluid" style="width: 70%; height: 100%;">
                 </div>
@@ -216,22 +240,61 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Sidebar Toggle Script -->
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            console.log('Script loaded');
+ document.addEventListener('DOMContentLoaded', function () {
+    const sidebar = document.getElementById('sidebar');
+    const content = document.querySelector('.content');
+    const toggleButton = document.getElementById('sidebarToggle');
+    const closeButton = document.getElementById('closeSidebar');
+    const sidebarLinks = document.querySelectorAll('.sidebar-link');
 
-            const sidebar = document.getElementById('sidebar');
-            const toggleButton = document.getElementById('sidebarToggle');
+    // Check if closeButton exists
+    if (closeButton) {
+        console.log('Close button is available');
+    }
 
-            toggleButton.addEventListener('click', function () {
-                console.log('Inside Click');
-                sidebar.classList.toggle('show');
+    function isMobileView() {
+        return window.innerWidth <= 991.98; // Match the breakpoint in your CSS
+    }
 
-                  // Debugging Sidebar Content
-                const sidebarNav = document.querySelector('.sidebar-nav');
-                console.log('Sidebar Nav Exists:', !!sidebarNav);
+    toggleButton.addEventListener('click', function () {
+        if (isMobileView()) {
+            sidebar.classList.toggle('show');
+            content.style.display = sidebar.classList.contains('show') ? 'none' : 'block';
+        }
+    });
 
-            });
+    // Close sidebar when close button is clicked (mobile view only)
+    if (closeButton) {
+        closeButton.addEventListener('click', function () {
+            if (isMobileView()) {
+                sidebar.classList.remove('show');
+                content.style.display = 'block';
+            }
         });
+    }
+
+    // Hide sidebar and show content when a sidebar link is clicked in mobile view
+    sidebarLinks.forEach(link => {
+        link.addEventListener('click', function () {
+            if (isMobileView()) {
+                sidebar.classList.remove('show');
+                content.style.display = 'block';
+            }
+        });
+    });
+
+    // Ensure content is always shown on larger screens
+    window.addEventListener('resize', function () {
+        if (!isMobileView()) {
+            sidebar.classList.add('show'); // Keep sidebar visible
+            content.style.display = 'block'; // Ensure content is visible
+        } else if (!sidebar.classList.contains('show')) {
+            content.style.display = 'block'; // Show content when resizing back to mobile
+        }
+    });
+});
+
+
     </script>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

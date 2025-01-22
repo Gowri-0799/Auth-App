@@ -3,7 +3,7 @@
 @section('title', 'Plan View')
 
 @section('content')
-<div id="content" class="p-4" style="background-color: #f8f9fc; margin-left: 300px; width: calc(100% - 300px);">
+<div id="content" class="p-4" style="background-color: #f8f9fc;">
     <div class="container-fluid mt-3">
         <a href="{{ route('plandb') }}" class="btn text-primary text-decoration-underline mb-3">
             <i class="fas fa-arrow-left"></i> Back

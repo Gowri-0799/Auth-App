@@ -3,7 +3,7 @@
 @section('title', 'Change Password')
 
 @section('content')
-<div id="content" class="p-3" style="background-color: #f8f9fc; margin-left: 250px; width: calc(100% - 220px);">
+<div id="content" class="p-3" style="background-color: #f8f9fc;">
     <div class="container-fluid mt-3">
     <h5 class="fw-bold"><strong>Profile</strong>    </h5>
       <!-- Profile Section -->

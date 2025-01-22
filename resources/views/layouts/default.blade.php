@@ -29,7 +29,8 @@
     <!-- Font Awesome -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js"></script>
 
-    <script async="" src="https://www.clarity.ms/tag/n8x5ekx79q"></script><script type="text/javascript">
+    <script async="" src="https://www.clarity.ms/tag/n8x5ekx79q"></script>
+    <script type="text/javascript">
         (function(c, l, a, r, i, t, y) {
             c[a] = c[a] || function() {
                 (c[a].q = c[a].q || []).push(arguments)
@@ -47,26 +48,69 @@
             display: block !important;
         }
 
-        /* Apply Bootstrap's primary button color to active sidebar links */
-        .sidebar-item .sidebar-link {
-           
-            padding: 8px 16px; /* Padding for better spacing */
-            border-radius: 50px; /* Rounded corners */
-            transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease; /* Smooth transition */
+        /* Sidebar and toggle button styles */
+        #sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 250px;
+            background: #f8f9fa;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-in-out;
+            z-index: 1040;
+            overflow-y: auto;
+            padding: 0;
         }
 
-        /* Active link style */
-        .sidebar-item .sidebar-link.active {
-            background-color: #0d6efd; /* Bootstrap's primary button color */
-            color: white !important; /* White text for the active link */
-            box-shadow: 0 0 10px rgba(0, 123, 255, 0.5); /* Subtle shadow for depth */
+        #sidebar.show {
+            transform: translateX(0);
         }
 
-        /* Hover effect for sidebar links */
-        .sidebar-item .sidebar-link:hover {
-            background-color: #0b5ed7; /* Slightly darker blue on hover */
-            color: white !important; /* Keep text white */
-            box-shadow: 0 0 12px rgba(0, 123, 255, 0.7); /* Shadow effect on hover */
+        .content {
+            transition: margin-left 0.3s ease-in-out;
+        }
+
+        #sidebar.show ~ .content {
+            margin-left: 250px;
+        }
+
+        @media (min-width: 992px) {
+            #sidebar {
+                transform: translateX(0);
+            }
+
+            .content {
+                margin-left: 250px;
+                display: block;
+            }
+            #closeSidebar {
+                position: absolute;
+        top: 20px;
+        right: 20px;
+        display: block; /* Show on mobile view */
+    }
+        }
+
+        @media (max-width: 991.98px) {
+            #sidebar {
+                transform: translateX(-100%);
+                z-index: 1050;
+            }
+
+            #sidebar.show {
+                transform: translateX(0);
+            }
+
+            .content {
+                display: block;
+            }
+            #closeSidebar {
+                position: absolute;
+        top: 20px;
+        right: 20px;
+        display: block; /* Show on mobile view */
+    }
         }
 
         .sidebar-logo img {
@@ -75,98 +119,27 @@
             display: block;
             margin: 0 auto;
         }
-
-        .sidebar-logo {
-            padding: 10px 0; /* Add padding to the top and bottom */
-            border-bottom: none; /* Optional: add a separator line */
-        }
-
-        .credit-card {
-            background-image: url('../assets/images/card.jpeg');
-        }
-
-        .table th, .table td {
-            vertical-align: middle;
-        }
-
-        .badge {
-            padding: 0.4em 0.7em;
-            font-size: 0.85rem;
-        }
-
-        .badge-success {
-            background-color: #E1FFDC;
-            color: #159300;
-            padding: 1px 13px;
-            border-radius: 6px;
-            font-weight: 700;
-        }
-
-        .badge-fail {
-            background-color: #FFE7EC;
-            color: #D52B4D;
-            padding: 1px 13px;
-            border-radius: 6px;
-            font-weight: 700;
-        }
-
-        .card-header {
-            background-color: #f8f9fa;
-            border-bottom: 2px solid #dee2e6;
-        }
-
-        .text-primary {
-            --bs-text-opacity: 1;
-            color: rgba(var(--bs-primary-rgb), var(--bs-text-opacity)) !important;
-        }
-
-        .fw-bold {
-            font-weight: 700 !important;
-        }
-
-        .text-decoration-underline {
-            text-decoration: underline !important;
-        }
-
-        .btn-group-sm>.btn, .btn-sm {
-            --bs-btn-padding-y: 0.25rem;
-            --bs-btn-padding-x: 0.5rem;
-            --bs-btn-font-size: 0.875rem;
-            --bs-btn-border-radius: var(--bs-border-radius-sm);
-        }
-
-        .p-2 {
-            padding: .5rem !important;
-        }
-        .chosen-container .chosen-choices li.search-choice {
-    color: black !important; 
-}
-
-.chosen-container .chosen-choices input {
-    color: black !important;
-}
-.custom-tooltip + .tooltip > .tooltip-inner {
-    background-color: black; /* Black background */
-    color: white;            /* White text */
-    border-radius: 4px;      /* Optional: rounded corners */
-    font-size: 14px;         /* Optional: font size */
-}
-
-/* Optional: Remove the default arrow color */
-.custom-tooltip + .tooltip > .tooltip-arrow::before {
-    border-top-color: black !important;
-}
-
     </style>
-
 </head>
 
 <body>
+    <!-- Navbar for Mobile View -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light d-lg-none">
+        <div class="container-fluid">
+            <button class="navbar-toggler" type="button" id="sidebarToggle">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <a class="navbar-brand" href="#"> </a>
+        </div>
+    </nav>
+
     <div class="scrollable blurred-bg">
         <!-- Sidebar -->
         <div class="wrapper">
-            <aside id="sidebar" class="expand">  
-            <div class="sidebar-logo text-center py-3">
+            <aside id="sidebar">  
+            <button id="closeSidebar" class="btn-close d-lg-none" aria-label="Close" style="position: absolute; top: 20px; right: 20px;"></button>
+
+                <div class="sidebar-logo text-center py-3">
                     <img src="{{ asset('assets/images/Ln_logo.png') }}" alt="Testlink Logo" class="img-fluid" style="width: 70%; height: 100%;">
                 </div>
                 <ul class="sidebar-nav">
@@ -235,7 +208,6 @@
                     </li>
                </ul>
 
-                
                 <div class="bottom-footer mt-auto">
                     <hr class="line mt-0">
                     <div>
@@ -267,26 +239,54 @@
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-
-    
-    <!-- JavaScript to handle submenu -->
-
+    <!-- Toggle Sidebar Script -->
     <script>
-    document.addEventListener('DOMContentLoaded', function () {
-    const settingsMenu = document.getElementById('settingsMenu');
-    const settingsLink = document.querySelector('[data-bs-target="#settingsMenu"]');
+       document.addEventListener('DOMContentLoaded', function () {
+    const sidebar = document.getElementById('sidebar');
+    const content = document.querySelector('.content');
+    const toggleButton = document.getElementById('sidebarToggle');
+    const closeButton = document.getElementById('closeSidebar');
 
-    if (settingsMenu) {
-        settingsMenu.classList.add('show'); // Ensure the submenu is open
+    function isMobileView() {
+        return window.innerWidth <= 991.98; // Match the breakpoint in your CSS
     }
 
-    if (settingsLink) {
-        settingsLink.setAttribute('aria-expanded', 'true'); // Mark it as expanded
+    toggleButton.addEventListener('click', function () {
+        if (isMobileView()) {
+            sidebar.classList.toggle('show');
+
+            if (sidebar.classList.contains('show')) {
+                content.style.display = 'none';
+            } else {
+                content.style.display = 'block';
+            }
+        }
+    });
+
+    // Close sidebar when close button is clicked (mobile view only)
+    if (closeButton) {
+        closeButton.addEventListener('click', function () {
+            if (isMobileView()) {
+                sidebar.classList.remove('show');
+                content.style.display = 'block';
+            }
+        });
     }
+
+    // Ensure sidebar is always visible in normal view
+    window.addEventListener('resize', function () {
+        if (!isMobileView()) {
+            sidebar.classList.add('show');
+            content.style.display = 'block';
+        }
+    });
 });
-</script>
+
+    </script>
+</body>
+
+</html>
+
 
       <script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.jquery.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

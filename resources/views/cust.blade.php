@@ -3,21 +3,23 @@
 @section('content')
 <!-- <div id="content" class="p-3" style="background-color: #f8f9fc; margin-left: 240px; width: calc(100% - 240px); position: relative;"> -->
 
-<div id="content" class="container-fluid mt-3" style="box-sizing: border-box; background-color: #f8f9fc; margin-left:240px; width:80%;" >
+<div id="content" class="container-fluid mt-3" style="box-sizing: border-box; background-color: #f8f9fc; " >
 
 
-    <div class="container mt-5">
-       <!-- Invite Partner Button -->
-       <a href="{{ route('cust.display') }}" class="btn btn-primary position-absolute top-0 end-0 m-3">
-            Invite Partner
-        </a>
-        
-        <!-- Sync Button (hidden on mobile) -->
+<div class="container mt-5">
+        <!-- Sync Button (hidden on mobile)
         <a href="{{ route('customers') }}" class="btn btn-primary position-absolute top-0 end-0 m-3" style="display: none;">
             Sync with Zoho
         </a>
-        
+         -->
         <h2 class="text-center mb-4">Partners</h2>
+
+           <!-- Invite Partner Button -->
+        <div class="d-flex justify-content-end mb-3">
+        <a href="{{ route('cust.display') }}" class="btn btn-primary">
+            Invite Partner
+        </a>
+    </div>
        
         <form method="GET" action="{{ route('customer.filter') }}" class="row mb-4 align-items-end">
            

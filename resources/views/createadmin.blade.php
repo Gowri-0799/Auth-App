@@ -1,7 +1,7 @@
 @extends("layouts.default")
 
 @section('content')
-<div id="content" class="p-3" style="background-color: #f8f9fc; margin-left: 240px; width: calc(100% - 220px);">
+<div id="content" class="p-3" style="background-color: #f8f9fc;">
     <div class="container mt-5">
         <div class="row">
             <div class="col-12">

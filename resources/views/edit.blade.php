@@ -1,7 +1,7 @@
 @extends("layouts.default")
 @section('title', "Edit Customer")
 @section('content')
-<div id="content" class="d-flex justify-content-center align-items-center" style="min-height: 100vh; background-color: #f8f9fc; margin-left: 280px; width: calc(100% - 240px);">
+<div id="content" class="d-flex justify-content-center align-items-center" style="min-height: 100vh; background-color: #f8f9fc;">
 
     <div class="container mt-5">
         <h2 class="text-center mb-4">Edit Partner</h2>

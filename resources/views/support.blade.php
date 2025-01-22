@@ -121,20 +121,23 @@
 
 <!-- Create New Ticket Modal -->
 <div class="modal fade" id="createTicketForm" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-sm">
-        <div class="modal-content">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-dark bg-popup">
             <div class="modal-header border-0">
-                <h5 class="modal-title" id="exampleModalLabel">Enter the request message</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Enter the request message</h1>
+                <button type="button" class="close border-0" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="fa-solid fa-xmark fs-3"></i>
+                </button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body p-0">
                 <form action="{{ route('tickets.store') }}" method="POST">
                     @csrf
                     <label class="fw-bold">Message*</label>
-                    <textarea class="form-control" name="message" rows="4" required></textarea>
-                    <button type="submit" class="btn btn-primary mt-3 w-100">Submit</button>
+                    <textarea class="w-100 p-3 pe-4 border-0 rounded" name="message" rows="4" required></textarea>
+                    <input type="submit" class="btn btn-primary popup-element mt-3" value="Submit">
                 </form>
             </div>
+            <div class="modal-footer border-0"></div>
         </div>
     </div>
 </div>

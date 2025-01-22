@@ -3,7 +3,7 @@
 
 @section('content')
 <!-- <div id="content" class="p-3" style="background-color: #f8f9fc; margin-left: 240px; width: calc(100% - 220px);"> -->
-<div id="content" class="container-fluid mt-3" style="box-sizing: border-box; background-color: #f8f9fc; margin-left:240px; width:80%;" >
+<div id="content" class="container-fluid mt-3" style="box-sizing: border-box; background-color: #f8f9fc;" >
 
     <div class="container-fluid mt-3">
         <!-- Card Wrapper for the Table -->

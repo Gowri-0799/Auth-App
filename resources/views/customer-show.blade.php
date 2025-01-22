@@ -5,7 +5,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 @section('content')
-<div id="content" style="box-sizing: border-box; margin-left:300px;" class="p-3">
+<div id="content" style="box-sizing: border-box; " class="p-3">
 <!-- Top Navigation Tabs -->
 <div class="d-flex justify-content-between align-items-center my-3">
    <h3>{{ $customer->company_name ?? '' }} 

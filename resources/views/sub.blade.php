@@ -2,7 +2,7 @@
 @section('title', 'Subscription Plans')
 @section('content')
 
-<div id="content" style="box-sizing: border-box;" class="p-3">
+<div id="content" class="p-3">
   <!-- Add Modal for First Login Alert -->
   <div class="modal fade" id="showAlertModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -17,28 +17,24 @@
           <ul class="message">
             <li class="d-flex justify-content-between">
               <span>Upload Logo (Company Info)</span>
-              <!-- Show tick if logo_image is not null -->
               @if ($companyInfo && $companyInfo->logo_image)
               <i class="fa-solid fa-check text-check fs-3"></i>
               @endif
             </li>
             <li class="d-flex justify-content-between">
               <span>Add Company Name (Company Info)</span>
-              <!-- Show tick if company_name is not null -->
               @if ($companyInfo && $companyInfo->company_name)
               <i class="fa-solid fa-check text-check fs-3"></i>
               @endif
             </li>
             <li class="d-flex justify-content-between">
               <span>Set Landing Page URL (Company Info)</span>
-              <!-- Show tick if landing_page_uri is not null -->
               @if ($companyInfo && $companyInfo->landing_page_uri)
               <i class="fa-solid fa-check text-check fs-3"></i>
               @endif
             </li>
             <li class="d-flex justify-content-between">
               <span>Upload Provider Data</span>
-              <!-- Show tick if landing_page_uri is not null -->
               @if ($providerData && $providerData->url)
               <i class="fa-solid fa-check text-check fs-3"></i>
               @endif
@@ -65,15 +61,14 @@
     <div class="d-flex flex-row row m-2 mb-0 w-100 justify-content-center align-items-center">
       <div class="tableFixHead p-0 mt-1 price-table">
         <div class="">
-          <table class="table table-bordered m-0 w-full text-center pricing-table ">
-            <thead class="border-bottom  shadow">
+          <table class="table table-bordered m-0 w-100 text-center pricing-table">
+            <thead class="border-bottom shadow">
               <tr>
-                <th class=" align-middle fixed-column">
-                  <h2 class="fw-bold ">Plan Features</h2>
+                <th class="align-middle fixed-column">
+                  <h2 class="fw-bold">Plan Features</h2>
                 </th>
 
                 @php
-
                 $subscribedPlan = $subscriptions->first();
                 $subscribedPlanPrice = $subscribedPlan->plan->plan_price ?? 0;
                 $nextBillingDate = $subscribedPlan->next_billing_at ?? null;
@@ -83,7 +78,6 @@
                 <th class="align-middle position-relative">
                   <div>
                     @php
-
                     $isSubscribed = $subscriptions->contains('plan_id', $plan->plan_id);
                     $isAddonSubscribed = $subscriptions->contains(function ($subscription) use ($plan) {
                     return $subscription->addon == 1 && $subscription->plan_id == $plan->plan_id;
@@ -154,7 +148,7 @@
                 </th>
                 @endforeach
 
-                <th class=" align-middle position-relative">
+                <th class="align-middle position-relative">
                   <div>
                     <h5 class="mb-2"><strong><span class="text-primary">Custom</span><span> Enterprise</span></strong></h5>
                     @if ($firstLogin == 1)
@@ -163,13 +157,11 @@
                     <a data-bs-toggle="modal" data-bs-target="#contactModal" class="btn btn-primary">Contact Us</a>
                     @endif
                   </div>
-
                 </th>
               </tr>
             </thead>
             <tbody>
               <tr>
-
                 <td class="fixed-column align-left fs-5 fw-bold">
                   <div>
                     <ul>
@@ -220,7 +212,6 @@
                       <li>
                         {{ $featureData['Maximum Click Monthly Add-on'] ?? '' }}
                       </li>
-
                     </ul>
                   </div>
                 </td>
@@ -245,10 +236,9 @@
           </table>
         </div>
       </div>
-
     </div>
-
   </div>
+
   <!-- Modal -->
   <div class="modal fade" id="contactModal" tabindex="-1" aria-labelledby="contactModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -264,7 +254,6 @@
             @csrf
             <textarea class="w-100 p-3 pe-4 border-0 rounded" name="message" rows="5">I am interested in learning more about the Enterprise plan. Please contact me with more information.</textarea>
             <input type="submit" class="btn btn-primary popup-element " value="Send">
-
           </form>
         </div>
         <div class="modal-footer border-0"></div>
@@ -275,7 +264,7 @@
   <!-- FAQ Section -->
   <div class="tableTerms p-0 border-0 mb-5 margin-default">
     <p class="fw-bold ms-3">
-    <h2 class="fw-bold ms-2">FAQ's</h2>
+      <h2 class="fw-bold ms-2">FAQ's</h2>
     </p>
     <div class="accordion accordion-flush" id="accordionFlushExample">
       <div class="accordion-item">
@@ -286,28 +275,17 @@
         </h2>
         <div id="flush-collapseOne" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample">
           <div class="accordion-body">
-            <ul id="billing" class=" ">
-              <li class="billing">
-                All billing & payments will be upfront in US Dollars
-              </li>
-              <li class="billing">
-                Plans are billed on a calendar billing schedule
-              </li>
-              <li class="billing">
-                Associated Credit Card will be charged on renewal of a plan subscription on the first of each month
-              </li>
-              <li class="billing">
-                Plan price and subscription will be pro-rata or full as applicable on some upgrades
-              </li>
-              <li class="billing">
-                Any credits which arise in the process of upgrades will be kept for adjusting subsequent subscription renewals and will not be refunded
-              </li>
+            <ul id="billing">
+              <li class="billing">All billing & payments will be upfront in US Dollars</li>
+              <li class="billing">Plans are billed on a calendar billing schedule</li>
+              <li class="billing">Associated Credit Card will be charged on renewal of a plan subscription on the first of each month</li>
+              <li class="billing">Plan price and subscription will be pro-rata or full as applicable on some upgrades</li>
+              <li class="billing">Any credits which arise in the process of upgrades will be kept for adjusting subsequent subscription renewals and will not be refunded</li>
               <li class="billing">If a subscription renewal auto-debit of the card fails, you will be notified to pay by email (invoice link) or pay through the payment portal</li>
-              <li class="billing">If the maximum number of clicks is reached prior to the end of the month, the plan can be upgraded or a Monthly Add-On can be purchased. </li>
-              <li class="billing">Only one Monthly Add-On can be purchased per month </li>
+              <li class="billing">If the maximum number of clicks is reached prior to the end of the month, the plan can be upgraded or a Monthly Add-On can be purchased.</li>
+              <li class="billing">Only one Monthly Add-On can be purchased per month</li>
               <li class="billing">Clearlink does not offer refunds on a paid subscription or credits if any, but will consider specific cases of erroneous and duplicate payment transactions after review</li>
               <li class="billing">Clearlink reserves the right to change the product, plan, subscription, limits, name and price, and will send notification of changes</li>
-
             </ul>
           </div>
         </div>
@@ -320,116 +298,82 @@
         </h2>
         <div id="flush-collapseTwo" class="accordion-collapse collapse" aria-labelledby="flush-headingTwo" data-bs-parent="#accordionFlushExample">
           <div class="accordion-body">
-            <ul id="upgrade" class="">
+            <ul id="upgrade">
               <li class="billing">You can upgrade a paid plan at any time, the upgrade will be applied immediately on successful payment</li>
               <li class="billing">Plan downgrade requests can be sent through a support ticket and will be done only at the end of the current subscription period</li>
               <li class="billing">Subscription cancellation requests can be sent through a support ticket</li>
-              <li class="billing">Unpaid subscriptions will be automatically cancelled after 15 days </li>
+              <li class="billing">Unpaid subscriptions will be automatically cancelled after 15 days</li>
               <li class="billing">Plan Features & Limits are subject to change based on upgrade / downgrade process</li>
             </ul>
-
-          </div>
-        </div>
-        <div class="accordion-item">
-          <h2 class="accordion-header" id="flush-headingThree">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseThree" aria-expanded="false" aria-controls="flush-collapseThree">
-              Security / Privacy
-            </button>
-          </h2>
-          <div id="flush-collapseThree" class="accordion-collapse collapse" aria-labelledby="flush-headingThree" data-bs-parent="#accordionFlushExample">
-            <div class="accordion-body">
-              <ul id="security" class="">
-                <li class="billing">Clearlink uses Zoho to manage your subscriptions / support and uses Stripe as a secured payment gateway</li>
-                <li class="billing">Clearlink respects and protects your data as per the <a target="_blank" href="https://www.clearlink.com/privacy/">Privacy Policy</a></li>
-                <li class="billing">Clearlink will send transactional and relevant product promotions and collateral by email to enrich your experience</li>
-              </ul>
-            </div>
           </div>
         </div>
       </div>
-<script >
-  
-  function updatePlanCode(selectElement) {
-    const selectedOption = selectElement.options[selectElement.selectedIndex];
-    const planCode = selectedOption.getAttribute('data-plan-code');
-    document.getElementById('hiddenPlanCode').value = planCode || '';
-  }
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="flush-headingThree">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseThree" aria-expanded="false" aria-controls="flush-collapseThree">
+            Security / Privacy
+          </button>
+        </h2>
+        <div id="flush-collapseThree" class="accordion-collapse collapse" aria-labelledby="flush-headingThree" data-bs-parent="#accordionFlushExample">
+          <div class="accordion-body">
+            <ul id="security">
+              <li class="billing">Clearlink uses Zoho to manage your subscriptions / support and uses Stripe as a secured payment gateway</li>
+              <li class="billing">Clearlink respects and protects your data as per the <a target="_blank" href="https://www.clearlink.com/privacy/">Privacy Policy</a></li>
+              <li class="billing">Clearlink will send transactional and relevant product promotions and collateral by email to enrich your experience</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    function updatePlanCode(selectElement) {
+      const selectedOption = selectElement.options[selectElement.selectedIndex];
+      const planCode = selectedOption.getAttribute('data-plan-code');
+      document.getElementById('hiddenPlanCode').value = planCode || '';
+    }
 
-document.addEventListener("DOMContentLoaded", function() {
-  var subscribeButtons = document.querySelectorAll("button#subscribeButton");
-  var contactButton = document.getElementById("save");
-  var showAlertModalElement = document.getElementById("showAlertModal");
-  var contactModalElement = document.getElementById("contactModal");
+    document.addEventListener("DOMContentLoaded", function() {
+      var subscribeButtons = document.querySelectorAll("button#subscribeButton");
+      var contactButton = document.getElementById("save");
+      var showAlertModalElement = document.getElementById("showAlertModal");
+      var contactModalElement = document.getElementById("contactModal");
 
-  var showAlertModal = new bootstrap.Modal(showAlertModalElement, {});
-  var contactModal = new bootstrap.Modal(contactModalElement, {});
+      var showAlertModal = new bootstrap.Modal(showAlertModalElement, {});
+      var contactModal = new bootstrap.Modal(contactModalElement, {});
 
-  function checkConditions() {
-    const logoUploaded = {
-      {
-        $companyInfo && $companyInfo - > logo_image ? 'true' : 'false'
+      function checkConditions() {
+        const logoUploaded = {{ $companyInfo && $companyInfo->logo_image ? 'true' : 'false' }};
+        const companyNameSet = {{ $companyInfo && $companyInfo->company_name ? 'true' : 'false' }};
+        const landingPageSet = {{ $companyInfo && $companyInfo->landing_page_uri ? 'true' : 'false' }};
+        const providerDataUploaded = {{ $providerData && $providerData->url ? 'true' : 'false' }};
+        const firstLogin = {{ $firstLogin ? 'true' : 'false' }};
+
+        return logoUploaded && companyNameSet && landingPageSet && providerDataUploaded && !firstLogin;
       }
-    };
-    const companyNameSet = {
-      {
-        $companyInfo && $companyInfo - > company_name ? 'true' : 'false'
-      }
-    };
-    const landingPageSet = {
-      {
-        $companyInfo && $companyInfo - > landing_page_uri ? 'true' : 'false'
-      }
-    };
-    const providerDataUploaded = {
-      {
-        $providerData && $providerData - > url ? 'true' : 'false'
-      }
-    };
-    const firstLogin = {
-      {
-        $firstLogin ? 'true' : 'false'
-      }
-    };
 
-    return (
-      logoUploaded &&
-      companyNameSet &&
-      landingPageSet &&
-      providerDataUploaded &&
-      !firstLogin
-    );
-  }
-
-  if (contactButton) {
-    contactButton.addEventListener("click", function(event) {
-      event.preventDefault(); 
-
-      if (!checkConditions()) {
-   
-        showAlertModal.show();
-
-        showAlertModalElement.addEventListener("hidden.bs.modal", function() {
-          contactModal.show();
+      if (contactButton) {
+        contactButton.addEventListener("click", function(event) {
+          event.preventDefault();
+          if (!checkConditions()) {
+            showAlertModal.show();
+            showAlertModalElement.addEventListener("hidden.bs.modal", function() {
+              contactModal.show();
+            });
+          } else {
+            contactModal.show();
+          }
         });
-      } else {
-        
-        contactModal.show();
       }
+
+      subscribeButtons.forEach((button) => {
+        button.addEventListener("click", function(event) {
+          if (!checkConditions()) {
+            event.preventDefault();
+            showAlertModal.show();
+          }
+        });
+      });
     });
-  }
-
-  subscribeButtons.forEach((button) => {
-    button.addEventListener("click", function(event) {
-      if (!checkConditions()) {
-        event.preventDefault(); 
-        showAlertModal.show();
-      }
-    });
-  });
-});
-
-</script>
-
-
-
-      @endsection
+  </script>
+@endsection
