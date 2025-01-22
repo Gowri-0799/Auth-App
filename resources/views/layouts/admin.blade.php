@@ -148,28 +148,28 @@
                 </div>
                 <ul class="sidebar-nav">
                     <li class="sidebar-item">
-                        <a href="{{ route('customer.provider') }}" class="sidebar-link">Provider Data</a>
+                        <a href="{{ route('customer.provider') }}" class="sidebar-link">- Provider Data</a>
                     </li>
                     <li class="sidebar-item">
                         <a href="{{ route('customer.companyinfo') }}" class="sidebar-link">
-                            <span>Company Info</span>
+                            <span>- Company Info</span>
                         </a>
                     </li>
                     <li class="sidebar-item">
                         <a href="{{ route('usagereports') }}" class="sidebar-link">
-                            <span>Usage Reports</span>
+                            <span>- Usage Reports</span>
                         </a>
                     </li>
                     <li class="sidebar-item">
                         <a href="{{ route('customer.details') }}" class="sidebar-link">
-                            <span>Profile</span>
+                            <span>- Profile</span>
                         </a>
                     </li>
 
                     <li class="sidebar-item">
                         <!-- Plan Management Link -->
                         <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse" data-bs-target="#planManagement" aria-expanded="true" aria-controls="planManagement">
-                            <span>Plan Management</span>
+                            <span>- Plan Management</span>
                             <span class="ms-1">
                                 <i class="fa-solid fa-angle-down"></i>
                             </span>
