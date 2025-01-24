@@ -222,55 +222,108 @@
         </div>
       </div>                                  
     </div>                                                  
-
-<!-- Update Password Modal -->                      
-
-        <div class="modal fade" id="updatePasswordModal" tabindex="-1" aria-labelledby="updatePasswordModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-md modal-dialog-centered ">
-            <div class="modal-content bg-popup">
+<!-- Update Password Modal -->
+<div class="modal fade" id="updatePasswordModal" tabindex="-1" aria-labelledby="updatePasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md modal-dialog-centered">
+        <div class="modal-content bg-popup">
             <div class="modal-header">
-                    <h3 class="modal-title" id="passwordUpdateModalLabel">Change Password</h3>
-                    <button type="button" class="close border-0" data-bs-dismiss="modal" aria-label="Close"><i class="fa-solid fa-xmark fs-3"></i></button>
-                </div>
-                
+                <h3 class="modal-title" id="passwordUpdateModalLabel">Change Password</h3>
+                <button type="button" class="close border-0" data-bs-dismiss="modal" aria-label="Close"><i class="fa-solid fa-xmark fs-3"></i></button>
+            </div>
             <div class="modal-body">
-            <form id="passwordUpdateForm" action="{{ route('profile.password.update') }}" method="post">
-    @csrf
-    <input type="hidden" name="email" value="{{ $partnerUser->email }}">
+                <form id="passwordUpdateForm" action="{{ route('profile.password.update') }}" method="post">
+                    @csrf
+                    <input type="hidden" name="email" value="{{ $partnerUser->email }}">
 
-    <label class="fw-bold">Current Password</label>
-    <input type="password" name="current_password" class="form-control" required />
-
-    <label class="fw-bold popup-element">New Password</label>
-    <input type="password" name="new_password" class="form-control" required />
-
-    <label class="fw-bold popup-element">Confirm New Password</label>
-    <input type="password" name="new_password_confirmation" class="form-control" required />
-
-    <input type="submit" class="btn btn-primary px-3 py-2 rounded popup-element" value="Update Password">
-</form>
-                    <div class="text-dark popup-element">
-                        <h4 class="fw-bold">Password Instructions:</h4>
-                        <ul id="billing" class="">
-                            <li class="billing">
-                                The password should have a minimum length of 6 characters
-                            </li>
-                            <li class="billing">
-                                The password should contain at least one letter
-                            </li>
-                            <li class="billing">
-                                The password should contain at least one number
-                            </li>
-                            <li class="billing">
-                                The password should contain at least one symbol (special character)
-                            </li>
-                        </ul>
+                    <div class="mb-3 position-relative">
+                        <label class="fw-bold">Current Password</label>
+                        <input type="password" id="modal_current_password" name="current_password" class="form-control" required />
+                        <i class="fas fa-eye toggle-password" data-target="#modal_current_password" aria-hidden="true"></i>
                     </div>
+
+                    <div class="mb-3 position-relative">
+                        <label class="fw-bold popup-element">New Password</label>
+                        <input type="password" id="modal_new_password" name="new_password" class="form-control" required />
+                        <i class="fas fa-eye toggle-password" data-target="#modal_new_password" aria-hidden="true"></i>
+                    </div>
+
+                    <div class="mb-3 position-relative">
+                        <label class="fw-bold popup-element">Confirm New Password</label>
+                        <input type="password" id="modal_new_password_confirmation" name="new_password_confirmation" class="form-control" required />
+                        <i class="fas fa-eye toggle-password" data-target="#modal_new_password_confirmation" aria-hidden="true"></i>
+                    </div>
+
+                    <input type="submit" class="btn btn-primary px-3 py-2 rounded popup-element" value="Update Password">
+                </form>
+                <div class="text-dark popup-element">
+                    <h4 class="fw-bold">Password Instructions:</h4>
+                    <ul id="billing" class="">
+                        <li class="billing">
+                            The password should have a minimum length of 6 characters
+                        </li>
+                        <li class="billing">
+                            The password should contain at least one letter
+                        </li>
+                        <li class="billing">
+                            The password should contain at least one number
+                        </li>
+                        <li class="billing">
+                            The password should contain at least one symbol (special character)
+                        </li>
+                    </ul>
                 </div>
+            </div>
         </div>
     </div>
 </div>
 
   </div>
 </div> 
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Script for Password Toggle -->
+<script>
+   $(document).ready(function() {
+  
+    $('.toggle-password').hide();
+
+    $('input[type="password"]').on('input', function() {
+        const icon = $(this).siblings('.toggle-password'); 
+        if ($(this).val().length > 0) {
+            icon.show(); 
+        } else {
+            icon.hide(); 
+        }
+    });
+
+    $('.toggle-password').click(function() {
+        const targetSelector = $(this).data('target'); 
+        const inputField = $(targetSelector);
+        const inputFieldType = inputField.attr('type');
+
+        if (inputFieldType === 'password') {
+            inputField.attr('type', 'text'); 
+            $(this).removeClass('fa-eye').addClass('fa-eye-slash'); 
+        } else {
+            inputField.attr('type', 'password'); 
+            $(this).removeClass('fa-eye-slash').addClass('fa-eye'); 
+        }
+    });
+});
+</script>
+
+<style>
+    .toggle-password {
+        position: absolute;
+        top: 70%;
+        right: 10px;
+        transform: translateY(-50%);
+        cursor: pointer;
+        z-index: 10; 
+    }
+</style>
 @endsection
