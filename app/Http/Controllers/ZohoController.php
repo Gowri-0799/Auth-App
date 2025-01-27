@@ -2429,7 +2429,15 @@ public function show($zohocust_id, Request $request)
     $creditnotes = Creditnote::where('zoho_cust_id', $customer->zohocust_id)->get();
 
     $refunds = DB::table('refunds')
-    ->where('zoho_cust_id', $customer->zohocust_id)
+    ->join('invoices', function ($join) use ($customer) {
+        $join->on('refunds.payment_method_id', '=', 'invoices.payment_method')
+            ->where('refunds.zoho_cust_id', '=', $customer->zohocust_id)
+            ->where('invoices.zoho_cust_id', '=', $customer->zohocust_id);
+    })
+    ->select(
+        'refunds.*', 
+        'invoices.invoice_number' 
+    )
     ->get();
 
     $affiliates = DB::table('partner_affiliates')
@@ -2445,6 +2453,21 @@ public function show($zohocust_id, Request $request)
     $filter = $request->input('filter', 'month_to_date');
     $defaultStartDate = Carbon::now()->startOfMonth();
     $defaultEndDate = Carbon::now();
+
+    
+    $partnerAffiliateId = DB::table('clicks')
+        ->whereNotNull('partners_affiliates_id') 
+        ->value('partners_affiliates_id'); 
+
+    if (!$partnerAffiliateId) {
+        return back()->withErrors('No valid partner affiliate ID found in clicks.');
+    }
+
+    $partnerAffiliate = DB::table('partner_affiliates')
+        ->where('id', $partnerAffiliateId)
+        ->first();
+
+        $isPartnerValid = $partnerAffiliate && $partnerAffiliate->partner_id == $customer->zohocust_id;
 
     $filterLabel = ''; // Label for the selected filter
     switch ($filter) {
@@ -2504,31 +2527,34 @@ public function show($zohocust_id, Request $request)
     }
 
     $clicksData = DB::table('clicks')
-        ->select(DB::raw('DATE(click_ts) as date'), DB::raw('COUNT(*) as total_clicks'))
-        ->whereBetween(DB::raw('DATE(click_ts)'), [$startDate, $endDate])
-        ->groupBy(DB::raw('DATE(click_ts)'))
-        ->orderBy(DB::raw('DATE(click_ts)'))
-        ->get();
+    ->select(
+        DB::raw('DATE(click_ts) as date'),
+        DB::raw("SUM(CASE WHEN channel = 'fake_clicks_organic' THEN 1 ELSE 0 END) as organic_clicks"),
+        DB::raw("SUM(CASE WHEN channel = 'fake_clicks_pmax' THEN 1 ELSE 0 END) as pmax_clicks"),
+        DB::raw("SUM(CASE WHEN channel = 'fake_clicks_paid_search' THEN 1 ELSE 0 END) as paid_search_clicks"),
+        DB::raw("SUM(CASE WHEN channel = 'fake_clicks_direct' THEN 1 ELSE 0 END) as direct_clicks"),
+        DB::raw('COUNT(*) as total_clicks')
+    )
+    ->whereBetween(DB::raw('DATE(click_ts)'), [$startDate, $endDate])
+    ->groupBy(DB::raw('DATE(click_ts)'))
+    ->orderBy(DB::raw('DATE(click_ts)'))
+    ->get();
 
-    $dates = $clicksData->pluck('date')->map(function ($date) {
-        return \Carbon\Carbon::parse($date)->format('d M Y');
-    });
+$dates = $clicksData->pluck('date')->map(function ($date) {
+    return \Carbon\Carbon::parse($date)->format('d M Y');
+});
 
-    $totalClicks = $clicksData->pluck('total_clicks');
+$organicClicks = $clicksData->pluck('organic_clicks');
+$pmaxClicks = $clicksData->pluck('pmax_clicks');
+$paidSearchClicks = $clicksData->pluck('paid_search_clicks');
+$directClicks = $clicksData->pluck('direct_clicks');
+$totalClicks = $clicksData->pluck('total_clicks');
 
     return view('customer-show', compact(
-        'customer',
-        'subscriptions',
-        'invoices',
-        'creditnotes',
-        'affiliates',
-        'selectedSection',
-        'partnerUser',
-        'plans',
-        'upgradePlans',
-        'partnerUsers',
+        'customer','subscriptions','invoices','creditnotes','affiliates','selectedSection','partnerUser','plans','upgradePlans','partnerUsers',
         'companyInfo',
-        'providerData','dates', 'totalClicks','startDate', 'endDate', 'filter', 'filterLabel','refunds',
+        'providerData','dates', 'organicClicks','pmaxClicks','paidSearchClicks','directClicks','totalClicks','startDate','endDate',
+    'filter','filterLabel','refunds','isPartnerValid'
     ));
 }
 
@@ -2688,25 +2714,69 @@ public function filterSubscriptionsnav(Request $request)
 
     $providerData = ProviderData::where('zoho_cust_id', $customer->zohocust_id)->first();
 
+    
+    
+    $partnerAffiliateId = DB::table('clicks')
+        ->whereNotNull('partners_affiliates_id') 
+        ->value('partners_affiliates_id'); 
+
+    if (!$partnerAffiliateId) {
+        return back()->withErrors('No valid partner affiliate ID found in clicks.');
+    }
+
+    $partnerAffiliate = DB::table('partner_affiliates')
+        ->where('id', $partnerAffiliateId)
+        ->first();
+
+        $isPartnerValid = $partnerAffiliate && $partnerAffiliate->partner_id == $customer->zohocust_id;
     // Get the first date of the current month and today's date
    $startOfMonth = Carbon::now()->startOfMonth(); // 1st of the current month
    $endOfMonth = Carbon::now(); // Today's date
 
-    $clicksData = DB::table('clicks')
-    ->select(DB::raw('DATE(click_ts) as date'), DB::raw('COUNT(*) as total_clicks'))
-    ->whereBetween(DB::raw('DATE(click_ts)'), [$startOfMonth->toDateString(), $endOfMonth->toDateString()])
-    ->groupBy(DB::raw('DATE(click_ts)'))
-    ->orderBy(DB::raw('DATE(click_ts)'))
-    ->get();
 
-// Extract the dates and total clicks
-$dates = $clicksData->pluck('date');
+   $clicksData = DB::table('clicks')
+   ->select(
+       DB::raw('DATE(click_ts) as date'),
+       DB::raw("SUM(CASE WHEN channel = 'fake_clicks_organic' THEN 1 ELSE 0 END) as organic_clicks"),
+       DB::raw("SUM(CASE WHEN channel = 'fake_clicks_pmax' THEN 1 ELSE 0 END) as pmax_clicks"),
+       DB::raw("SUM(CASE WHEN channel = 'fake_clicks_paid_search' THEN 1 ELSE 0 END) as paid_search_clicks"),
+       DB::raw("SUM(CASE WHEN channel = 'fake_clicks_direct' THEN 1 ELSE 0 END) as direct_clicks"),
+       DB::raw('COUNT(*) as total_clicks')
+   )
+   ->whereBetween(DB::raw('DATE(click_ts)'), [$startDate, $endDate])
+   ->groupBy(DB::raw('DATE(click_ts)'))
+   ->orderBy(DB::raw('DATE(click_ts)'))
+   ->get();
+
+$dates = $clicksData->pluck('date')->map(function ($date) {
+   return \Carbon\Carbon::parse($date)->format('d M Y');
+});
+
+$organicClicks = $clicksData->pluck('organic_clicks');
+$pmaxClicks = $clicksData->pluck('pmax_clicks');
+$paidSearchClicks = $clicksData->pluck('paid_search_clicks');
+$directClicks = $clicksData->pluck('direct_clicks');
 $totalClicks = $clicksData->pluck('total_clicks');
+
+
+$refunds = DB::table('refunds')
+->join('invoices', function ($join) use ($customer) {
+    $join->on('refunds.payment_method_id', '=', 'invoices.payment_method')
+        ->where('refunds.zoho_cust_id', '=', $customer->zohocust_id)
+        ->where('invoices.zoho_cust_id', '=', $customer->zohocust_id);
+})
+->select(
+    'refunds.*', 
+    'invoices.invoice_number' 
+)
+->get();
+
 
     return view('customer-show', compact('customer','partnerUsers', 
     'subscriptions','selectedSection', 'affiliates', 'search', 'startDate',
      'endDate', 'invoices','creditnotes', 'partnerUser','plans','upgradePlans' ,'companyInfo',
-     'providerData','dates', 'totalClicks'));
+     'providerData','dates', 'organicClicks','pmaxClicks','paidSearchClicks','directClicks','totalClicks','startDate','endDate',
+     'filter','filterLabel','refunds','isPartnerValid'));
 }   
 
     
@@ -2783,25 +2853,65 @@ $upgradePlans = $currentSubscription
 
     $providerData = ProviderData::where('zoho_cust_id', $customer->zohocust_id)->first();
 
-    // Get the first date of the current month and today's date
-   $startOfMonth = Carbon::now()->startOfMonth(); // 1st of the current month
-   $endOfMonth = Carbon::now(); // Today's date
+    $partnerAffiliateId = DB::table('clicks')
+        ->whereNotNull('partners_affiliates_id') 
+        ->value('partners_affiliates_id'); 
 
-    $clicksData = DB::table('clicks')
-    ->select(DB::raw('DATE(click_ts) as date'), DB::raw('COUNT(*) as total_clicks'))
-    ->whereBetween(DB::raw('DATE(click_ts)'), [$startOfMonth->toDateString(), $endOfMonth->toDateString()])
+    if (!$partnerAffiliateId) {
+        return back()->withErrors('No valid partner affiliate ID found in clicks.');
+    }
+
+    $partnerAffiliate = DB::table('partner_affiliates')
+        ->where('id', $partnerAffiliateId)
+        ->first();
+
+        $isPartnerValid = $partnerAffiliate && $partnerAffiliate->partner_id == $customer->zohocust_id;
+ 
+   $startOfMonth = Carbon::now()->startOfMonth(); 
+   $endOfMonth = Carbon::now(); 
+
+   $clicksData = DB::table('clicks')
+    ->select(
+        DB::raw('DATE(click_ts) as date'),
+        DB::raw("SUM(CASE WHEN channel = 'fake_clicks_organic' THEN 1 ELSE 0 END) as organic_clicks"),
+        DB::raw("SUM(CASE WHEN channel = 'fake_clicks_pmax' THEN 1 ELSE 0 END) as pmax_clicks"),
+        DB::raw("SUM(CASE WHEN channel = 'fake_clicks_paid_search' THEN 1 ELSE 0 END) as paid_search_clicks"),
+        DB::raw("SUM(CASE WHEN channel = 'fake_clicks_direct' THEN 1 ELSE 0 END) as direct_clicks"),
+        DB::raw('COUNT(*) as total_clicks')
+    )
+    ->whereBetween(DB::raw('DATE(click_ts)'), [$startDate, $endDate])
     ->groupBy(DB::raw('DATE(click_ts)'))
     ->orderBy(DB::raw('DATE(click_ts)'))
     ->get();
 
-// Extract the dates and total clicks
-$dates = $clicksData->pluck('date');
+$dates = $clicksData->pluck('date')->map(function ($date) {
+    return \Carbon\Carbon::parse($date)->format('d M Y');
+});
+
+$organicClicks = $clicksData->pluck('organic_clicks');
+$pmaxClicks = $clicksData->pluck('pmax_clicks');
+$paidSearchClicks = $clicksData->pluck('paid_search_clicks');
+$directClicks = $clicksData->pluck('direct_clicks');
 $totalClicks = $clicksData->pluck('total_clicks');
-  
+
+
+$refunds = DB::table('refunds')
+->join('invoices', function ($join) use ($customer) {
+    $join->on('refunds.payment_method_id', '=', 'invoices.payment_method')
+        ->where('refunds.zoho_cust_id', '=', $customer->zohocust_id)
+        ->where('invoices.zoho_cust_id', '=', $customer->zohocust_id);
+})
+->select(
+    'refunds.*', 
+    'invoices.invoice_number' 
+)
+->get();
+
     return view('customer-show', compact('customer','partnerUsers',
      'subscriptions','selectedSection', 'affiliates', 'search', 'startDate', 'endDate',
       'invoices','creditnotes', 'partnerUser','plans','upgradePlans', 'companyInfo',
-      'providerData','dates', 'totalClicks'));
+      'providerData','dates', 'organicClicks','pmaxClicks','paidSearchClicks','directClicks','totalClicks','startDate','endDate',
+      'filter','filterLabel','refunds','isPartnerValid'));
 }
 
 public function filtercreditnav(Request $request)
@@ -2873,25 +2983,66 @@ $upgradePlans = $currentSubscription
 
     $providerData = ProviderData::where('zoho_cust_id', $customer->zohocust_id)->first();
 
+    
+    $partnerAffiliateId = DB::table('clicks')
+        ->whereNotNull('partners_affiliates_id') 
+        ->value('partners_affiliates_id'); 
+
+    if (!$partnerAffiliateId) {
+        return back()->withErrors('No valid partner affiliate ID found in clicks.');
+    }
+
+    $partnerAffiliate = DB::table('partner_affiliates')
+        ->where('id', $partnerAffiliateId)
+        ->first();
+
+        $isPartnerValid = $partnerAffiliate && $partnerAffiliate->partner_id == $customer->zohocust_id;
     // Get the first date of the current month and today's date
    $startOfMonth = Carbon::now()->startOfMonth(); // 1st of the current month
    $endOfMonth = Carbon::now(); // Today's date
+   $clicksData = DB::table('clicks')
+   ->select(
+       DB::raw('DATE(click_ts) as date'),
+       DB::raw("SUM(CASE WHEN channel = 'fake_clicks_organic' THEN 1 ELSE 0 END) as organic_clicks"),
+       DB::raw("SUM(CASE WHEN channel = 'fake_clicks_pmax' THEN 1 ELSE 0 END) as pmax_clicks"),
+       DB::raw("SUM(CASE WHEN channel = 'fake_clicks_paid_search' THEN 1 ELSE 0 END) as paid_search_clicks"),
+       DB::raw("SUM(CASE WHEN channel = 'fake_clicks_direct' THEN 1 ELSE 0 END) as direct_clicks"),
+       DB::raw('COUNT(*) as total_clicks')
+   )
+   ->whereBetween(DB::raw('DATE(click_ts)'), [$startDate, $endDate])
+   ->groupBy(DB::raw('DATE(click_ts)'))
+   ->orderBy(DB::raw('DATE(click_ts)'))
+   ->get();
 
-    $clicksData = DB::table('clicks')
-    ->select(DB::raw('DATE(click_ts) as date'), DB::raw('COUNT(*) as total_clicks'))
-    ->whereBetween(DB::raw('DATE(click_ts)'), [$startOfMonth->toDateString(), $endOfMonth->toDateString()])
-    ->groupBy(DB::raw('DATE(click_ts)'))
-    ->orderBy(DB::raw('DATE(click_ts)'))
-    ->get();
+$dates = $clicksData->pluck('date')->map(function ($date) {
+   return \Carbon\Carbon::parse($date)->format('d M Y');
+});
 
-// Extract the dates and total clicks
-$dates = $clicksData->pluck('date');
+$organicClicks = $clicksData->pluck('organic_clicks');
+$pmaxClicks = $clicksData->pluck('pmax_clicks');
+$paidSearchClicks = $clicksData->pluck('paid_search_clicks');
+$directClicks = $clicksData->pluck('direct_clicks');
 $totalClicks = $clicksData->pluck('total_clicks');
+
+
+$refunds = DB::table('refunds')
+->join('invoices', function ($join) use ($customer) {
+    $join->on('refunds.payment_method_id', '=', 'invoices.payment_method')
+        ->where('refunds.zoho_cust_id', '=', $customer->zohocust_id)
+        ->where('invoices.zoho_cust_id', '=', $customer->zohocust_id);
+})
+->select(
+    'refunds.*', 
+    'invoices.invoice_number' 
+)
+->get();
+
 
     return view('customer-show', compact('customer','partnerUsers', 'subscriptions', 
     'selectedSection', 'affiliates','invoices', 'search', 'startDate', 'endDate', 
     'creditnotes','partnerUser','plans','upgradePlans', 'companyInfo',
-    'providerData','dates', 'totalClicks'));
+    'providerData','dates', 'organicClicks','pmaxClicks','paidSearchClicks','directClicks','totalClicks','startDate','endDate',
+    'filter','filterLabel','refunds','isPartnerValid'));
 }
 
 public function filterProviderDatanav(Request $request)
@@ -2964,25 +3115,67 @@ public function filterProviderDatanav(Request $request)
     ->where('zoho_cust_id', $customer->zohocust_id)
     ->first();
 
-    // Get the first date of the current month and today's date
-   $startOfMonth = Carbon::now()->startOfMonth(); // 1st of the current month
-   $endOfMonth = Carbon::now(); // Today's date
+    
+    $partnerAffiliateId = DB::table('clicks')
+        ->whereNotNull('partners_affiliates_id') 
+        ->value('partners_affiliates_id'); 
 
-    $clicksData = DB::table('clicks')
-    ->select(DB::raw('DATE(click_ts) as date'), DB::raw('COUNT(*) as total_clicks'))
-    ->whereBetween(DB::raw('DATE(click_ts)'), [$startOfMonth->toDateString(), $endOfMonth->toDateString()])
-    ->groupBy(DB::raw('DATE(click_ts)'))
-    ->orderBy(DB::raw('DATE(click_ts)'))
-    ->get();
+    if (!$partnerAffiliateId) {
+        return back()->withErrors('No valid partner affiliate ID found in clicks.');
+    }
 
-// Extract the dates and total clicks
-$dates = $clicksData->pluck('date');
+    $partnerAffiliate = DB::table('partner_affiliates')
+        ->where('id', $partnerAffiliateId)
+        ->first();
+
+        $isPartnerValid = $partnerAffiliate && $partnerAffiliate->partner_id == $customer->zohocust_id;
+   
+   $startOfMonth = Carbon::now()->startOfMonth(); 
+   $endOfMonth = Carbon::now(); 
+
+   $clicksData = DB::table('clicks')
+   ->select(
+       DB::raw('DATE(click_ts) as date'),
+       DB::raw("SUM(CASE WHEN channel = 'fake_clicks_organic' THEN 1 ELSE 0 END) as organic_clicks"),
+       DB::raw("SUM(CASE WHEN channel = 'fake_clicks_pmax' THEN 1 ELSE 0 END) as pmax_clicks"),
+       DB::raw("SUM(CASE WHEN channel = 'fake_clicks_paid_search' THEN 1 ELSE 0 END) as paid_search_clicks"),
+       DB::raw("SUM(CASE WHEN channel = 'fake_clicks_direct' THEN 1 ELSE 0 END) as direct_clicks"),
+       DB::raw('COUNT(*) as total_clicks')
+   )
+   ->whereBetween(DB::raw('DATE(click_ts)'), [$startDate, $endDate])
+   ->groupBy(DB::raw('DATE(click_ts)'))
+   ->orderBy(DB::raw('DATE(click_ts)'))
+   ->get();
+
+$dates = $clicksData->pluck('date')->map(function ($date) {
+   return \Carbon\Carbon::parse($date)->format('d M Y');
+});
+
+$organicClicks = $clicksData->pluck('organic_clicks');
+$pmaxClicks = $clicksData->pluck('pmax_clicks');
+$paidSearchClicks = $clicksData->pluck('paid_search_clicks');
+$directClicks = $clicksData->pluck('direct_clicks');
 $totalClicks = $clicksData->pluck('total_clicks');
+
+
+$refunds = DB::table('refunds')
+->join('invoices', function ($join) use ($customer) {
+    $join->on('refunds.payment_method_id', '=', 'invoices.payment_method')
+        ->where('refunds.zoho_cust_id', '=', $customer->zohocust_id)
+        ->where('invoices.zoho_cust_id', '=', $customer->zohocust_id);
+})
+->select(
+    'refunds.*', 
+    'invoices.invoice_number' 
+)
+->get();
+
 
     return view('customer-show', compact('customer','partnerUsers', 
     'subscriptions','selectedSection', 'affiliates', 'search', 'startDate','creditnotes',
      'endDate', 'invoices', 'partnerUser','plans','upgradePlans' ,'companyInfo',
-     'providerData','dates', 'totalClicks'));
+     'providerData','dates', 'organicClicks','pmaxClicks','paidSearchClicks','directClicks','totalClicks','startDate','endDate',
+     'filter','filterLabel','refunds','isPartnerValid'));
 }   
 
 public function filterclicksnav(Request $request)
@@ -2997,6 +3190,7 @@ public function filterclicksnav(Request $request)
     $defaultStartDate = Carbon::now()->startOfMonth();
     $defaultEndDate = Carbon::now();
     $filterLabel = '';
+
 
     // Determine the date range for clicks based on the selected filter
     switch ($filter) {
@@ -3091,6 +3285,7 @@ public function filterclicksnav(Request $request)
 
     $invoices = Invoice::where('zoho_cust_id', $customer->zohocust_id)->get();
 
+
     $currentSubscription = DB::table('subscriptions')
         ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
         ->where('subscriptions.zoho_cust_id', $customer->zohocust_id)
@@ -3113,18 +3308,31 @@ public function filterclicksnav(Request $request)
         ->get();
 
     // Query to fetch clicks data within the selected range
+   
     $clicksData = DB::table('clicks')
-        ->select(DB::raw('DATE(click_ts) as date'), DB::raw('COUNT(*) as total_clicks'))
-        ->whereBetween(DB::raw('DATE(click_ts)'), [$startDate, $endDate])
-        ->groupBy(DB::raw('DATE(click_ts)'))
-        ->orderBy(DB::raw('DATE(click_ts)'))
-        ->get();
-
-    // Format the dates and extract total clicks
-    $dates = $clicksData->pluck('date')->map(function ($date) {
-        return \Carbon\Carbon::parse($date)->format('d M Y');
-    });
-    $totalClicks = $clicksData->pluck('total_clicks');
+    ->select(
+        DB::raw('DATE(click_ts) as date'),
+        DB::raw("SUM(CASE WHEN channel = 'fake_clicks_organic' THEN 1 ELSE 0 END) as organic_clicks"),
+        DB::raw("SUM(CASE WHEN channel = 'fake_clicks_pmax' THEN 1 ELSE 0 END) as pmax_clicks"),
+        DB::raw("SUM(CASE WHEN channel = 'fake_clicks_paid_search' THEN 1 ELSE 0 END) as paid_search_clicks"),
+        DB::raw("SUM(CASE WHEN channel = 'fake_clicks_direct' THEN 1 ELSE 0 END) as direct_clicks"),
+        DB::raw('COUNT(*) as total_clicks')
+    )
+    ->whereBetween(DB::raw('DATE(click_ts)'), [$startDate, $endDate])
+    ->groupBy(DB::raw('DATE(click_ts)'))
+    ->orderBy(DB::raw('DATE(click_ts)'))
+    ->get();
+ 
+ $dates = $clicksData->pluck('date')->map(function ($date) {
+    return \Carbon\Carbon::parse($date)->format('d M Y');
+ });
+ 
+ $organicClicks = $clicksData->pluck('organic_clicks');
+ $pmaxClicks = $clicksData->pluck('pmax_clicks');
+ $paidSearchClicks = $clicksData->pluck('paid_search_clicks');
+ $directClicks = $clicksData->pluck('direct_clicks');
+ $totalClicks = $clicksData->pluck('total_clicks');
+ 
 
     $selectedSection = 'clicks';
 
@@ -3135,32 +3343,37 @@ public function filterclicksnav(Request $request)
         ->first();
 
     $providerData = ProviderData::where('zoho_cust_id', $customer->zohocust_id)->first();
+    $refunds = DB::table('refunds')
+    ->join('invoices', function ($join) use ($customer) {
+        $join->on('refunds.payment_method_id', '=', 'invoices.payment_method')
+            ->where('refunds.zoho_cust_id', '=', $customer->zohocust_id)
+            ->where('invoices.zoho_cust_id', '=', $customer->zohocust_id);
+    })
+    ->select(
+        'refunds.*', 
+        'invoices.invoice_number' 
+    )
+    ->get();
+    
+    $partnerAffiliateId = DB::table('clicks')
+        ->whereNotNull('partners_affiliates_id') 
+        ->value('partners_affiliates_id'); 
+
+    if (!$partnerAffiliateId) {
+        return back()->withErrors('No valid partner affiliate ID found in clicks.');
+    }
+
+    $partnerAffiliate = DB::table('partner_affiliates')
+        ->where('id', $partnerAffiliateId)
+        ->first();
+
+        $isPartnerValid = $partnerAffiliate && $partnerAffiliate->partner_id == $customer->zohocust_id;
 
     return view('customer-show', compact(
-        'customer',
-        'partnerUsers',
-        'subscriptions',
-        'selectedSection',
-        'affiliates',
-        'search',
-        'startDate',
-        'endDate',
-        'invoices',
-        'creditnotes',
-        'partnerUser',
-        'plans',
-        'upgradePlans',
-        'companyInfo',
-        'providerData',
-        'dates',
-        'totalClicks',
-        'filter',
-        'filterLabel'
-    ));
-
+        'customer','partnerUsers','subscriptions','selectedSection','affiliates','search','startDate','endDate',
+        'invoices','creditnotes','partnerUser','plans','upgradePlans','companyInfo','providerData','dates','organicClicks','pmaxClicks','paidSearchClicks','directClicks','totalClicks','startDate','endDate',
+     'filter','filterLabel','refunds','isPartnerValid'));
 }
-
-
 
 public function customenterprise(Request $request)
 {
@@ -3835,6 +4048,32 @@ public function updateinviteuser(Request $request)
 }
 public function showChart(Request $request)
 {
+    $partnerUser = PartnerUser::where('email', Session::get('user_email'))->first();
+
+    if (!$partnerUser) {
+        return back()->withErrors('Partner User not found.');
+    }
+
+    $customer = Partner::where('zohocust_id', $partnerUser->zoho_cust_id)->first();
+
+    if (!$customer) {
+        return back()->withErrors('Partner not found.');
+    }
+
+    $partnerAffiliateId = DB::table('clicks')
+        ->whereNotNull('partners_affiliates_id') 
+        ->value('partners_affiliates_id'); 
+
+    if (!$partnerAffiliateId) {
+        return back()->withErrors('No valid partner affiliate ID found in clicks.');
+    }
+
+    $partnerAffiliate = DB::table('partner_affiliates')
+        ->where('id', $partnerAffiliateId)
+        ->first();
+
+        $isPartnerValid = $partnerAffiliate && $partnerAffiliate->partner_id == $customer->zohocust_id;
+
     $filter = $request->input('filter', 'month_to_date');
     $showBy = $request->input('showBy', 'day');
     $defaultStartDate = Carbon::now()->startOfMonth();
@@ -3953,7 +4192,8 @@ public function showChart(Request $request)
 
     $totalClicks = $clicksData->pluck('total_clicks');
 
-    return view("chart", compact('dates', 'totalClicks', 'startDate', 'endDate', 'filter', 'filterLabel', 'showBy'));
+    return view("chart", compact('dates', 'totalClicks', 'startDate', 'endDate', 'filter', 'filterLabel', 'showBy', 'isPartnerValid'));
+
 }
 
 public function downloadCsv(Request $request)
@@ -4070,7 +4310,6 @@ public function downloadCsv(Request $request)
 }
 public function refundPayment(Request $request)
 {
-    // Validate the incoming request
     $validated = $request->validate([
         'invoice_number' => 'required',
         'amount' => 'required|numeric',
@@ -4078,16 +4317,31 @@ public function refundPayment(Request $request)
         'zohocust_id' => 'required|string',
     ]);
 
-    // Retrieve Zoho access token
+    $invoice = Invoice::where('invoice_number', $request->invoice_number)
+        ->where('zoho_cust_id', $validated['zohocust_id'])
+        ->first();
+
+    if (!$invoice) {
+        return redirect()->back()->with('error', 'Invoice not found.');
+    }
+
+    $totalRefunded = DB::table('refunds')
+        ->where('payment_method_id', $invoice->payment_method)
+        ->where('zoho_cust_id', $validated['zohocust_id'])
+        ->sum('refund_amount');
+
+
+    $balance = $invoice->amount - $totalRefunded;
+
+
     $accessToken = $this->zohoService->getAccessToken();
 
-    // Ensure the payment_id is provided
-    $paymentId = $request->input('payment_id'); 
+    $paymentId = $request->input('payment_id');
+
     if (!$paymentId) {
         return back()->withErrors('Payment ID is required for the refund.');
     }
 
-    // Make the API request
     $response = Http::withHeaders([
         'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
         'X-com-zoho-subscriptions-organizationid' => config('services.zoho.zoho_org_id'),
@@ -4097,7 +4351,6 @@ public function refundPayment(Request $request)
         'description' => $validated['description'],
     ]);
 
-    // Parse the response
     $responseData = $response->json();
 
     if ($response->successful() && isset($responseData['refund'])) {

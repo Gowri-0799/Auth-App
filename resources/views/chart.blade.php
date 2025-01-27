@@ -7,6 +7,8 @@
         <!-- Main Content -->
         <div class="col-12">
             <div class="card shadow-sm border-0 rounded-lg">
+
+            @if ($isPartnerValid )
                 <div class="card-header">
                     <h2 class="mb-4 text-center text-lg-start" style="font-size: 28px;">Usage Reports</h2>
                 </div>
@@ -76,6 +78,13 @@
                 <div class="chart-container" style="position: relative; height: 400px; width: 100%;">
                     <canvas id="myChart"></canvas>
                 </div>
+
+                @else
+                    <!-- Show "No Usage Report Found" message -->
+                    <div class="text-center" style="height: 100vh; display: flex; justify-content: center; align-items: center;">
+                        <p class="fw-bold" style="font-size: 24px;">No Usage report found for the partner.</p>
+                    </div>
+                @endif
             </div>
         </div>
     </div>

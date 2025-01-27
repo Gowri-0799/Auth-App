@@ -301,14 +301,14 @@
                <td>{{ $subscription->start_date }}</td>
                <td>{{ $subscription->next_billing_at }}</td>
                <td>
-                  @if(strtolower($subscription->status) == 'live')
-                  <span class="badge badge-success">Live</span>
-                  @elseif(strtolower($subscription->status) == 'cancelled')
-                  <span class="badge badge-danger">Cancelled</span>
-                  @else
-                  <span class="badge badge-warning">Pending</span>
-                  @endif
-               </td>
+                                            @if(strtolower($subscription->status) == 'live')
+                                                <span class="badge bg-success">Live</span>
+                                            @elseif(strtolower($subscription->status) == 'cancelled')
+                                                <span class="badge bg-danger">Cancelled</span>  
+                                            @else
+                                                <span class="badge bg-warning">Pending</span>
+                                            @endif
+                                        </td>
             </tr>
             @endforeach
          </tbody>
@@ -318,10 +318,14 @@
 </div>
 <!-- Invoices Section --> 
 <div id="invoices" class="section mt-4" style="{{ $selectedSection !== 'invoices' ? 'display: none;' : '' }}">
-   <div>
+   <div class="d-flex align-items-center">
       <span style="font-family: Arial, sans-serif; font-size: 21px; font-weight: bold;">Invoice</span>
+      <a href="#" class="btn btn-primary ms-auto" style="margin-right: 100px;"  data-bs-toggle="modal" data-bs-target="#refundModal">
+         Refund a Payment
+      </a>
    </div>
    <br>
+
    <!-- Filter Form for Invoices -->
    <form method="GET" action="{{ route('nav.invoice.filter') }}" class="row mb-4 align-items-end">
       @include('partials.filter-form')
@@ -566,6 +570,8 @@
 
 <!-- Clicks Data Section -->
 <div id="clicks" class="section mt-4" style="{{ $selectedSection !== 'clicks' ? 'display: none;' : '' }}">
+   
+@if ($isPartnerValid )
     <div>
         <span style="font-family: Arial, sans-serif; font-size: 21px; font-weight: bold;">Clicks Data</span>
     </div>
@@ -592,6 +598,12 @@
     <div>
         <canvas id="myChart"></canvas>
     </div>
+    @else
+    <!-- Show "No Usage Report Found" message -->
+    <div class="d-flex justify-content-center align-items-center" style="height: 60vh;">
+        <p class="fw-bold" style="font-size: 24px;">No Clicks Data found for the partner.</p>
+    </div>
+@endif
 </div>
 <!-- Refunds -->
 <div id="refunds" class="section mt-4" style="{{ $selectedSection !== 'refunds' ? 'display: none;' : '' }}">
@@ -618,26 +630,29 @@
       <table class="table table-hover text-center table-bordered" style="background-color:#fff; width: 100%; max-width: 100%;">
          <thead class="table-light">
             <tr>
-               <th style="background-color:#EEF3FB;">#</th>
-               <th style="background-color:#EEF3FB;">Date</th>
-               <th style="background-color:#EEF3FB;">Refund ID</th>
-               <th style="background-color:#EEF3FB;">Credit Note #</th>
+               
+               <th style="background-color:#EEF3FB;">Creation Date</th>
                <th style="background-color:#EEF3FB;">Refund Amount (USD)</th>
-               <th style="background-color:#EEF3FB;">Balance (USD)</th>
-               <th style="background-color:#EEF3FB;">Status</th>
                <th style="background-color:#EEF3FB;">Description</th>
-           
+               <th style="background-color:#EEF3FB;">Creditnote Number</th>
+               <th style="background-color:#EEF3FB;">Gateway Transaction ID</th>
+               <th style="background-color:#EEF3FB;">Invoice Number</th>
+               <th style="background-color:#EEF3FB;">Refund mode</th>
+               <th style="background-color:#EEF3FB;">Status</th>
+
             </tr>
          </thead>
          <tbody>
             @foreach($refunds as $index => $refund)
             <tr>
-               <td>{{ (int)$index + 1 }}</td>
+               
                <td>{{ \Carbon\Carbon::parse($refund->date)->format('d-M-Y') }}</td>
-               <td>{{ $refund->refund_id }}</td>
-               <td>{{ $refund->creditnote_number }}</td>
                <td>{{ number_format($refund->refund_amount, 2) }}</td>
-               <td>{{ number_format($refund->balance_amount, 2) }}</td>
+               <td>{{ $refund->description }}</td>
+               <td>{{ $refund->creditnote_number }}</td>
+               <td>{{ $refund->gateway_transaction_id }}</td>
+               <td>{{ $refund->invoice_number }}</td>
+                <td>{{$refund->refund_mode }}</td>
                <td class="p-2 status">
                   @if(strtolower($refund->status) == 'completed')
                   <span class="badge-success">Completed</span>
@@ -645,7 +660,7 @@
                   <span class="badge-fail">Pending</span>
                   @endif
                </td>
-               <td>{{ $refund->description }}</td>
+             
               
             </tr>
             @endforeach
@@ -773,7 +788,6 @@
       </div>
    </div>
 </div>
-
 <!-- Refund a Payment Modal -->
 <div class="modal fade" id="refundModal" tabindex="-1" aria-labelledby="refundModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -783,7 +797,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-            <form action="{{ route('refund.payment') }}" method="POST">
+                <form action="{{ route('refund.payment') }}" method="POST">
                     @csrf
                     <div class="mb-3">
                         <label for="invoice-number" class="form-label">Invoice Number*</label>
@@ -791,7 +805,12 @@
                             <option value="">Select an Invoice</option>
                             <!-- Populate dynamically -->
                             @foreach ($invoices as $invoice)
-                            <option value="{{ $invoice->invoice_number }}">{{ $invoice->invoice_number }}</option>
+                                @php
+                                    $balance = $invoice->amount - $invoice->refunded_amount; 
+                                @endphp
+                                <option value="{{ $invoice->invoice_number }}">
+                                    {{ $invoice->invoice_number }} - ${{ number_format($invoice->amount, 2) }} - balance(${{ number_format($balance, 2) }})
+                                </option>
                             @endforeach
                         </select>
                     </div>
@@ -819,7 +838,6 @@
         </div>
     </div>
 </div>
-
 <!-- Address Update Modal -->
 <div class="modal fade" id="updateAddressModal" tabindex="-1" aria-labelledby="updateAddressModalLabel" aria-hidden="true">
    <div class="modal-dialog">
@@ -1044,41 +1062,91 @@
    });
 </script>
 <script>
-   document.addEventListener('DOMContentLoaded', function () {
-       // Pass the data from PHP to JavaScript
-       const labels = {!! json_encode($dates) !!};
-       const data = {!! json_encode($totalClicks) !!};
+ document.addEventListener('DOMContentLoaded', function () {
+    const labels = {!! json_encode($dates) !!};
+    const organicClicks = {!! json_encode($organicClicks) !!};
+    const pmaxClicks = {!! json_encode($pmaxClicks) !!};
+    const paidSearchClicks = {!! json_encode($paidSearchClicks) !!};
+    const directClicks = {!! json_encode($directClicks) !!};
+    const totalClicks = {!! json_encode($totalClicks) !!};
 
-       console.log('Labels:', labels);
-       console.log('Data:', data);
-   
-       // Create the chart using Chart.js
-       const ctx = document.getElementById('myChart').getContext('2d');
-       const myChart = new Chart(ctx, {
-           type: 'line',
-           data: {
-               labels: labels, // x-axis labels (dates)
-               datasets: [{
-                   label: 'Total Clicks',
-                   data: data, // y-axis data (clicks)
-                   borderColor: '#00aaff', // line color
-                   backgroundColor: 'rgba(0, 170, 255, 0.1)', // area color
-                   fill: true, // Fill the area under the line
-               }]
-           },
-           options: {
-               responsive: true,
-               scales: {
-                   x: {
-                       beginAtZero: true,
-                   },
-                   y: {
-                       beginAtZero: true,
-                   }
-               }
-           }
-       });
-   
+    // Debugging logs
+    console.log({
+        labels,
+        organicClicks,
+        pmaxClicks,
+        paidSearchClicks,
+        directClicks,
+        totalClicks
+    });
+
+    if (labels.length === 0) {
+        document.getElementById('myChart').innerHTML = 'No data available.';
+        return;
+    }
+
+    const ctx = document.getElementById('myChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Organic Clicks',
+                    data: organicClicks,
+                    borderColor: '#28a745',
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    fill: true,
+                },
+                {
+                    label: 'PMax Clicks',
+                    data: pmaxClicks,
+                    borderColor: '#6c757d',
+                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                    fill: true,
+                },
+                {
+                    label: 'Paid Search Clicks',
+                    data: paidSearchClicks,
+                    borderColor: '#ffc107',
+                    backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                    fill: true,
+                },
+                {
+                    label: 'Direct Clicks',
+                    data: directClicks,
+                    borderColor: '#dc3545',
+                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                    fill: true,
+                },
+                {
+                    label: 'Total Clicks',
+                    data: totalClicks,
+                    borderColor: '#007bff', 
+                    backgroundColor: 'rgba(108, 117, 125, 0.1)',
+                    fill: false,
+                    borderDash: [5, 5],
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                },
+            },
+            scales: {
+                x: { beginAtZero: false },
+                y: { beginAtZero: true },
+            },
+        },
+    });
+
        // Toggle date fields accessibility based on filter selection
        const filterDropdown = document.getElementById('filter');
        const startDateInput = document.getElementById('startDate');

@@ -3,7 +3,7 @@
 @section('title', 'Subscribe Plan Preview')
 
 @section('content')
-<div id="content" style="box-sizing: border-box; margin-left: 300px;" class="p-3">
+<div id="content" style="box-sizing: border-box;" class="p-3">
     <div class="row">
         <div class="col-md-6">
             <a href="{{ route('showplan') }}" class="btn text-primary text-decoration-underline mb-3">

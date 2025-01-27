@@ -22,7 +22,7 @@ class FakeClicksTableSeeder extends Seeder
 
         $partner = DB::table('partners')
         ->select('zohocust_id as id')
-        ->where('company_name', 'Link Zoho')
+        ->where('company_name', 'Test Organization1258')
         ->first();
 
         if ($partner) {
@@ -32,12 +32,12 @@ class FakeClicksTableSeeder extends Seeder
                 ->toArray();
 
             $startDate = Carbon::createFromDate(2024, 1, 1);
-            $endDate = Carbon::createFromDate(2025, 1, 2);
+            $endDate = Carbon::createFromDate(2025, 1, 20);
 
             while ($startDate->lte($endDate)) {
 
                 $recordCount = rand(10, 40);
-
+ 
                 for ($i = 0; $i < $recordCount; $i++) {
 
                     $partners_affiliates_id = $partnersAffiliateIds[array_rand($partnersAffiliateIds)];
