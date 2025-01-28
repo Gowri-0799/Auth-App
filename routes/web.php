@@ -203,6 +203,8 @@ Route::get('nav/invoices/filter', [ZohoController::class, 'filterInvoicesnav'])-
 Route::get('nav/creditnote/filter', [ZohoController::class, 'filtercreditnav'])->name('nav.creditnote.filter');
 Route::get('nav/providerdata/filter', [ZohoController::class, 'filterProviderDatanav'])->name('nav.provider.filter');
 Route::get('nav/clicks/filter', [ZohoController::class, 'filterclicksnav'])->name('nav.clicks.filter');
+Route::get('nav/refunds/filter', [ZohoController::class, 'filterrefundnav'])->name('nav.refund.filter');
+
 
 Route::post('/refund-payment', [ZohoController::class, 'refundPayment'])->name('refund.payment');
 

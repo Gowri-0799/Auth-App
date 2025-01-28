@@ -761,6 +761,7 @@ if (!$existingInvoice) {
         'invoice_link' => $invoiceData['invoice_url'],
         'zoho_cust_id' => $subscriptionData['customer_id'],
         'invoice_items' => $invoiceItems,
+        'balance'=>$invoiceData['payment_made'],
         'payment_details' => $paymentItems,
         'status' => $invoiceData['status'],
     ]);
@@ -777,6 +778,8 @@ if (!$existingInvoice) {
         'invoice_link' => $invoiceData['invoice_url'],
         'zoho_cust_id' => $subscriptionData['customer_id'],
         'invoice_items' => $invoiceItems,
+        'balance'=>$invoiceData['payment_made'],
+        'payment_details' => $paymentItems,
         'status' => $invoiceData['status'],
     ]);
 }
@@ -1265,6 +1268,7 @@ if (!$existingInvoice) {
         'invoice_link' => $invoiceData['invoice_url'],
         'zoho_cust_id' => $subscriptionData['customer_id'],
         'invoice_items' => $invoiceItems,
+        'balance'=>$invoiceData['payment_made'],
         'payment_details' => $paymentItems,
         'status' => $invoiceData['status'],
     ]);
@@ -1281,6 +1285,8 @@ if (!$existingInvoice) {
         'invoice_link' => $invoiceData['invoice_url'],
         'zoho_cust_id' => $subscriptionData['customer_id'],
         'invoice_items' => $invoiceItems,
+        'balance'=>$invoiceData['payment_made'],
+        'payment_details' => $paymentItems,
         'status' => $invoiceData['status'],
     ]);
 }
@@ -2436,7 +2442,9 @@ public function show($zohocust_id, Request $request)
     })
     ->select(
         'refunds.*', 
-        'invoices.invoice_number' 
+        'invoices.invoice_number',
+        'invoices.balance',
+        'invoices.payment_made'
     )
     ->get();
 
@@ -2776,7 +2784,7 @@ $refunds = DB::table('refunds')
     'subscriptions','selectedSection', 'affiliates', 'search', 'startDate',
      'endDate', 'invoices','creditnotes', 'partnerUser','plans','upgradePlans' ,'companyInfo',
      'providerData','dates', 'organicClicks','pmaxClicks','paidSearchClicks','directClicks','totalClicks','startDate','endDate',
-     'filter','filterLabel','refunds','isPartnerValid'));
+    'refunds','isPartnerValid'));
 }   
 
     
@@ -2911,7 +2919,7 @@ $refunds = DB::table('refunds')
      'subscriptions','selectedSection', 'affiliates', 'search', 'startDate', 'endDate',
       'invoices','creditnotes', 'partnerUser','plans','upgradePlans', 'companyInfo',
       'providerData','dates', 'organicClicks','pmaxClicks','paidSearchClicks','directClicks','totalClicks','startDate','endDate',
-      'filter','filterLabel','refunds','isPartnerValid'));
+     'refunds','isPartnerValid'));
 }
 
 public function filtercreditnav(Request $request)
@@ -3042,7 +3050,7 @@ $refunds = DB::table('refunds')
     'selectedSection', 'affiliates','invoices', 'search', 'startDate', 'endDate', 
     'creditnotes','partnerUser','plans','upgradePlans', 'companyInfo',
     'providerData','dates', 'organicClicks','pmaxClicks','paidSearchClicks','directClicks','totalClicks','startDate','endDate',
-    'filter','filterLabel','refunds','isPartnerValid'));
+    'refunds','isPartnerValid'));
 }
 
 public function filterProviderDatanav(Request $request)
@@ -3175,8 +3183,141 @@ $refunds = DB::table('refunds')
     'subscriptions','selectedSection', 'affiliates', 'search', 'startDate','creditnotes',
      'endDate', 'invoices', 'partnerUser','plans','upgradePlans' ,'companyInfo',
      'providerData','dates', 'organicClicks','pmaxClicks','paidSearchClicks','directClicks','totalClicks','startDate','endDate',
-     'filter','filterLabel','refunds','isPartnerValid'));
+    'refunds','isPartnerValid'));
 }   
+
+public function filterrefundnav(Request $request)
+{
+    $zohocust_id = $request->input('zohocust_id');
+    $search = $request->input('search');
+    $startDate = $request->input('start_date');
+    $endDate = $request->input('end_date');
+    $perPage = $request->input('rows_to_show', 10); 
+
+    // Update query to filter refunds instead of provider_data
+    $query = DB::table('refunds')
+        ->join('partners', 'refunds.zoho_cust_id', '=', 'partners.zohocust_id')
+        ->join('invoices', function ($join) {
+            $join->on('refunds.payment_method_id', '=', 'invoices.payment_method')
+                ->whereColumn('refunds.zoho_cust_id', 'invoices.zoho_cust_id');
+        })
+        ->select(
+            'refunds.*',
+            'invoices.invoice_number',
+            'partners.company_name'
+        )
+        ->where('refunds.zoho_cust_id', $zohocust_id);
+
+    if ($startDate) {
+        $query->whereDate('refunds.created_at', '>=', $startDate);
+    }
+    if ($endDate) {
+        $query->whereDate('refunds.created_at', '<=', $endDate);
+    }
+
+    if ($search) {
+        $query->where(function ($q) use ($search) {
+            $q->where('refunds.description', 'LIKE', "%{$search}%")
+              ->orWhere('refunds.refund_id', 'LIKE', "%{$search}%")
+              ->orWhere('invoices.invoice_number', 'LIKE', "%{$search}%");
+        });
+    }
+
+    $refunds = $query->paginate($perPage);
+
+    \Log::info($refunds);
+
+    $customer = Partner::where('zohocust_id', $zohocust_id)->first();
+    $partnerUser = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)
+        ->whereNotNull('zoho_cpid') 
+        ->get();
+
+    $subscriptions = Subscription::where('zoho_cust_id', $zohocust_id)->get();
+    $creditnotes = Creditnote::where('zoho_cust_id', $customer->zohocust_id)->get();
+    $invoices = Invoice::where('zoho_cust_id', $customer->zohocust_id)->get();
+   
+    $affiliates = DB::table('partner_affiliates')
+        ->join('affiliates', 'partner_affiliates.affiliate_id', '=', 'affiliates.id')  
+        ->where('partner_affiliates.partner_id', $customer->zohocust_id)  
+        ->select(
+            'affiliates.isp_affiliate_id',
+            'affiliates.domain_name'
+        )
+        ->get();
+
+    $selectedSection = 'refunds';  
+
+    $currentSubscription = DB::table('subscriptions')
+        ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
+        ->where('subscriptions.zoho_cust_id', $customer->zohocust_id)
+        ->select('plans.plan_price', 'plans.plan_id')
+        ->first();
+
+    $upgradePlans = $currentSubscription 
+        ? Plan::where('plan_price', '>', $currentSubscription->plan_price)->get() 
+        : [];
+ 
+    $plans = DB::table('plans')->select('plan_code', 'plan_name', 'plan_price')->get();
+    $partnerUsers = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)->first();
+    $companyInfo = DB::table('company_info')
+        ->where('zoho_cust_id', $customer->zohocust_id)
+        ->first();
+
+        $providerData = ProviderData::where('zoho_cust_id', $customer->zohocust_id)->first();
+
+    $partnerAffiliateId = DB::table('clicks')
+        ->whereNotNull('partners_affiliates_id') 
+        ->value('partners_affiliates_id'); 
+
+    if (!$partnerAffiliateId) {
+        return back()->withErrors('No valid partner affiliate ID found in clicks.');
+    }
+
+    $partnerAffiliate = DB::table('partner_affiliates')
+        ->where('id', $partnerAffiliateId)
+        ->first();
+
+    $isPartnerValid = $partnerAffiliate && $partnerAffiliate->partner_id == $customer->zohocust_id;
+   
+    $startOfMonth = Carbon::now()->startOfMonth(); 
+    $endOfMonth = Carbon::now(); 
+
+    $clicksData = DB::table('clicks')
+        ->select(
+            DB::raw('DATE(click_ts) as date'),
+            DB::raw("SUM(CASE WHEN channel = 'fake_clicks_organic' THEN 1 ELSE 0 END) as organic_clicks"),
+            DB::raw("SUM(CASE WHEN channel = 'fake_clicks_pmax' THEN 1 ELSE 0 END) as pmax_clicks"),
+            DB::raw("SUM(CASE WHEN channel = 'fake_clicks_paid_search' THEN 1 ELSE 0 END) as paid_search_clicks"),
+            DB::raw("SUM(CASE WHEN channel = 'fake_clicks_direct' THEN 1 ELSE 0 END) as direct_clicks"),
+            DB::raw('COUNT(*) as total_clicks')
+        )
+        ->whereBetween(DB::raw('DATE(click_ts)'), [$startDate, $endDate])
+        ->groupBy(DB::raw('DATE(click_ts)'))
+        ->orderBy(DB::raw('DATE(click_ts)'))
+        ->get();
+
+    $dates = $clicksData->pluck('date')->map(function ($date) {
+        return \Carbon\Carbon::parse($date)->format('d M Y');
+    });
+
+    $organicClicks = $clicksData->pluck('organic_clicks');
+    $pmaxClicks = $clicksData->pluck('pmax_clicks');
+    $paidSearchClicks = $clicksData->pluck('paid_search_clicks');
+    $directClicks = $clicksData->pluck('direct_clicks');
+    $totalClicks = $clicksData->pluck('total_clicks');
+
+    return view('customer-show', compact(
+        'customer', 'partnerUsers', 
+        'subscriptions', 'selectedSection', 'affiliates', 'search','providerData',
+        'startDate', 'creditnotes', 'endDate', 'invoices', 
+        'partnerUser', 'plans', 'upgradePlans', 'companyInfo', 
+        'dates', 'organicClicks', 'pmaxClicks', 'paidSearchClicks', 
+        'directClicks', 'totalClicks', 'refunds', 'isPartnerValid'
+    ));
+}
+
+
+
 
 public function filterclicksnav(Request $request)
 {
@@ -3372,7 +3513,7 @@ public function filterclicksnav(Request $request)
     return view('customer-show', compact(
         'customer','partnerUsers','subscriptions','selectedSection','affiliates','search','startDate','endDate',
         'invoices','creditnotes','partnerUser','plans','upgradePlans','companyInfo','providerData','dates','organicClicks','pmaxClicks','paidSearchClicks','directClicks','totalClicks','startDate','endDate',
-     'filter','filterLabel','refunds','isPartnerValid'));
+    'refunds','isPartnerValid'));
 }
 
 public function customenterprise(Request $request)
@@ -4325,14 +4466,20 @@ public function refundPayment(Request $request)
         return redirect()->back()->with('error', 'Invoice not found.');
     }
 
-    $totalRefunded = DB::table('refunds')
+    // Get the latest refund entry for this invoice and payment method
+    $latestRefund = \DB::table('refunds')
         ->where('payment_method_id', $invoice->payment_method)
-        ->where('zoho_cust_id', $validated['zohocust_id'])
-        ->sum('refund_amount');
+        ->latest('created_at')
+        ->first();
 
+    // Determine the current balance
+    $balance = $latestRefund
+        ? $latestRefund->balance_amount - $validated['amount']
+        : $invoice->payment_made - $validated['amount'];
 
-    $balance = $invoice->amount - $totalRefunded;
-
+    if ($balance < 0) {
+        return redirect()->back()->with('error', 'Refund amount exceeds the available balance.');
+    }
 
     $accessToken = $this->zohoService->getAccessToken();
 
@@ -4364,7 +4511,7 @@ public function refundPayment(Request $request)
             'refund_id' => $refundData['refund_id'] ?? null,
             'creditnote_id' => $creditnote['creditnote_id'] ?? null,
             'creditnote_number' => $creditnote['creditnote_number'] ?? null,
-            'balance_amount' => $creditnote['balance_amount'] ?? 0,
+            'balance_amount' => $balance, // Save the manually calculated balance
             'refund_amount' => $refundData['amount'] ?? 0,
             'description' => $refundData['description'] ?? '',
             'zoho_cust_id' => $refundData['customer_id'] ?? null,
@@ -4377,6 +4524,9 @@ public function refundPayment(Request $request)
             'updated_at' => now(),
         ]);
 
+        // Update the invoice balance
+        $invoice->update(['balance' => $balance]);
+
         // Redirect with a success message
         return redirect()->back()->with('success', 'Refund processed and saved successfully.');
     } else {
@@ -4385,6 +4535,8 @@ public function refundPayment(Request $request)
         return redirect()->back()->with('error', 'Failed to process the refund: ' . $errorMessage);
     }
 }
+
+
 
 
 

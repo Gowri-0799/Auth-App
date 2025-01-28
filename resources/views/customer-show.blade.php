@@ -609,17 +609,17 @@
 <div id="refunds" class="section mt-4" style="{{ $selectedSection !== 'refunds' ? 'display: none;' : '' }}">
 <div class="d-flex justify-content-between align-items-center">
     <span style="font-family: Arial, sans-serif; font-size: 21px; font-weight: bold;">Refunds</span>
-    <a href="#" class="btn btn-primary" style="margin-right: 100px;" data-bs-toggle="modal" data-bs-target="#refundModal">
+    <!-- <a href="#" class="btn btn-primary" style="margin-right: 100px;" data-bs-toggle="modal" data-bs-target="#refundModal">
     Refund a Payment
-</a>
+</a> -->
 </div>
 
     <br>
-    <!-- <form method="GET" action="" class="row mb-4 align-items-end">
+    <form method="GET" action="{{ route('nav.refund.filter') }}" class="row mb-4 align-items-end">
       @include('partials.filter-form')
       <input type="hidden" name="zohocust_id" value="{{ $customer->zohocust_id }}">
       <input type="hidden" name="section" value="refunds">
-    </form> -->
+    </form>
    
     @if($refunds->count() == 0)
     <div class="d-flex align-items-center justify-content-center border p-3" style="width: 70%; height: 100px; margin: 0 auto; font-size: 20px;">
@@ -654,8 +654,8 @@
                <td>{{ $refund->invoice_number }}</td>
                 <td>{{$refund->refund_mode }}</td>
                <td class="p-2 status">
-                  @if(strtolower($refund->status) == 'completed')
-                  <span class="badge-success">Completed</span>
+                  @if(strtolower($refund->status) == 'success')
+                  <span class="badge-success">Success</span>
                   @else
                   <span class="badge-fail">Pending</span>
                   @endif
@@ -805,11 +805,8 @@
                             <option value="">Select an Invoice</option>
                             <!-- Populate dynamically -->
                             @foreach ($invoices as $invoice)
-                                @php
-                                    $balance = $invoice->amount - $invoice->refunded_amount; 
-                                @endphp
                                 <option value="{{ $invoice->invoice_number }}">
-                                    {{ $invoice->invoice_number }} - ${{ number_format($invoice->amount, 2) }} - balance(${{ number_format($balance, 2) }})
+                                    {{ $invoice->invoice_number }} - ${{ number_format($invoice->payment_made, 2) }} - balance(${{ number_format($invoice->balance, 2) }})
                                 </option>
                             @endforeach
                         </select>
