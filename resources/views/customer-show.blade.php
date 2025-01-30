@@ -672,7 +672,7 @@
 </div>
 
 <!-- Select Plans -->
-<div id="plans" class="section mt-4" style="{{ $selectedSection !== 'plans' ? 'display: none;' : '' }}">>
+<div id="plans" class="section mt-4" style="{{ $selectedSection !== 'plans' ? 'display: none;' : '' }}">
     <div class="d-flex justify-content-between align-items-center">
         <span style="font-family: Arial, sans-serif; font-size: 21px; font-weight: bold;">
             Select Plans for Partner Display
