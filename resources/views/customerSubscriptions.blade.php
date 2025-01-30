@@ -205,72 +205,72 @@
                </div>
             </div>
          </div>
-  
-            {{-- FAQ Section --}}
-               <div class="mt-5">
-                  <h2 class="fw-bold">FAQ's</h2>
-                  <div class="accordion accordion-flush" id="accordionFlushExample">
-                     <div class="accordion-item">
-                        <h2 class="accordion-header" id="flush-headingOne">
-                           <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
-                           Billing & Payments
-                           </button>
-                        </h2>
-                        <div id="flush-collapseOne" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample">
-                           <div class="accordion-body">
-                              <ul>
-                                 <li>All billing & payments will be upfront in US Dollars</li>
-                                 <li>Plans are billed on a calendar billing schedule</li>
-                                 <li>Associated Credit Card will be charged on renewal of a plan subscription on the first of each month</li>
-                                 <li>Plan price and subscription will be pro-rata or full as applicable on some upgrades</li>
-                                 <li>Any credits which arise in the process of upgrades will be kept for adjusting subsequent subscription renewals and will not be refunded</li>
-                                 <li>If a subscription renewal auto-debit of the card fails, you will be notified to pay by email (invoice link) or pay through the payment portal</li>
-                                 <li>If the maximum number of clicks is reached prior to the end of the month, the plan can be upgraded or a Monthly Add-On can be purchased.</li>
-                                 <li>Only one Monthly Add-On can be purchased per month</li>
-                                 <li>Clearlink does not offer refunds on a paid subscription or credits if any, but will consider specific cases of erroneous and duplicate payment transactions after review</li>
-                                 <li>Clearlink reserves the right to change the product, plan, subscription, limits, name and price, and will send notification of changes</li>
-                              </ul>
-                           </div>
-                        </div>
-                     </div>
-                     <div class="accordion-item">
-                        <h2 class="accordion-header" id="flush-headingTwo">
-                           <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseTwo" aria-expanded="false" aria-controls="flush-collapseTwo">
-                           Upgrade / Downgrade / Cancel
-                           </button>
-                        </h2>
-                        <div id="flush-collapseTwo" class="accordion-collapse collapse" aria-labelledby="flush-headingTwo" data-bs-parent="#accordionFlushExample">
-                           <div class="accordion-body">
-                              <ul>
-                                 <li>You can upgrade a paid plan at any time, the upgrade will be applied immediately on successful payment</li>
-                                 <li>Plan downgrade requests can be sent through a support ticket and will be done only at the end of the current subscription period</li>
-                                 <li>Subscription cancellation requests can be sent through a support ticket</li>
-                                 <li>Unpaid subscriptions will be automatically cancelled after 15 days</li>
-                                 <li>Plan Features & Limits are subject to change based on upgrade / downgrade process</li>
-                              </ul>
-                           </div>
-                        </div>
-                     </div>
-                     <div class="accordion-item">
-                        <h2 class="accordion-header" id="flush-headingThree">
-                           <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseThree" aria-expanded="false" aria-controls="flush-collapseThree">
-                           Security / Privacy
-                           </button>
-                        </h2>
-                        <div id="flush-collapseThree" class="accordion-collapse collapse" aria-labelledby="flush-headingThree" data-bs-parent="#accordionFlushExample">
-                           <div class="accordion-body">
-                              <ul>
-                                 <li>Clearlink uses Zoho to manage your subscriptions / support and uses Stripe as a secured payment gateway</li>
-                                 <li>Clearlink respects and protects your data as per the <a target="_blank" href="https://www.clearlink.com/privacy/">Privacy Policy</a></li>
-                              </ul>
-                           </div>
-                        </div>
-                     </div>
-                  </div>
-               </div>         
-         @endif                   
+         @endif
       </div>
    </div>
+
+   {{-- FAQ Section --}}
+   <div class="mt-5">
+      <h2 class="fw-bold">FAQ's</h2>
+      <div class="accordion accordion-flush" id="accordionFlushExample">
+         <div class="accordion-item">
+            <h2 class="accordion-header" id="flush-headingOne">
+               <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+               Billing & Payments
+               </button>
+            </h2>
+            <div id="flush-collapseOne" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample">
+               <div class="accordion-body">
+                  <ul>
+                     <li>All billing & payments will be upfront in US Dollars</li>
+                     <li>Plans are billed on a calendar billing schedule</li>
+                     <li>Associated Credit Card will be charged on renewal of a plan subscription on the first of each month</li>
+                     <li>Plan price and subscription will be pro-rata or full as applicable on some upgrades</li>
+                     <li>Any credits which arise in the process of upgrades will be kept for adjusting subsequent subscription renewals and will not be refunded</li>
+                     <li>If a subscription renewal auto-debit of the card fails, you will be notified to pay by email (invoice link) or pay through the payment portal</li>
+                     <li>If the maximum number of clicks is reached prior to the end of the month, the plan can be upgraded or a Monthly Add-On can be purchased.</li>
+                     <li>Only one Monthly Add-On can be purchased per month</li>
+                     <li>Clearlink does not offer refunds on a paid subscription or credits if any, but will consider specific cases of erroneous and duplicate payment transactions after review</li>
+                     <li>Clearlink reserves the right to change the product, plan, subscription, limits, name and price, and will send notification of changes</li>
+                  </ul>
+               </div>
+            </div>
+         </div>
+         <div class="accordion-item">
+            <h2 class="accordion-header" id="flush-headingTwo">
+               <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseTwo" aria-expanded="false" aria-controls="flush-collapseTwo">
+               Upgrade / Downgrade / Cancel
+               </button>
+            </h2>
+            <div id="flush-collapseTwo" class="accordion-collapse collapse" aria-labelledby="flush-headingTwo" data-bs-parent="#accordionFlushExample">
+               <div class="accordion-body">
+                  <ul>
+                     <li>You can upgrade a paid plan at any time, the upgrade will be applied immediately on successful payment</li>
+                     <li>Plan downgrade requests can be sent through a support ticket and will be done only at the end of the current subscription period</li>
+                     <li>Subscription cancellation requests can be sent through a support ticket</li>
+                     <li>Unpaid subscriptions will be automatically cancelled after 15 days</li>
+                     <li>Plan Features & Limits are subject to change based on upgrade / downgrade process</li>
+                  </ul>
+               </div>
+            </div>
+         </div>
+         <div class="accordion-item">
+            <h2 class="accordion-header" id="flush-headingThree">
+               <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseThree" aria-expanded="false" aria-controls="flush-collapseThree">
+               Security / Privacy
+               </button>
+            </h2>
+            <div id="flush-collapseThree" class="accordion-collapse collapse" aria-labelledby="flush-headingThree" data-bs-parent="#accordionFlushExample">
+               <div class="accordion-body">
+                  <ul>
+                     <li>Clearlink uses Zoho to manage your subscriptions / support and uses Stripe as a secured payment gateway</li>
+                     <li>Clearlink respects and protects your data as per the <a target="_blank" href="https://www.clearlink.com/privacy/">Privacy Policy</a></li>
+                  </ul>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>         
 </div>
  <!-- Modal contact us -->
  <div class="modal fade" id="contactModal" tabindex="-1" aria-labelledby="contactModalLabel" aria-hidden="true">

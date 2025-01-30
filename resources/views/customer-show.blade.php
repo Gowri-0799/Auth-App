@@ -68,12 +68,13 @@
       <a class="nav-link {{ $selectedSection === 'providerdata' ? 'active' : '' }}"
          href="{{ route('customers.show', $customer->zohocust_id) }}?section=providerdata">Provider Data</a>
    </li>
-   <li class="nav-item">
+   <li class="nav-item"> 
       <a class="nav-link {{ $selectedSection === 'clicks' ? 'active' : '' }}" 
-         href="{{ route('customers.show', $customer->zohocust_id) }}?section=clicks">Clicks Data</a>
+         href="{{ route('customers.show', $customer->zohocust_id) }}?section=clicks">Clicks Data</a> 
    </li>
    <li class="nav-item">
-      <a class="nav-link" href="#">Select Plans</a>
+      <a class="nav-link {{ $selectedSection === 'plans' ? 'active' : '' }}" 
+         href="{{ route('customers.show', $customer->zohocust_id) }}?section=plans">Select Plans</a> 
    </li>
 </ul>
 <!-- Overview Section (default) -->
@@ -670,6 +671,69 @@
     @endif
 </div>
 
+<!-- Select Plans -->
+<div id="plans" class="section mt-4" style="{{ $selectedSection !== 'plans' ? 'display: none;' : '' }}">>
+    <div class="d-flex justify-content-between align-items-center">
+        <span style="font-family: Arial, sans-serif; font-size: 21px; font-weight: bold;">
+            Select Plans for Partner Display
+        </span>
+    </div>
+
+    <!-- Plan Type Selection -->
+    <div class="mt-3">
+        <label style="font-weight: bold;">Select Plan Type:</label>
+        <label class="ms-2">
+            <input type="radio" name="planType" value="flat" checked> Flat
+        </label>
+        <label class="ms-2">
+            <input type="radio" name="planType" value="cpc"> CPC
+        </label>
+    </div>
+
+    <!-- Table Section -->
+    <div class="table-responsive" style="max-width: 80%; margin: auto;">
+        <table class="table table-hover text-center table-bordered" 
+               style="background-color: #fff; width: 100%; border-radius: 8px;">
+            <thead class="table-light">
+                <tr>
+                    <th style="background-color:#EEF3FB; width: 5%;">S.No</th>
+                    <th style="background-color:#EEF3FB; width: 50%;">Plan Name</th>
+                    <th style="background-color:#EEF3FB; width: 25%;">Price</th>
+                    <th style="background-color:#EEF3FB; width: 10%;">Select</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Default Row for "Custom Enterprise" -->
+                <tr>
+                    <td>1</td>
+                    <td>Custom Enterprise</td>
+                    <td>Contact Us</td>
+                    <td><input type="checkbox" style="transform: scale(1.2);"></td>
+                </tr>
+
+                @foreach($plans as $index => $plan)
+                <tr>
+                    <td>{{ $loop->iteration + 1 }}</td> <!-- Adjust index to account for default row -->
+                    <td>{{ $plan->plan_name }}</td>
+                    <td>{{ $plan->plan_price }}</td>
+                    <td><input type="checkbox" style="transform: scale(1.2);"></td>
+                </tr>
+                @endforeach
+                <!-- Submit Button Row -->
+                <tr>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                    <td colspan="4" class="text-end">
+                        <button type="submit" class="btn btn-primary mt-3">Submit</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
 <!-- Create subscription model-->
 <div class="modal fade" id="downgradeModal" tabindex="-1" aria-labelledby="downgradeModalLabel" aria-hidden="true">
    <div class="modal-dialog modal-dialog-centered">
@@ -990,6 +1054,7 @@
        document.getElementById('providerdata').style.display = 'none';
        document.getElementById('clicks').style.display = 'none';
        document.getElementById('refunds').style.display = 'none';
+       document.getElementById('plans').style.display = 'none';
        document.getElementById(sectionId).style.display = 'block';
    
        // Remove active class from all tabs
@@ -1122,7 +1187,7 @@
                     borderColor: '#007bff', 
                     backgroundColor: 'rgba(108, 117, 125, 0.1)',
                     fill: false,
-                    borderDash: [5, 5],
+                  //   borderDash: [5, 5],
                 }
             ]
         },
