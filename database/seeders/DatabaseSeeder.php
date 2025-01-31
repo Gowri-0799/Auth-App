@@ -33,6 +33,5 @@ class DatabaseSeeder extends Seeder
             'role'=>'Super Admin'
         ]);
 
-        $this->call(FakeClicksTableSeeder::class);
     }
 }
