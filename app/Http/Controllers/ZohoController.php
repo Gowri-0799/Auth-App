@@ -423,21 +423,23 @@ class ZohoController extends Controller
 
     public function display(){
         $affiliates = Affiliate::all();
-       
-    return view("custdetail", compact('affiliates'));
+       $plans=Plan::all();
+    return view("custdetail", compact('affiliates','plans'));
     }
 
     public function storepartner(Request $request)
     {
+       
         $validatedData = $request->validate([
             'first_name' => 'nullable|string',
             'last_name' => 'nullable|string',
             'customer_email' => 'required|email|unique:partner_users,email', 
             'company_name' => 'required|string',
+            'phone_number'=>'required|string',
             'billing_street' => 'nullable|string',
             'billing_city' => 'nullable|string',
             'billing_state' => 'nullable|string',
-            'billing_country' => 'nullable|string',
+            // 'billing_country' => 'nullable|string',
             'billing_zip' => 'nullable|string',
             'affiliate_ids' => 'required|array',
             'affiliate_ids.*' => 'exists:affiliates,id',
@@ -445,15 +447,15 @@ class ZohoController extends Controller
             'customer_email.unique' => 'The email ID already exists.',
             'affiliate_ids.required' => 'Please select the affiliate ID.',
         ]);
-    
+ 
         $fullName = trim($validatedData['first_name'] . ' ' . $validatedData['last_name']);
 
-        $exists = Partner::where('customer_name', $fullName)->exists();
-        if ($exists) {
-            return redirect()->back()->withErrors([
-                'name_combination' => 'The combination of first name and last name already exists.',
-            ])->withInput();
-        }
+        // $exists = Partner::where('customer_name', $fullName)->exists();
+        // if ($exists) {
+        //     return redirect()->back()->withErrors([
+        //         'name_combination' => 'The combination of first name and last name already exists.',
+        //     ])->withInput();
+        // }
     
         $defaultPassword = Str::random(16);
         try {
@@ -463,15 +465,16 @@ class ZohoController extends Controller
                 'last_name' =>$validatedData['last_name'],
                 'email' => $validatedData['customer_email'],
                 'company_name' => $validatedData['company_name'],
+                'phone_number' => $validatedData['phone_number'],
                 'billing_address' => $validatedData['billing_street'],
                 'billing_city' => $validatedData['billing_city'],
                 'billing_state' => $validatedData['billing_state'],
-                'billing_country' => $validatedData['billing_country'],
+                'billing_country' => 'U.S.A',
                 'billing_zip' => $validatedData['billing_zip'],
                 'shipping_address' => $validatedData['billing_street'],
                 'shipping_city' => $validatedData['billing_city'],
                 'shipping_state' => $validatedData['billing_state'],
-                'shipping_country' => $validatedData['billing_country'],
+                'shipping_country' => 'U.S.A',
                 'shipping_zip' => $validatedData['billing_zip'],
             ];
 
@@ -490,13 +493,13 @@ class ZohoController extends Controller
                 'billing_street' => $validatedData['billing_street'],
                 'billing_city' => $validatedData['billing_city'],
                 'billing_state' => $validatedData['billing_state'],
-                'billing_country' => $validatedData['billing_country'],
+                'billing_country' => 'U.S.A',
                 'billing_zip' => $validatedData['billing_zip'],
                 'shipping_attention' => $fullName,
                 'shipping_street' => $validatedData['billing_street'],
                 'shipping_city' => $validatedData['billing_city'],
                 'shipping_state' => $validatedData['billing_state'],
-                'shipping_country' => $validatedData['billing_country'],
+                'shipping_country' => 'U.S.A',
                 'shipping_zip' => $validatedData['billing_zip'],
                 'zohocust_id' => $zohoCustomerId,
             ]);
@@ -504,6 +507,7 @@ class ZohoController extends Controller
             $partnerUser = PartnerUser::create([
                 'first_name' => $validatedData['first_name'],
                 'last_name' => $validatedData['last_name'],
+                'phone_number'=>$validatedData['phone_number'],
                 'email' => $validatedData['customer_email'],
                 'password' => Hash::make($defaultPassword),
                 'zoho_cust_id' => $zohoCustomerId,
@@ -542,7 +546,7 @@ class ZohoController extends Controller
     private function createCustomerInZoho($customer)
     {
         $accessToken = $this->zohoService->getAccessToken();
-  
+
         \Log::info('Customer data:', ['customer' => $customer]);
         $response = Http::withHeaders([
             'Authorization' => 'Zoho-oauthtoken ' . $accessToken
@@ -553,6 +557,7 @@ class ZohoController extends Controller
             'last_name' => $customer['last_name'],
             'email' => $customer['email'],
             'company_name' => $customer['company_name'],
+            'phone' => $customer['phone_number'],
             'billing_address' => [
                 'attention' => $customer['customer_name'],
                 'street' => $customer['billing_address'],
@@ -2378,6 +2383,7 @@ public function ProviderDatafilter(Request $request)
 
 public function show($zohocust_id, Request $request)
 {
+ 
     $customer = Partner::where('zohocust_id', $zohocust_id)->firstOrFail();
 
     $partnerUser = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)
@@ -2429,7 +2435,7 @@ public function show($zohocust_id, Request $request)
     $upgradePlans = $currentSubscription 
         ? Plan::where('plan_price', '>', $currentSubscription->plan_price)->get() 
         : [];
-   
+
     $invoices = Invoice::where('zoho_cust_id', $customer->zohocust_id)->get();
  
     $creditnotes = Creditnote::where('zoho_cust_id', $customer->zohocust_id)->get();
@@ -2464,18 +2470,20 @@ public function show($zohocust_id, Request $request)
 
     
     $partnerAffiliateId = DB::table('clicks')
-        ->whereNotNull('partners_affiliates_id') 
-        ->value('partners_affiliates_id'); 
+    ->whereNotNull('partners_affiliates_id') 
+    ->value('partners_affiliates_id'); 
 
-    if (!$partnerAffiliateId) {
-        return back()->withErrors('No valid partner affiliate ID found in clicks.');
-    }
+// Initialize variables to handle the scenario where $partnerAffiliateId is null/false
+$partnerAffiliate = null;
+$isPartnerValid = false;
 
+if ($partnerAffiliateId) {
     $partnerAffiliate = DB::table('partner_affiliates')
         ->where('id', $partnerAffiliateId)
         ->first();
 
-        $isPartnerValid = $partnerAffiliate && $partnerAffiliate->partner_id == $customer->zohocust_id;
+    $isPartnerValid = $partnerAffiliate && $partnerAffiliate->partner_id == $customer->zohocust_id;
+}
 
     $filterLabel = ''; // Label for the selected filter
     switch ($filter) {

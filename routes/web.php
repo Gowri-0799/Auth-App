@@ -19,7 +19,7 @@ Route::get('/verify-otp', [AuthController::class, 'otppage'])->name('otppage');
 
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->name('verify.otp');
 
-Route::get('/customer/plan-subscriptions', [ZohoController::class, 'showplan'])->name('showplan');
+Route::get('/customer/plans', [ZohoController::class, 'showplan'])->name('showplan');
 
 
 // Route::get('/customer/provider-data', [AuthController::class, 'provider'])->name('provider');
@@ -114,7 +114,7 @@ Route::put('/customers/{zohocust_id}/update-address', [ZohoController::class, 'a
 Route::post('/profile/password/update', [ZohoController::class, 'updatePasswordinprofile'])->name('profile.password.update');
 
 
-    Route:: get("customers/allcustomer", [ZohoController::class, "customerdb"])
+    Route:: get("admin/allcustomer", [ZohoController::class, "customerdb"])
     ->name("customerdb");
 
 Route::get('customers/allcustomers',[ZohoController::class, "getAllCustomers"])
@@ -134,7 +134,7 @@ Route::get('/custdetail', [AuthController::class, 'customerdetail'])
 
 Route::post('/customerdetail', [ZohoController::class, 'storepartner'])->name('customers.store');
 
-Route::get('/customer',[ZohoController::class,'display']) ->name('cust.display');
+Route::get('admin/customer',[ZohoController::class,'display']) ->name('cust.display');
 
 
 Route::post('/addon', [ZohoController::class, 'addons'])->name('addon');
@@ -239,10 +239,10 @@ Route::get('/provider-info', [ZohoController::class, 'ProviderDatafilter'])->nam
 
 Route::get('/customers/{zohocust_id}/view', [ZohoController::class, 'show'])->name('customers.show');
 
-Route::get('/affiliates', [AffiliateController::class, 'affiliate'])->name('affiliates.index');
+Route::get('admin/affiliates', [AffiliateController::class, 'affiliate'])->name('affiliates.index');
 Route::post('/affiliates', [AffiliateController::class, 'affiliatestore'])->name('affiliates.store');
 
-Route::get('/admins', [AdminController::class, 'adminview'])->name('admin.index');
+Route::get('admin/admins', [AdminController::class, 'adminview'])->name('admin.index');
 
 Route::post('/revoke-ticket', [ZohoController::class, 'revokeTicket'])->name('revoke_ticket');
 

@@ -24,7 +24,7 @@
               <i class="fa fa-envelope right-margin text-primary" aria-hidden="true"></i>{{ $partnerUser->email }}
             </p>
             <p class="m-0">
-              <i class="fa-solid fa-phone right-margin text-primary"></i>
+              <i class="fa-solid fa-phone right-margin text-primary"></i> {{ $partnerUser->phone_number }}
             </p>
             <div class="d-flex flex-row mb-3">
               <div class="m-0">

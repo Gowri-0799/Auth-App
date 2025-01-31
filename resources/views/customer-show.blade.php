@@ -9,11 +9,11 @@
 <!-- Top Navigation Tabs -->
 <div class="d-flex justify-content-between align-items-center my-3">
    <h3>{{ $customer->company_name ?? '' }} 
-      @if ($partnerUsers->status === 'inactive')
+      @if ($customer->status === 'invited')
       <span class="badge" style="background-color: #FFEEBA; color: #856404; padding: 5px 10px;">
-      Inactive
+      Invited
       </span>
-      @elseif ($partnerUsers->status === 'active')
+      @elseif ($customer->status === 'active')
       <span class="badge" style="background-color: #D4EDDA; color: #155724; padding: 5px 10px;">
       Active
       </span>

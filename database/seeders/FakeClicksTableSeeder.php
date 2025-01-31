@@ -22,7 +22,7 @@ class FakeClicksTableSeeder extends Seeder
 
         $partner = DB::table('partners')
         ->select('zohocust_id as id')
-        ->where('company_name', 'Test Organization1258')
+        ->where('company_name', 'Test org1')
         ->first();
 
         if ($partner) {
