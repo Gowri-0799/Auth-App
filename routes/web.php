@@ -20,7 +20,8 @@ Route::get('/verify-otp', [AuthController::class, 'otppage'])->name('otppage');
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->name('verify.otp');
 
 Route::get('/customer/plans', [ZohoController::class, 'showplan'])->name('showplan');
-
+Route::put('/admin/{zohocust_id}/update-plans', [ZohoController::class, 'updatePlans'])
+    ->name('partner.updatePlans');
 
 // Route::get('/customer/provider-data', [AuthController::class, 'provider'])->name('provider');
 

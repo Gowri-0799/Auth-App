@@ -27,28 +27,60 @@
         <div class="col-md-1">
     <button type="submit" class="btn button-clearlink text-primary fw-bold">Submit</button>
 </div>
-<a href="{{ url()->current() }}" class="text-decoration-none text-primary d-inline-block" onclick="resetFilter(event)">Reset</a>
+<a href="{{ url()->current() }}" class="reset-link text-decoration-none text-primary d-inline-block" onclick="resetFilter(event)">Reset</a>
+
 <script>
-    function resetFilter(event) {
-        event.preventDefault(); // Prevent the default link behavior
-        
-        // Reset the dropdown and date fields
-        document.getElementById('filter').value = 'month_to_date'; // Default filter
-        document.getElementById('startDate').value = ''; // Clear Start Date
-        document.getElementById('endDate').value = ''; // Clear End Date
+    document.addEventListener("DOMContentLoaded", function () {
+        var filter = document.getElementById("filter");
+        var startDate = document.getElementById("startDate");
+        var endDate = document.getElementById("endDate");
+        var resetLink = document.querySelector("a.reset-link"); // Corrected selector
 
-        // Disable the date fields as default
-        document.getElementById('startDate').disabled = true;
-        document.getElementById('endDate').disabled = true;
+        function toggleDateFields() {
+            if (filter.value === "custom_range") {
+                startDate.disabled = false;
+                endDate.disabled = false;
+            } else {
+                startDate.disabled = true;
+                endDate.disabled = true;
+                startDate.value = ""; // Clear values when disabled
+                endDate.value = "";
+            }
+        }
 
-        // Remove query parameters from the URL
-        let url = new URL(window.location.href);
-        url.searchParams.delete('filter');
-        url.searchParams.delete('startDate');
-        url.searchParams.delete('endDate');
-        url.searchParams.delete('section');
+        function resetFilter(event) {
+            event.preventDefault(); // Prevent the default link behavior
+            
+            // Reset the dropdown and date fields
+            filter.value = "month_to_date"; // Default filter
+            startDate.value = ""; // Clear Start Date
+            endDate.value = ""; // Clear End Date
 
-        // Redirect to the cleaned URL to refresh the data
-        window.location.href = url.toString();
-    }
+            // Disable the date fields as default
+            startDate.disabled = true;
+            endDate.disabled = true;
+
+            // Remove query parameters from the URL
+            let url = new URL(window.location.href);
+            url.searchParams.delete("filter");
+            url.searchParams.delete("startDate");
+            url.searchParams.delete("endDate");
+            url.searchParams.delete("section");
+
+            // Redirect to the cleaned URL to refresh the data
+            window.location.href = url.toString();
+        }
+
+        // Initial check in case of pre-selected value
+        toggleDateFields();
+
+        // Add event listener to filter dropdown
+        filter.addEventListener("change", toggleDateFields);
+
+        // Attach the reset function to the reset button/link
+        if (resetLink) {
+            resetLink.addEventListener("click", resetFilter);
+        }
+    });
 </script>
+

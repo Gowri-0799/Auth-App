@@ -581,7 +581,7 @@
     <form method="GET" action="{{ route('nav.clicks.filter') }}" class="row mb-4 align-items-end">
          @include('partials.filter-click')
          <input type="hidden" name="zohocust_id" value="{{ $customer->zohocust_id }}">
-         <input type="hidden" name="section" value="creditnote">
+                  <input type="hidden" name="section" value="creditnote">
       </form>
     
 
@@ -689,11 +689,13 @@
         </label>
     </div>
  <!-- Table Section -->
-      <div class="table-responsive" style="max-width: 80%; margin: 0; padding: 0;">
-          <table class="table table-hover text-center table-bordered" 
-              style="background-color: #fff; width: 100%; border-radius: 8px; margin-top: 0;">
+ <form action="{{ route('partner.updatePlans', ['zohocust_id' => $customer->zohocust_id]) }}" method="POST">
+    @csrf
+    @method('PUT') <!-- Use PUT since it's an update -->
 
-
+    <div class="table-responsive" style="max-width: 80%; margin: 0; padding: 0;">
+        <table class="table table-hover text-center table-bordered" 
+            style="background-color: #fff; width: 100%; border-radius: 8px; margin-top: 0;">
             <thead class="table-light">
                 <tr>
                     <th style="background-color:#EEF3FB; width: 5%;">S.No</th>
@@ -703,34 +705,40 @@
                 </tr>
             </thead>
             <tbody>
-         
-                <tr>
+ <tr>
                     <td>1</td>
                     <td>Custom Enterprise</td>
                     <td>Contact Us</td>
                     <td><input type="checkbox" style="transform: scale(1.2);"></td>
                 </tr>
-
                 @foreach($plans as $index => $plan)
                 <tr>
-                    <td>{{ $loop->iteration + 1 }}</td> 
+                    <td>{{ $loop->iteration }}</td> 
                     <td>{{ $plan->plan_name }}</td>
                     <td>{{ $plan->plan_price }}</td>
-                    <td><input type="checkbox" style="transform: scale(1.2);"></td>
+                    <td>
+                        <input type="checkbox" name="plan_codes[]" value="{{ $plan->plan_code }}" 
+                            style="transform: scale(1.2);"
+                            {{ in_array($plan->plan_code, $partnerPlanCodes) ? 'checked' : '' }}>
+                    </td>
                 </tr>
                 @endforeach
                 <tr>
+ <td></td>
                   <td></td>
                   <td></td>
-                  <td></td>
-                  <td colspan="4" class="text-center">
-                     <button type="submit" class="btn btn-primary mt-3">Submit</button>
-                  </td>
+                    <td colspan="4" class="text-center">
+                        <button type="submit" class="btn btn-primary mt-3">Submit</button>
+                    </td>
                 </tr>
             </tbody>
         </table>
     </div>
+</form>
+
+    </div>
 </div>
+
 
 <!-- Create subscription model-->
 <div class="modal fade" id="downgradeModal" tabindex="-1" aria-labelledby="downgradeModalLabel" aria-hidden="true">

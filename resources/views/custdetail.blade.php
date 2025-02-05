@@ -109,13 +109,15 @@
                             <td><input type="checkbox" style="transform: scale(1.2);"></td>
                         </tr>
                         @foreach($plans as $index => $plan)
-                        <tr>
-                            <td>{{ $loop->iteration + 1 }}</td> 
-                            <td>{{ $plan->plan_name }}</td>
-                            <td>{{ $plan->plan_price }}</td>
-                            <td><input type="checkbox" style="transform: scale(1.2);"></td>
-                        </tr>
-                        @endforeach
+<tr>
+    <td>{{ $loop->iteration + 1 }}</td> 
+    <td>{{ $plan->plan_name }}</td>
+    <td>{{ $plan->plan_price }}</td>
+    <td>
+        <input type="checkbox" name="plan_codes[]" value="{{ $plan->plan_code }}" style="transform: scale(1.2);">
+    </td>
+</tr>
+@endforeach
                     </tbody>
                 </table>
             </div>

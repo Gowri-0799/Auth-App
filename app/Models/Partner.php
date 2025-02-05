@@ -27,6 +27,12 @@ class Partner extends Model
         'shipping_country',
         'shipping_zip',
         'shipping_fax',
-        'company_name'
+        'company_name',
+        'plan_code',
+        
+    ];
+
+    protected $casts = [
+        'plan_code' => 'array',
     ];
 }

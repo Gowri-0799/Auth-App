@@ -303,7 +303,6 @@ class ZohoController extends Controller
         $response['customers'] = $this->partner->all();
         return view("cust")->with($response);
     }
-
     public function showplan()
     {
         $partnerUser = PartnerUser::where('email', Session::get('user_email'))->first();
@@ -320,11 +319,17 @@ class ZohoController extends Controller
     
         $subscriptions = Subscription::where('zoho_cust_id', $partnerUser->zoho_cust_id)->get();
         $companyInfo = CompanyInfo::where('zoho_cust_id', $partnerUser->zoho_cust_id)->first();
-        $plans = Plan::orderBy('plan_price', 'asc')->get();
         $providerData = ProviderData::where('zoho_cust_id', $partnerUser->zoho_cust_id)->first();
-      
+    
+        // Decode the plan_code JSON field
+        $partnerPlans = $customer->plan_code ?? [];
+    
+        // Retrieve only the plans that match the stored plan codes
+        $plans = Plan::whereIn('plan_code', $partnerPlans)->orderBy('plan_price', 'asc')->get();
+    
+        // Fetch features for the filtered plans
         $planFeatures = Feature::whereIn('plan_code', $plans->pluck('plan_code'))->get()->keyBy('plan_code');
-      
+    
         foreach ($planFeatures as $key => $feature) {
             if (is_string($feature->features_json)) {
                 $feature->features_json = json_decode($feature->features_json, true);
@@ -443,11 +448,12 @@ class ZohoController extends Controller
             'billing_zip' => 'nullable|string',
             'affiliate_ids' => 'required|array',
             'affiliate_ids.*' => 'exists:affiliates,id',
+            'plan_codes' => 'nullable|array',
         ], [
             'customer_email.unique' => 'The email ID already exists.',
             'affiliate_ids.required' => 'Please select the affiliate ID.',
         ]);
- 
+        \Log::info('Validated plan codes:', ['plan_codes' => $validatedData['plan_codes']]);
         $fullName = trim($validatedData['first_name'] . ' ' . $validatedData['last_name']);
 
         // $exists = Partner::where('customer_name', $fullName)->exists();
@@ -485,6 +491,7 @@ class ZohoController extends Controller
     
             $zohoCustomerId = $zohoResponse['customer']['customer_id'];
 
+        
             $customer = Partner::create([
                 'customer_name' => $fullName,
                 'company_name' => $validatedData['company_name'],
@@ -502,8 +509,9 @@ class ZohoController extends Controller
                 'shipping_country' => 'U.S.A',
                 'shipping_zip' => $validatedData['billing_zip'],
                 'zohocust_id' => $zohoCustomerId,
+                'plan_code' => $validatedData['plan_codes'] ?? [],
             ]);
-    
+            
             $partnerUser = PartnerUser::create([
                 'first_name' => $validatedData['first_name'],
                 'last_name' => $validatedData['last_name'],
@@ -576,7 +584,6 @@ class ZohoController extends Controller
             ]
         ]);
     
-        \Log::info('Zoho API Response:', ['response' => $response->body()]);
       
         if ($response->successful()) {
             $responseData = $response->json();
@@ -2462,6 +2469,7 @@ public function show($zohocust_id, Request $request)
             'affiliates.domain_name'
         )
         ->get();
+        $partnerPlanCodes = $customer->plan_code ?? [];
 
     $plans = DB::table('plans')->select('plan_code', 'plan_name', 'plan_price')->get();
     $filter = $request->input('filter', 'month_to_date');
@@ -2570,7 +2578,7 @@ $totalClicks = $clicksData->pluck('total_clicks');
         'customer','subscriptions','invoices','creditnotes','affiliates','selectedSection','partnerUser','plans','upgradePlans','partnerUsers',
         'companyInfo',
         'providerData','dates', 'organicClicks','pmaxClicks','paidSearchClicks','directClicks','totalClicks','startDate','endDate',
-    'filter','filterLabel','refunds','isPartnerValid'
+    'filter','filterLabel','refunds','isPartnerValid','partnerPlanCodes',
     ));
 }
 
@@ -2722,6 +2730,8 @@ public function filterSubscriptionsnav(Request $request)
     )
     ->get();
     $selectedSection = 'subscriptions'; 
+    $partnerPlanCodes = $customer->plan_code ?? [];
+
     $plans = DB::table('plans')->select('plan_code', 'plan_name', 'plan_price')->get();
     $partnerUsers = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)->first();
     $companyInfo = DB::table('company_info')
@@ -2792,14 +2802,15 @@ $refunds = DB::table('refunds')
     'subscriptions','selectedSection', 'affiliates', 'search', 'startDate',
      'endDate', 'invoices','creditnotes', 'partnerUser','plans','upgradePlans' ,'companyInfo',
      'providerData','dates', 'organicClicks','pmaxClicks','paidSearchClicks','directClicks','totalClicks','startDate','endDate',
-    'refunds','isPartnerValid'));
+    'refunds','isPartnerValid','partnerPlanCodes'));
 }   
 
     
 public function filterInvoicesnav(Request $request)
 {
-
+   
     $zohocust_id = $request->input('zohocust_id');
+
     $search = $request->input('search');
     $startDate = $request->input('start_date');
     $endDate = $request->input('end_date');
@@ -2834,6 +2845,7 @@ public function filterInvoicesnav(Request $request)
     $invoices = $query->paginate($perPage);
 
     $customer = Partner::where('zohocust_id', $zohocust_id)->first();
+ 
     $partnerUser = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)
     ->whereNotNull('zoho_cpid') 
     ->get();
@@ -2859,6 +2871,7 @@ public function filterInvoicesnav(Request $request)
 $upgradePlans = $currentSubscription 
     ? Plan::where('plan_price', '>', $currentSubscription->plan_price)->get() 
     : [];
+    $partnerPlanCodes = $customer->plan_code ?? [];
 
     $plans = DB::table('plans')->select('plan_code', 'plan_name', 'plan_price')->get();
     $partnerUsers = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)->first();
@@ -2927,7 +2940,7 @@ $refunds = DB::table('refunds')
      'subscriptions','selectedSection', 'affiliates', 'search', 'startDate', 'endDate',
       'invoices','creditnotes', 'partnerUser','plans','upgradePlans', 'companyInfo',
       'providerData','dates', 'organicClicks','pmaxClicks','paidSearchClicks','directClicks','totalClicks','startDate','endDate',
-     'refunds','isPartnerValid'));
+     'refunds','isPartnerValid','partnerPlanCodes'));
 }
 
 public function filtercreditnav(Request $request)
@@ -2989,7 +3002,8 @@ public function filtercreditnav(Request $request)
 $upgradePlans = $currentSubscription 
     ? Plan::where('plan_price', '>', $currentSubscription->plan_price)->get() 
     : [];
- 
+    $partnerPlanCodes = $customer->plan_code ?? [];
+
     $plans = DB::table('plans')->select('plan_code', 'plan_name', 'plan_price')->get();
     $partnerUsers = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)->first();
 
@@ -3058,7 +3072,7 @@ $refunds = DB::table('refunds')
     'selectedSection', 'affiliates','invoices', 'search', 'startDate', 'endDate', 
     'creditnotes','partnerUser','plans','upgradePlans', 'companyInfo',
     'providerData','dates', 'organicClicks','pmaxClicks','paidSearchClicks','directClicks','totalClicks','startDate','endDate',
-    'refunds','isPartnerValid'));
+    'refunds','isPartnerValid','partnerPlanCodes'));
 }
 
 public function filterProviderDatanav(Request $request)
@@ -3124,7 +3138,8 @@ public function filterProviderDatanav(Request $request)
     $upgradePlans = $currentSubscription 
         ? Plan::where('plan_price', '>', $currentSubscription->plan_price)->get() 
         : [];
- 
+        $partnerPlanCodes = $customer->plan_code ?? [];
+
     $plans = DB::table('plans')->select('plan_code', 'plan_name', 'plan_price')->get();
     $partnerUsers = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)->first();
     $companyInfo = DB::table('company_info')
@@ -3191,11 +3206,12 @@ $refunds = DB::table('refunds')
     'subscriptions','selectedSection', 'affiliates', 'search', 'startDate','creditnotes',
      'endDate', 'invoices', 'partnerUser','plans','upgradePlans' ,'companyInfo',
      'providerData','dates', 'organicClicks','pmaxClicks','paidSearchClicks','directClicks','totalClicks','startDate','endDate',
-    'refunds','isPartnerValid'));
+    'refunds','isPartnerValid','partnerPlanCodes'));
 }   
 
 public function filterrefundnav(Request $request)
 {
+   
     $zohocust_id = $request->input('zohocust_id');
     $search = $request->input('search');
     $startDate = $request->input('start_date');
@@ -3264,7 +3280,8 @@ public function filterrefundnav(Request $request)
     $upgradePlans = $currentSubscription 
         ? Plan::where('plan_price', '>', $currentSubscription->plan_price)->get() 
         : [];
- 
+        $partnerPlanCodes = $customer->plan_code ?? [];
+
     $plans = DB::table('plans')->select('plan_code', 'plan_name', 'plan_price')->get();
     $partnerUsers = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)->first();
     $companyInfo = DB::table('company_info')
@@ -3320,16 +3337,14 @@ public function filterrefundnav(Request $request)
         'startDate', 'creditnotes', 'endDate', 'invoices', 
         'partnerUser', 'plans', 'upgradePlans', 'companyInfo', 
         'dates', 'organicClicks', 'pmaxClicks', 'paidSearchClicks', 
-        'directClicks', 'totalClicks', 'refunds', 'isPartnerValid'
+        'directClicks', 'totalClicks', 'refunds', 'isPartnerValid','partnerPlanCodes'
     ));
 }
-
-
-
 
 public function filterclicksnav(Request $request)
 {
     $zohocust_id = $request->input('zohocust_id');
+   
     $search = $request->input('search');
     $startDate = $request->input('start_date');
     $endDate = $request->input('end_date');
@@ -3340,8 +3355,6 @@ public function filterclicksnav(Request $request)
     $defaultEndDate = Carbon::now();
     $filterLabel = '';
 
-
-    // Determine the date range for clicks based on the selected filter
     switch ($filter) {
         case 'this_month':
             $startDate = Carbon::now()->startOfMonth();
@@ -3426,12 +3439,16 @@ public function filterclicksnav(Request $request)
 
     $subscriptions = $query->paginate($perPage);
 
-    $customer = Partner::where('zohocust_id', $zohocust_id)->first();
+    $customer = Partner::where('zohocust_id',  $zohocust_id)->first();
 
+    if (!$customer) {
+        return back()->withErrors('No customer found for the provided ID.');
+    }
+    
     $partnerUser = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)
         ->whereNotNull('zoho_cpid')
         ->get();
-
+    
     $invoices = Invoice::where('zoho_cust_id', $customer->zohocust_id)->get();
 
 
@@ -3456,7 +3473,6 @@ public function filterclicksnav(Request $request)
         )
         ->get();
 
-    // Query to fetch clicks data within the selected range
    
     $clicksData = DB::table('clicks')
     ->select(
@@ -3484,6 +3500,7 @@ public function filterclicksnav(Request $request)
  
 
     $selectedSection = 'clicks';
+    $partnerPlanCodes = $customer->plan_code ?? [];
 
     $plans = DB::table('plans')->select('plan_code', 'plan_name', 'plan_price')->get();
     $partnerUsers = PartnerUser::where('zoho_cust_id', $customer->zohocust_id)->first();
@@ -3521,7 +3538,7 @@ public function filterclicksnav(Request $request)
     return view('customer-show', compact(
         'customer','partnerUsers','subscriptions','selectedSection','affiliates','search','startDate','endDate',
         'invoices','creditnotes','partnerUser','plans','upgradePlans','companyInfo','providerData','dates','organicClicks','pmaxClicks','paidSearchClicks','directClicks','totalClicks','startDate','endDate',
-    'refunds','isPartnerValid'));
+    'refunds','isPartnerValid','partnerPlanCodes'));
 }
 
 public function customenterprise(Request $request)
@@ -4544,7 +4561,21 @@ public function refundPayment(Request $request)
     }
 }
 
+public function updatePlans(Request $request, $zohocust_id)
+{
+    // Find the partner by Zoho customer ID
+    $customer = Partner::where('zohocust_id', $zohocust_id)->firstOrFail();
 
+    // Retrieve selected plan codes (or empty array if none selected)
+    $selectedPlans = $request->input('plan_codes', []);
+
+    // Update the plan_code column
+    $customer->update([
+        'plan_code' => $selectedPlans, // Laravel will auto-convert to JSON
+    ]);
+
+    return redirect()->back()->with('success', 'Plans updated successfully.');
+}
 
 
 
