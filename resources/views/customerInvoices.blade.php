@@ -3,7 +3,9 @@
 
 @section('content')
 
-<div id="content" class="container-fluid mt-3" style="box-sizing: border-box; min-height: 100vh; padding-bottom: 20px;">
+<!-- <div id="content" class="container-fluid mt-3" style="box-sizing: border-box; min-height: 100vh; padding-bottom: 20px;"> -->
+<div id="content" style="box-sizing: border-box;" class="p-3">
+
     <div class="row">
         <!-- Main Content -->
         <div class="col-12">
