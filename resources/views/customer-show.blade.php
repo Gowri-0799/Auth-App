@@ -661,8 +661,6 @@
                   <span class="badge-fail">Pending</span>
                   @endif
                </td>
-             
-              
             </tr>
             @endforeach
          </tbody>

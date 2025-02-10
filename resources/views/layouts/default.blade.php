@@ -63,7 +63,9 @@
             overflow-y: auto;
             padding: 0;
         }
-
+        #sidebar::-webkit-scrollbar {
+    display: none;
+}
         #sidebar.show {
             transform: translateX(0);
         }
@@ -145,7 +147,7 @@
                 </div>
                 <ul class="sidebar-nav">
                     <li class="sidebar-item">
-                        <a href="{{ route('plandb') }}" class="sidebar-link">
+                    <a href="{{ route('plandb') }}" class="sidebar-link">
                             <span>- Plans </span>
                         </a>
                     </li>

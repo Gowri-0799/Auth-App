@@ -36,7 +36,9 @@
             padding: 0; /* Removes any padding inside the sidebar */
             margin: 0; /* Ensures no margin offsets the sidebar */
         }
-        
+        #sidebar::-webkit-scrollbar {
+    display: none;
+}
         #sidebar.show {
             transform: translateX(0);
         }

@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\Session;
 use App\Models\Creditnote;
 use Carbon\Carbon;
 use App\Models\Support;
+use App\Models\Refund;
 use Illuminate\Support\Facades\Storage;
 use App\Mail\SubscriptionDowngrade;
 use Illuminate\Support\Facades\Mail;
@@ -57,6 +58,7 @@ class ZohoController extends Controller
     protected $affiliate;
     protected $partneruser;
     protected $click;
+    protected $refund;
 
     public function __construct(ZohoService $zohoService)
     {
@@ -75,6 +77,7 @@ class ZohoController extends Controller
         $this->affiliate=new Affiliate();
         $this->partneruser= new PartnerUser();
         $this->click=new Click();
+        $this->refund=new Refund();
     }
 
     public function getAllPlans()
@@ -2446,7 +2449,8 @@ public function show($zohocust_id, Request $request)
     $invoices = Invoice::where('zoho_cust_id', $customer->zohocust_id)->get();
  
     $creditnotes = Creditnote::where('zoho_cust_id', $customer->zohocust_id)->get();
-
+    // $refunds = Refund::where('zoho_cust_id', $customer->zohocust_id)->get();
+  
     $refunds = DB::table('refunds')
     ->join('invoices', function ($join) use ($customer) {
         $join->on('refunds.payment_method_id', '=', 'invoices.payment_method')
@@ -2460,7 +2464,6 @@ public function show($zohocust_id, Request $request)
         'invoices.payment_made'
     )
     ->get();
-
     $affiliates = DB::table('partner_affiliates')
         ->join('affiliates', 'partner_affiliates.affiliate_id', '=', 'affiliates.id')  
         ->where('partner_affiliates.partner_id', $customer->zohocust_id)  
