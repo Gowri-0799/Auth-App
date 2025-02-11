@@ -83,7 +83,7 @@ class AdminController extends Controller
        
         if ($sessionOtp && $sessionOtp == $inputOtp) {
            
-            return redirect()->route('admin.dashboard'); 
+            return redirect()->route('customerdb'); 
         }
 
         return redirect()->back()->with('error', 'Invalid OTP, please try again.');
@@ -179,7 +179,7 @@ class AdminController extends Controller
         if ($admin->save()) {
            
             if ($admin->first_login == 0) {
-                return redirect()->route('admin.dashboard')->with('success', 'Your password has been successfully updated.');
+                return redirect()->route('customerdb')->with('success', 'Your password has been successfully updated.');
             } else {
                 return redirect()->route('adminlogin')->with('success', 'Your password has been successfully updated.');
             }

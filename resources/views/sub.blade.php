@@ -334,15 +334,13 @@
     }
 
     document.addEventListener("DOMContentLoaded", function() {
-      var subscribeButtons = document.querySelectorAll("button#subscribeButton");
-      var contactButton = document.getElementById("save");
-      var showAlertModalElement = document.getElementById("showAlertModal");
-      var contactModalElement = document.getElementById("contactModal");
+    var showAlertModalElement = document.getElementById("showAlertModal");
+    var showAlertModal = new bootstrap.Modal(showAlertModalElement);
 
-      var showAlertModal = new bootstrap.Modal(showAlertModalElement, {});
-      var contactModal = new bootstrap.Modal(contactModalElement, {});
+    var subscribeButtons = document.querySelectorAll("button#subscribeButton");
+    var contactButton = document.getElementById("save");
 
-      function checkConditions() {
+    function checkConditions() {
         const logoUploaded = {{ $companyInfo && $companyInfo->logo_image ? 'true' : 'false' }};
         const companyNameSet = {{ $companyInfo && $companyInfo->company_name ? 'true' : 'false' }};
         const landingPageSet = {{ $companyInfo && $companyInfo->landing_page_uri ? 'true' : 'false' }};
@@ -350,30 +348,31 @@
         const firstLogin = {{ $firstLogin ? 'true' : 'false' }};
 
         return logoUploaded && companyNameSet && landingPageSet && providerDataUploaded && !firstLogin;
-      }
+    }
 
-      if (contactButton) {
-        contactButton.addEventListener("click", function(event) {
-          event.preventDefault();
-          if (!checkConditions()) {
-            showAlertModal.show();
-            showAlertModalElement.addEventListener("hidden.bs.modal", function() {
-              contactModal.show();
-            });
-          } else {
-            contactModal.show();
-          }
-        });
-      }
-
-      subscribeButtons.forEach((button) => {
+    subscribeButtons.forEach((button) => {
         button.addEventListener("click", function(event) {
-          if (!checkConditions()) {
-            event.preventDefault();
-            showAlertModal.show();
-          }
+            if (!checkConditions()) {
+                event.preventDefault();
+                showAlertModal.show();
+            }
         });
-      });
     });
+
+    showAlertModalElement.addEventListener("hidden.bs.modal", function () {
+        showAlertModal.dispose(); 
+        showAlertModal = new bootstrap.Modal(showAlertModalElement); 
+    });
+
+    if (contactButton) {
+        contactButton.addEventListener("click", function(event) {
+            event.preventDefault();
+            if (!checkConditions()) {
+                showAlertModal.show();
+            }
+        });
+    }
+});
+
   </script>
 @endsection

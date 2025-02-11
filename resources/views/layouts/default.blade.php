@@ -147,9 +147,9 @@
                 </div>
                 <ul class="sidebar-nav">
                     <li class="sidebar-item">
-                    <a href="{{ route('plandb') }}" class="sidebar-link">
+                    <!-- <a href="{{ route('plandb') }}" class="sidebar-link">
                             <span>- Plans </span>
-                        </a>
+                        </a> -->
                     </li>
                     <li class="sidebar-item">
                         <a href="{{ route('customerdb') }}" class="sidebar-link">
