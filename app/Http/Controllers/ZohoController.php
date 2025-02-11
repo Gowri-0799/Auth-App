@@ -4228,20 +4228,21 @@ public function showChart(Request $request)
     if (!$customer) {
         return back()->withErrors('Partner not found.');
     }
-
     $partnerAffiliateId = DB::table('clicks')
-        ->whereNotNull('partners_affiliates_id') 
-        ->value('partners_affiliates_id'); 
+    ->whereNotNull('partners_affiliates_id') 
+    ->value('partners_affiliates_id'); 
 
-    if (!$partnerAffiliateId) {
-        return back()->withErrors('No valid partner affiliate ID found in clicks.');
-    }
+// Initialize variables to handle the scenario where $partnerAffiliateId is null/false
+$partnerAffiliate = null;
+$isPartnerValid = false;
 
+if ($partnerAffiliateId) {
     $partnerAffiliate = DB::table('partner_affiliates')
         ->where('id', $partnerAffiliateId)
         ->first();
 
-        $isPartnerValid = $partnerAffiliate && $partnerAffiliate->partner_id == $customer->zohocust_id;
+    $isPartnerValid = $partnerAffiliate && $partnerAffiliate->partner_id == $customer->zohocust_id;
+}
 
     $filter = $request->input('filter', 'month_to_date');
     $showBy = $request->input('showBy', 'day');
@@ -4367,7 +4368,7 @@ public function showChart(Request $request)
 
 public function downloadCsv(Request $request)
 {
-    // Fetch the same filtered data as in the showChart function
+ 
     $filter = $request->input('filter', 'month_to_date');
     $showBy = $request->input('showBy', 'day');
     $defaultStartDate = Carbon::now()->startOfMonth();
@@ -4377,16 +4378,18 @@ public function downloadCsv(Request $request)
     $endDate = $defaultEndDate;
     $groupByColumn = DB::raw('DATE(click_ts)');
 
+
     switch ($filter) {
         case 'this_month':
             $startDate = Carbon::now()->startOfMonth();
             $endDate = Carbon::now();
             break;
 
-        case 'last_12_months':
-            $startDate = Carbon::now()->subMonths(12)->startOfMonth();
-            $endDate = Carbon::now();
-            break;
+            case 'last_12_months': // ✅ Fixed indentation
+                $startDate = Carbon::now()->subMonths(12)->startOfMonth();
+                $endDate = Carbon::now()->endOfDay();
+                break;
+            
 
         case 'last_6_months':
             $startDate = Carbon::now()->subMonths(6)->startOfMonth();
@@ -4418,28 +4421,24 @@ public function downloadCsv(Request $request)
             $endDate = Carbon::parse($request->input('endDate', $defaultEndDate));
             break;
     }
-
     switch ($showBy) {
         case 'month':
             $groupByColumn = DB::raw('YEAR(click_ts), MONTH(click_ts)');
             break;
-
         case 'week':
             $groupByColumn = DB::raw('YEAR(click_ts), WEEK(click_ts)');
             break;
-
         case 'day':
-        default:
             $groupByColumn = DB::raw('DATE(click_ts)');
             break;
     }
 
     $clicksData = DB::table('clicks')
-        ->select($groupByColumn, DB::raw('COUNT(*) as total_clicks'))
-        ->whereBetween(DB::raw('DATE(click_ts)'), [$startDate, $endDate])
-        ->groupBy($groupByColumn)
-        ->orderBy($groupByColumn)
-        ->get();
+    ->select($groupByColumn, DB::raw('COUNT(*) as total_clicks'))
+    ->whereBetween('click_ts', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')]) // ✅ Fixed condition
+    ->groupBy($groupByColumn)
+    ->orderBy($groupByColumn)
+    ->get();
 
     // Prepare CSV Data
     $csvData = [['Date Range', 'Number of Clicks']];
@@ -4471,12 +4470,12 @@ public function downloadCsv(Request $request)
     fclose($handle);
     $output = ob_get_clean();
 
-    // Return CSV as Download
     return Response::make($output, 200, [
         'Content-Type' => 'text/csv',
         'Content-Disposition' => "attachment; filename=\"$filename\"",
     ]);
 }
+
 public function refundPayment(Request $request)
 {
     $validated = $request->validate([

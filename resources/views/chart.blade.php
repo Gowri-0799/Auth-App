@@ -62,9 +62,12 @@
                 </form>
 
                 <!-- Add "Download CSV" Button --> 
-                <div class="col-12 px-3 mb-4 d-flex ">
-                    <a href="{{ route('usagereports.download') }}" class="btn button-clearlink text-primary fw-bold" style="display: none;">Download CSV</a>
-                </div>
+                <div class="col-12 px-3 mb-4 d-flex">
+    <a href="{{ route('usagereports.download', ['filter' => request('filter', 'month_to_date'), 'showBy' => request('showBy', 'day')]) }}" 
+       class="btn button-clearlink text-primary fw-bold">
+       Download CSV
+    </a>
+</div>
 
                 <!-- Display Date Range -->
                 <div class="mb-4 text-center">
