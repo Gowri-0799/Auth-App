@@ -606,68 +606,65 @@
     </div>
 @endif
 </div>
-<!-- Refunds -->
 <div id="refunds" class="section mt-4" style="{{ $selectedSection !== 'refunds' ? 'display: none;' : '' }}">
-<div class="d-flex justify-content-between align-items-center">
-    <span style="font-family: Arial, sans-serif; font-size: 21px; font-weight: bold;">Refunds</span>
-    <!-- <a href="#" class="btn btn-primary" style="margin-right: 100px;" data-bs-toggle="modal" data-bs-target="#refundModal">
-    Refund a Payment
-</a> -->
-</div>
+    <div class="d-flex justify-content-between align-items-center">
+        <span style="font-family: Arial, sans-serif; font-size: 21px; font-weight: bold;">Refunds</span>
+        <a href="#" class="btn btn-primary" style="margin-right: 100px;" data-bs-toggle="modal" data-bs-target="#refundModal">
+            Refund a Payment
+        </a>
+    </div>
 
     <br>
     <form method="GET" action="{{ route('nav.refund.filter') }}" class="row mb-4 align-items-end">
-      @include('partials.filter-form')
-      <input type="hidden" name="zohocust_id" value="{{ $customer->zohocust_id }}">
-      <input type="hidden" name="section" value="refunds">
+        @include('partials.filter-form')
+        <input type="hidden" name="zohocust_id" value="{{ $customer->zohocust_id }}">
+        <input type="hidden" name="section" value="refunds">
     </form>
-   
+
     @if($refunds->count() == 0)
     <div class="d-flex align-items-center justify-content-center border p-3" style="width: 70%; height: 100px; margin: 0 auto; font-size: 20px;">
-      No Refunds found.
+        No Refunds found.
     </div>
     @else
     <div class="table-responsive">
-      <table class="table table-hover text-center table-bordered" style="background-color:#fff; width: 100%; max-width: 100%;">
-         <thead class="table-light">
-            <tr>
-               
-               <th style="background-color:#EEF3FB;">Creation Date</th>
-               <th style="background-color:#EEF3FB;">Refund Amount (USD)</th>
-               <th style="background-color:#EEF3FB;">Description</th>
-               <th style="background-color:#EEF3FB;">Creditnote Number</th>
-               <th style="background-color:#EEF3FB;">Gateway Transaction ID</th>
-               <th style="background-color:#EEF3FB;">Invoice Number</th>
-               <th style="background-color:#EEF3FB;">Refund mode</th>
-               <th style="background-color:#EEF3FB;">Status</th>
-
-            </tr>
-         </thead>
-         <tbody>
-            @foreach($refunds as $index => $refund)
-            <tr>
-               
-               <td>{{ \Carbon\Carbon::parse($refund->date)->format('d-M-Y') }}</td>
-               <td>{{ number_format($refund->refund_amount, 2) }}</td>
-               <td>{{ $refund->description }}</td>
-               <td>{{ $refund->creditnote_number }}</td>
-               <td>{{ $refund->gateway_transaction_id }}</td>
-               <td>{{ $refund->invoice_number }}</td>
-                <td>{{$refund->refund_mode }}</td>
-               <td class="p-2 status">
-                  @if(strtolower($refund->status) == 'success')
-                  <span class="badge-success">Success</span>
-                  @else
-                  <span class="badge-fail">Pending</span>
-                  @endif
-               </td>
-            </tr>
-            @endforeach
-         </tbody>
-      </table>
+        <table class="table table-hover text-center table-bordered" style="background-color:#fff; width: 100%; max-width: 100%;">
+            <thead class="table-light">
+                <tr>
+                    <th style="background-color:#EEF3FB;">Creation Date</th>
+                    <th style="background-color:#EEF3FB;">Refund Amount (USD)</th>
+                    <th style="background-color:#EEF3FB;">Description</th>
+                    <th style="background-color:#EEF3FB;">Creditnote Number</th>
+                    <th style="background-color:#EEF3FB;">Gateway Transaction ID</th>
+                    <th style="background-color:#EEF3FB;">Invoice Number</th>
+                    <th style="background-color:#EEF3FB;">Refund mode</th>
+                    <th style="background-color:#EEF3FB;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($refunds as $index => $refund)
+                <tr>
+                    <td>{{ \Carbon\Carbon::parse($refund->date)->format('d-M-Y') }}</td>
+                    <td>{{ number_format($refund->refund_amount, 2) }}</td>
+                    <td>{{ $refund->description }}</td>
+                    <td>{{ $refund->creditnote_number }}</td>
+                    <td>{{ $refund->gateway_transaction_id }}</td>
+                    <td>{{ $refund->invoice_number }}</td>
+                    <td>{{$refund->refund_mode }}</td>
+                    <td class="p-2 status">
+                        @if(strtolower($refund->status) == 'success')
+                        <span class="badge-success">Success</span>
+                        @else
+                        <span class="badge-fail">Pending</span>
+                        @endif
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
     </div>
     @endif
 </div>
+        
 <!-- Select Plans -->
 <div id="plans" class="section mt-4" style="{{ $selectedSection !== 'plans' ? 'display: none;' : '' }}">
     <div class="d-flex justify-content-between align-items-center">

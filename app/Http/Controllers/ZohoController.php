@@ -2450,7 +2450,6 @@ public function show($zohocust_id, Request $request)
  
     $creditnotes = Creditnote::where('zoho_cust_id', $customer->zohocust_id)->get();
     // $refunds = Refund::where('zoho_cust_id', $customer->zohocust_id)->get();
-  
     $refunds = DB::table('refunds')
     ->join('invoices', function ($join) use ($customer) {
         $join->on('refunds.payment_method_id', '=', 'invoices.payment_method')
@@ -2464,6 +2463,7 @@ public function show($zohocust_id, Request $request)
         'invoices.payment_made'
     )
     ->get();
+
     $affiliates = DB::table('partner_affiliates')
         ->join('affiliates', 'partner_affiliates.affiliate_id', '=', 'affiliates.id')  
         ->where('partner_affiliates.partner_id', $customer->zohocust_id)  
@@ -4368,7 +4368,6 @@ if ($partnerAffiliateId) {
 
 public function downloadCsv(Request $request)
 {
- 
     $filter = $request->input('filter', 'month_to_date');
     $showBy = $request->input('showBy', 'day');
     $defaultStartDate = Carbon::now()->startOfMonth();
@@ -4378,19 +4377,17 @@ public function downloadCsv(Request $request)
     $endDate = $defaultEndDate;
     $groupByColumn = DB::raw('DATE(click_ts)');
 
-
     switch ($filter) {
         case 'this_month':
             $startDate = Carbon::now()->startOfMonth();
             $endDate = Carbon::now();
             break;
 
-            case 'last_12_months': // ✅ Fixed indentation
+            case 'last_12_months': 
                 $startDate = Carbon::now()->subMonths(12)->startOfMonth();
                 $endDate = Carbon::now()->endOfDay();
                 break;
             
-
         case 'last_6_months':
             $startDate = Carbon::now()->subMonths(6)->startOfMonth();
             $endDate = Carbon::now();
@@ -4440,7 +4437,7 @@ public function downloadCsv(Request $request)
     ->orderBy($groupByColumn)
     ->get();
 
-    // Prepare CSV Data
+   
     $csvData = [['Date Range', 'Number of Clicks']];
     foreach ($clicksData as $data) {
         if ($showBy == 'month') {
