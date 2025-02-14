@@ -583,7 +583,9 @@
          <input type="hidden" name="zohocust_id" value="{{ $customer->zohocust_id }}">
                   <input type="hidden" name="section" value="creditnote">
       </form>
-    
+      <a href="#" class="btn btn-primary" id="openBudgetCapModal" data-bs-toggle="modal" data-bs-target="#budgetCapModal">
+    Budget cap settings
+</a>
 
     <!-- Display Date Range -->
     <div class="mb-4 text-center">
@@ -594,7 +596,7 @@
             <span class="fw-bold">{{ \Carbon\Carbon::parse($endDate)->format('d M Y') ?? 'N/A' }}</span>
         </p>
     </div>
-
+  
     <!-- Chart -->
     <div>
         <canvas id="myChart"></canvas>
@@ -606,6 +608,7 @@
     </div>
 @endif
 </div>
+<!--Refunds-->
 <div id="refunds" class="section mt-4" style="{{ $selectedSection !== 'refunds' ? 'display: none;' : '' }}">
     <div class="d-flex justify-content-between align-items-center">
         <span style="font-family: Arial, sans-serif; font-size: 21px; font-weight: bold;">Refunds</span>
@@ -1011,6 +1014,50 @@
       </div>
    </div>
 </div>
+
+<!-- Budget Cap Settings Modal -->
+<div class="modal fade" id="budgetCapModal" tabindex="-1" aria-labelledby="budgetCapModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="budgetCapModalLabel">Budget Cap Settings</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="budgetCapForm">
+                    <div class="mb-3 d-flex justify-content-between align-items-center">
+                        <label class="form-label m-0"><strong>Show Clicks Pace to partner</strong></label>
+                        <div class="form-check form-switch m-0">
+                            <input class="form-check-input" type="checkbox" id="clicksPace" checked>
+                        </div>
+                    </div>
+                    <div class="mb-3 d-flex justify-content-between align-items-center">
+                        <label class="form-label m-0"><strong>Show Invoice Pace to partner</strong></label>
+                        <div class="form-check form-switch m-0">
+                            <input class="form-check-input" type="checkbox" id="invoicePace" checked>
+                        </div>
+                    </div>
+                    <div class="mb-3 d-flex justify-content-between align-items-center">
+                        <label class="form-label m-0"><strong>Show Budget Cap to partner</strong></label>
+                        <div class="form-check form-switch m-0">
+                            <input class="form-check-input" type="checkbox" id="budgetCapToggle" checked>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="budgetCap" class="form-label"><strong>Budget Cap</strong></label>
+                        <input type="number" class="form-control" id="budgetCap">
+                    </div>
+                    <p><strong>Plan Name:</strong> &nbsp;&nbsp;&nbsp; <strong>Plan Price:</strong></p>
+                    <p><strong>Plan Type:</strong></p>
+                </form>
+                <div class=" d-flex justify-content-start">
+                  <button type="button" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Invite User Modal -->
 <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
    <div class="modal-dialog modal-dialog-centered" style="max-width: 500px;">
