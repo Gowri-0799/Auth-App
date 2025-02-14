@@ -2456,11 +2456,10 @@ public function show($zohocust_id, Request $request)
             ->where('refunds.zoho_cust_id', '=', $customer->zohocust_id)
             ->where('invoices.zoho_cust_id', '=', $customer->zohocust_id);
     })
+    ->whereRaw('invoices.payment_made > invoices.balance') // Filtering refunds with actual overpayment
     ->select(
         'refunds.*', 
-        'invoices.invoice_number',
-        'invoices.balance',
-        'invoices.payment_made'
+        'invoices.invoice_number'
     )
     ->get();
 
@@ -2794,9 +2793,10 @@ $refunds = DB::table('refunds')
         ->where('refunds.zoho_cust_id', '=', $customer->zohocust_id)
         ->where('invoices.zoho_cust_id', '=', $customer->zohocust_id);
 })
+->whereRaw('invoices.payment_made > invoices.balance') // Filtering refunds with actual overpayment
 ->select(
     'refunds.*', 
-    'invoices.invoice_number' 
+    'invoices.invoice_number'
 )
 ->get();
 
@@ -2933,9 +2933,10 @@ $refunds = DB::table('refunds')
         ->where('refunds.zoho_cust_id', '=', $customer->zohocust_id)
         ->where('invoices.zoho_cust_id', '=', $customer->zohocust_id);
 })
+->whereRaw('invoices.payment_made > invoices.balance') // Filtering refunds with actual overpayment
 ->select(
     'refunds.*', 
-    'invoices.invoice_number' 
+    'invoices.invoice_number'
 )
 ->get();
 
@@ -3064,12 +3065,12 @@ $refunds = DB::table('refunds')
         ->where('refunds.zoho_cust_id', '=', $customer->zohocust_id)
         ->where('invoices.zoho_cust_id', '=', $customer->zohocust_id);
 })
+->whereRaw('invoices.payment_made > invoices.balance') // Filtering refunds with actual overpayment
 ->select(
     'refunds.*', 
-    'invoices.invoice_number' 
+    'invoices.invoice_number'
 )
 ->get();
-
 
     return view('customer-show', compact('customer','partnerUsers', 'subscriptions', 
     'selectedSection', 'affiliates','invoices', 'search', 'startDate', 'endDate', 
@@ -3198,9 +3199,10 @@ $refunds = DB::table('refunds')
         ->where('refunds.zoho_cust_id', '=', $customer->zohocust_id)
         ->where('invoices.zoho_cust_id', '=', $customer->zohocust_id);
 })
+->whereRaw('invoices.payment_made > invoices.balance') 
 ->select(
     'refunds.*', 
-    'invoices.invoice_number' 
+    'invoices.invoice_number'
 )
 ->get();
 
@@ -3518,9 +3520,10 @@ public function filterclicksnav(Request $request)
             ->where('refunds.zoho_cust_id', '=', $customer->zohocust_id)
             ->where('invoices.zoho_cust_id', '=', $customer->zohocust_id);
     })
+    ->whereRaw('invoices.payment_made > invoices.balance') 
     ->select(
         'refunds.*', 
-        'invoices.invoice_number' 
+        'invoices.invoice_number'
     )
     ->get();
     
