@@ -1045,10 +1045,15 @@
                     </div>
                     <div class="mb-3">
                         <label for="budgetCap" class="form-label"><strong>Budget Cap</strong></label>
-                        <input type="number" class="form-control" id="budgetCap">
+                        <input type="number" class="form-control" id="budgetCap"            value="{{ $currentSubscription ? $currentSubscription->plan_price : '' }}">
                     </div>
-                    <p><strong>Plan Name:</strong> &nbsp;&nbsp;&nbsp; <strong>Plan Price:</strong></p>
+                    <!-- Plan Info Display -->
+                    @if ($currentSubscription)                    
+                    <p><strong>Plan Name:</strong>{{ $currentSubscription->plan_name }} &nbsp;&nbsp;&nbsp; <strong>Plan Price:{{ $currentSubscription->plan_price }}</strong></p>
                     <p><strong>Plan Type:</strong></p>
+                    @else
+                    <p>No active subscription found.</p>
+                    @endif
                 </form>
                 <div class=" d-flex justify-content-start">
                   <button type="button" class="btn btn-primary">Save changes</button>

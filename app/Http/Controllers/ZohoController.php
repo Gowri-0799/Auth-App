@@ -2439,7 +2439,7 @@ public function show($zohocust_id, Request $request)
     $currentSubscription = DB::table('subscriptions')
         ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
         ->where('subscriptions.zoho_cust_id', $customer->zohocust_id)
-        ->select('plans.plan_price', 'plans.plan_id')
+        ->select('plans.plan_price', 'plans.plan_id','plans.plan_name')
         ->first();
 
     $upgradePlans = $currentSubscription 
@@ -2580,8 +2580,7 @@ $totalClicks = $clicksData->pluck('total_clicks');
         'customer','subscriptions','invoices','creditnotes','affiliates','selectedSection','partnerUser','plans','upgradePlans','partnerUsers',
         'companyInfo',
         'providerData','dates', 'organicClicks','pmaxClicks','paidSearchClicks','directClicks','totalClicks','startDate','endDate',
-    'filter','filterLabel','refunds','isPartnerValid','partnerPlanCodes',
-    ));
+    'filter','filterLabel','refunds','isPartnerValid','partnerPlanCodes', 'currentSubscription'));
 }
 
 
@@ -2710,11 +2709,12 @@ public function filterSubscriptionsnav(Request $request)
 
     $invoices = Invoice::where('zoho_cust_id', $customer->zohocust_id)->get();
 
+   
     $currentSubscription = DB::table('subscriptions')
-    ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
-    ->where('subscriptions.zoho_cust_id', $customer->zohocust_id)
-    ->select('plans.plan_price', 'plans.plan_id')
-    ->first();
+        ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
+        ->where('subscriptions.zoho_cust_id', $customer->zohocust_id)
+        ->select('plans.plan_price', 'plans.plan_id','plans.plan_name')
+        ->first();
 
    $upgradePlans = $currentSubscription 
     ? Plan::where('plan_price', '>', $currentSubscription->plan_price)->get() 
@@ -2805,7 +2805,7 @@ $refunds = DB::table('refunds')
     'subscriptions','selectedSection', 'affiliates', 'search', 'startDate',
      'endDate', 'invoices','creditnotes', 'partnerUser','plans','upgradePlans' ,'companyInfo',
      'providerData','dates', 'organicClicks','pmaxClicks','paidSearchClicks','directClicks','totalClicks','startDate','endDate',
-    'refunds','isPartnerValid','partnerPlanCodes'));
+    'refunds','isPartnerValid','partnerPlanCodes','currentSubscription'));
 }   
 
     
@@ -2865,11 +2865,12 @@ public function filterInvoicesnav(Request $request)
         'affiliates.domain_name'
     )
     ->get();
+  
     $currentSubscription = DB::table('subscriptions')
-    ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
-    ->where('subscriptions.zoho_cust_id', $customer->zohocust_id)
-    ->select('plans.plan_price', 'plans.plan_id')
-    ->first();
+        ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
+        ->where('subscriptions.zoho_cust_id', $customer->zohocust_id)
+        ->select('plans.plan_price', 'plans.plan_id','plans.plan_name')
+        ->first();
 
 $upgradePlans = $currentSubscription 
     ? Plan::where('plan_price', '>', $currentSubscription->plan_price)->get() 
@@ -2944,7 +2945,7 @@ $refunds = DB::table('refunds')
      'subscriptions','selectedSection', 'affiliates', 'search', 'startDate', 'endDate',
       'invoices','creditnotes', 'partnerUser','plans','upgradePlans', 'companyInfo',
       'providerData','dates', 'organicClicks','pmaxClicks','paidSearchClicks','directClicks','totalClicks','startDate','endDate',
-     'refunds','isPartnerValid','partnerPlanCodes'));
+     'refunds','isPartnerValid','partnerPlanCodes','currentSubscription'));
 }
 
 public function filtercreditnav(Request $request)
@@ -2997,11 +2998,12 @@ public function filtercreditnav(Request $request)
     )
     ->get();
     $selectedSection = 'creditnote'; 
+
     $currentSubscription = DB::table('subscriptions')
-    ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
-    ->where('subscriptions.zoho_cust_id', $customer->zohocust_id)
-    ->select('plans.plan_price', 'plans.plan_id')
-    ->first();
+        ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
+        ->where('subscriptions.zoho_cust_id', $customer->zohocust_id)
+        ->select('plans.plan_price', 'plans.plan_id','plans.plan_name')
+        ->first();
 
 $upgradePlans = $currentSubscription 
     ? Plan::where('plan_price', '>', $currentSubscription->plan_price)->get() 
@@ -3076,7 +3078,7 @@ $refunds = DB::table('refunds')
     'selectedSection', 'affiliates','invoices', 'search', 'startDate', 'endDate', 
     'creditnotes','partnerUser','plans','upgradePlans', 'companyInfo',
     'providerData','dates', 'organicClicks','pmaxClicks','paidSearchClicks','directClicks','totalClicks','startDate','endDate',
-    'refunds','isPartnerValid','partnerPlanCodes'));
+    'refunds','isPartnerValid','partnerPlanCodes','currentSubscription'));
 }
 
 public function filterProviderDatanav(Request $request)
@@ -3133,10 +3135,11 @@ public function filterProviderDatanav(Request $request)
 
     $selectedSection = 'providerdata';  
 
+   
     $currentSubscription = DB::table('subscriptions')
         ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
         ->where('subscriptions.zoho_cust_id', $customer->zohocust_id)
-        ->select('plans.plan_price', 'plans.plan_id')
+        ->select('plans.plan_price', 'plans.plan_id','plans.plan_name')
         ->first();
 
     $upgradePlans = $currentSubscription 
@@ -3276,10 +3279,11 @@ public function filterrefundnav(Request $request)
 
     $selectedSection = 'refunds';  
 
+   
     $currentSubscription = DB::table('subscriptions')
         ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
         ->where('subscriptions.zoho_cust_id', $customer->zohocust_id)
-        ->select('plans.plan_price', 'plans.plan_id')
+        ->select('plans.plan_price', 'plans.plan_id','plans.plan_name')
         ->first();
 
     $upgradePlans = $currentSubscription 
@@ -3342,7 +3346,7 @@ public function filterrefundnav(Request $request)
         'startDate', 'creditnotes', 'endDate', 'invoices', 
         'partnerUser', 'plans', 'upgradePlans', 'companyInfo', 
         'dates', 'organicClicks', 'pmaxClicks', 'paidSearchClicks', 
-        'directClicks', 'totalClicks', 'refunds', 'isPartnerValid','partnerPlanCodes'
+        'directClicks', 'totalClicks', 'refunds', 'isPartnerValid','partnerPlanCodes','currentSubscription'
     ));
 }
 
@@ -3457,12 +3461,12 @@ public function filterclicksnav(Request $request)
     $invoices = Invoice::where('zoho_cust_id', $customer->zohocust_id)->get();
 
 
+   
     $currentSubscription = DB::table('subscriptions')
         ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
         ->where('subscriptions.zoho_cust_id', $customer->zohocust_id)
-        ->select('plans.plan_price', 'plans.plan_id')
+        ->select('plans.plan_price', 'plans.plan_id','plans.plan_name')
         ->first();
-
     $upgradePlans = $currentSubscription
         ? Plan::where('plan_price', '>', $currentSubscription->plan_price)->get()
         : [];
@@ -3544,7 +3548,7 @@ public function filterclicksnav(Request $request)
     return view('customer-show', compact(
         'customer','partnerUsers','subscriptions','selectedSection','affiliates','search','startDate','endDate',
         'invoices','creditnotes','partnerUser','plans','upgradePlans','companyInfo','providerData','dates','organicClicks','pmaxClicks','paidSearchClicks','directClicks','totalClicks','startDate','endDate',
-    'refunds','isPartnerValid','partnerPlanCodes'));
+    'refunds','isPartnerValid','partnerPlanCodes','currentSubscription'));
 }
 
 public function customenterprise(Request $request)
