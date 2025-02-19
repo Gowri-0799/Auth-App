@@ -107,8 +107,8 @@ Change Plan
     <input type="hidden" name="plan_code" value="{{ $newPlan->plan_code }}">
     <input type="hidden" name="zoho_cust_id" value="{{ $subscription->zoho_cust_id ?? 'default_customer_id' }}">
     <input type="hidden" name="subscription_number" value="{{ $subscription->subscription_number ?? 'default_subscription_number' }}">
-    <input type="hidden" name="plan_name" value="{{ $plan->plan_name ?? 'default_plan_name' }}">
-    <input type="hidden" name="amount" value="{{ $plan->plan_price ?? 0 }}">
+    <input type="hidden" name="plan_name" value="{{  $newPlan->plan_name ?? 'default_plan_name' }}">
+    <input type="hidden" name="amount" value="{{$newPlan->plan_price ?? 0 }}">
     <input type="hidden" name="consent" id="consent" value="0">
 </form>
 

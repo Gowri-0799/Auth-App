@@ -76,9 +76,9 @@
                                         <td>{{ number_format($creditnote->balance, 2) }}</td>
                                         <td>
                                             @if(strtolower($creditnote->status) == 'credited')
-                                                <span class="badge bg-success">Open</span>
+                                                <span class="badge-success">Open</span>
                                             @else
-                                                <span class="badge bg-danger">Closed</span>
+                                                <span class="badge-fail">Closed</span>
                                             @endif
                                         </td>
                                         <td>

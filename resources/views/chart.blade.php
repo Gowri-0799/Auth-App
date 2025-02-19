@@ -13,9 +13,8 @@
                     <h2 class="mb-4 text-center text-lg-start" style="font-size: 28px;">Usage Reports</h2>
                 </div>
 
-                <!-- Date Filter Form -->
                 <form method="GET" action="{{ route('usagereports') }}" class="row g-2 align-items-end mb-4 px-3">
-                    <!-- Filter Dropdown -->
+                   
                     <div class="col-12 col-md-2">
                         <label for="filter" class="form-label fw-bold">Filter</label>
                         <select id="filter" name="filter" class="form-select">
@@ -31,7 +30,6 @@
                         </select>
                     </div>
 
-                    <!-- Show Data By Dropdown -->
                     <div class="col-12 col-md-2">
                         <label for="showBy" class="form-label fw-bold">Show Data By</label>
                         <select id="showBy" name="showBy" class="form-select">
@@ -41,35 +39,30 @@
                         </select>
                     </div>
 
-                    <!-- Start Date Field -->
                     <div class="col-12 col-md-2">
                         <label for="startDate" class="form-label fw-bold">Start Date</label>
                         <input type="date" id="startDate" name="startDate" class="form-control" 
                             value="{{ request('startDate', \Carbon\Carbon::parse($startDate)->toDateString()) }}" disabled>
                     </div>
 
-                    <!-- End Date Field -->
                     <div class="col-12 col-md-2">
                         <label for="endDate" class="form-label fw-bold">End Date</label>
                         <input type="date" id="endDate" name="endDate" class="form-control" 
                             value="{{ request('endDate', \Carbon\Carbon::parse($endDate)->toDateString()) }}" disabled>
                     </div>
 
-                    <!-- Submit Button -->
                     <div class="col-12 col-md-2">
                         <button class="btn btn-primary fw-bold w-100" type="submit">Submit</button>
                     </div>
                 </form>
 
-                <!-- Add "Download CSV" Button --> 
                 <div class="col-12 px-3 mb-4 d-flex">
-    <a href="{{ route('usagereports.download', ['filter' => request('filter', 'month_to_date'), 'showBy' => request('showBy', 'day')]) }}" 
-       class="btn button-clearlink text-primary fw-bold">
-       Download CSV
-    </a>
-</div>
+                   <a href="{{ route('usagereports.download', ['filter' => request('filter', 'month_to_date'), 'showBy' => request('showBy', 'day')]) }}" 
+                     class="btn button-clearlink text-primary fw-bold">
+                      Download CSV
+                   </a>
+                </div>
 
-                <!-- Display Date Range -->
                 <div class="mb-4 text-center">
                     <p class="fw-bold">
                         Date From: <span class="fw-bold">{{ \Carbon\Carbon::parse($startDate)->format('d M Y') }}</span> 
@@ -83,7 +76,6 @@
                 </div>
 
                 @else
-                    <!-- Show "No Usage Report Found" message -->
                     <div class="text-center" style="height: 100vh; display: flex; justify-content: center; align-items: center;">
                         <p class="fw-bold" style="font-size: 24px;">No Usage report found for the partner.</p>
                     </div>
@@ -96,11 +88,10 @@
 <!-- Chart.js Script -->
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Pass the data from PHP to JavaScript
+        
         const labels = {!! json_encode($dates) !!};
         const data = {!! json_encode($totalClicks) !!};
 
-        // Create the chart using Chart.js
         const ctx = document.getElementById('myChart').getContext('2d');
         const myChart = new Chart(ctx, {
             type: 'line',
@@ -137,7 +128,6 @@
             }
         });
 
-        // Toggle date fields based on filter selection
         const filterDropdown = document.getElementById('filter');
         const startDateInput = document.getElementById('startDate');
         const endDateInput = document.getElementById('endDate');
@@ -148,15 +138,12 @@
             endDateInput.disabled = !isCustomRange;
         }
 
-        // Run on page load
         toggleDateFields();
 
-        // Add event listener to dropdown
         filterDropdown.addEventListener('change', toggleDateFields);
     });
 </script>
 
-<!-- Styling -->
 <style>
     .chart-container {
         position: relative;

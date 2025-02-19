@@ -139,33 +139,37 @@
         @endif
     </span>
     {{-- Buttons for Add-On and Upgrade --}}
-    <div style="margin-top: 25px; display: flex; flex-wrap: wrap; justify-content: space-between;">
-        @if($subscriptions->addon == 1)
+    <div style="margin-top: 25px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center;">
+    @if($subscriptions->addon == 1)
         <p class="mt-3 w-50 text-dark">You have also Subscribed to: <span>{{$plans->addon_code}}</span> for the current month</p>
-        @else  
-        <form action="{{ route('addon.preview') }}" method="POST" style="display: inline; margin-top: 20px;">
+    @else  
+        <form action="{{ route('addon.preview') }}" method="POST" style="display: inline;">
             @csrf
             <input type="hidden" name="plan_code" value="{{  $plans->plan_code }}">
-            <button type="submit" class="btn btn-primary">Monthly Click Add-On</button>
+            <button type="submit" class="btn btn-primary"
+                style="cursor: pointer; width: 220px; height: 70px; font-size: 18px; 
+                display: flex; align-items: center; justify-content: center; 
+                border-radius: 8px; padding: 10px; font-weight: bold;">
+                Monthly Click Add-On
+            </button>
         </form>
-        @endif
-        @if($upgradePlans->isEmpty())
-        {{-- No upgrade plans available, show Contact Us button --}}
+    @endif
+
+    @if($upgradePlans->isEmpty())
         <a data-bs-toggle="modal" data-bs-target="#contactModal" id="save"
-            class="btn btn-primary m-3 d-flex align-items-center w-50 justify-content-center rounded p-2">
+            class="btn btn-primary d-flex align-items-center justify-content-center 
+            rounded p-2" style="width: 220px; height: 70px; font-size: 18px; font-weight: bold;">
             Contact Us
         </a>
-        @else
-        {{-- Upgrade plans available, show Upgrade button --}}
-        <a id="upgrade-button" 
-            style="cursor: pointer;" 
-            data-bs-toggle="modal" 
-            data-bs-target="#upgradeModal" 
-            class="btn btn-primary m-3 d-flex align-items-center w-50 justify-content-center rounded p-2">
+    @else
+        <a id="upgrade-button" data-bs-toggle="modal" data-bs-target="#upgradeModal"
+            class="btn btn-primary d-flex align-items-center justify-content-center rounded p-2"
+            style="cursor: pointer; width: 220px; height: 70px; font-size: 18px; font-weight: bold;">
             Upgrade
         </a>
-        @endif
-    </div>
+    @endif
+</div>
+
     {{-- Downgrade and Cancellation Links --}}
     <div style="margin-top: 20px; display: flex; flex-wrap: wrap; justify-content: space-between;">
         <a href="#" data-bs-toggle="modal" data-bs-target="#cancelSubscription" style="color: #007bff; text-decoration: underline; font-size: 16px;">

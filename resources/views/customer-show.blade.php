@@ -302,14 +302,14 @@
                <td>{{ $subscription->start_date }}</td>
                <td>{{ $subscription->next_billing_at }}</td>
                <td>
-                                            @if(strtolower($subscription->status) == 'live')
-                                                <span class="badge bg-success">Live</span>
-                                            @elseif(strtolower($subscription->status) == 'cancelled')
-                                                <span class="badge bg-danger">Cancelled</span>  
-                                            @else
-                                                <span class="badge bg-warning">Pending</span>
-                                            @endif
-                                        </td>
+               @if(strtolower($subscription->status) == 'live')
+                   <span class="badge-success">Live</span>
+                @elseif(strtolower($subscription->status) == 'cancelled')
+                    <span class="badge bg-danger">Cancelled</span>  
+               @else
+                  <span class="badge bg-warning">Pending</span>
+                @endif
+               </td>
             </tr>
             @endforeach
          </tbody>
@@ -612,9 +612,9 @@
 <div id="refunds" class="section mt-4" style="{{ $selectedSection !== 'refunds' ? 'display: none;' : '' }}">
     <div class="d-flex justify-content-between align-items-center">
         <span style="font-family: Arial, sans-serif; font-size: 21px; font-weight: bold;">Refunds</span>
-        <a href="#" class="btn btn-primary" style="margin-right: 100px;" data-bs-toggle="modal" data-bs-target="#refundModal">
+        <!-- <a href="#" class="btn btn-primary" style="margin-right: 100px;" data-bs-toggle="modal" data-bs-target="#refundModal">
             Refund a Payment
-        </a>
+        </a> -->
     </div>
 
     <br>
@@ -1049,8 +1049,8 @@
                     </div>
                     <!-- Plan Info Display -->
                     @if ($currentSubscription)                    
-                    <p><strong>Plan Name:</strong>{{ $currentSubscription->plan_name }} &nbsp;&nbsp;&nbsp; <strong>Plan Price:{{ $currentSubscription->plan_price }}</strong></p>
-                    <p><strong>Plan Type:</strong></p>
+                    <p><strong>Plan Name:{{ $currentSubscription->plan_name }} &nbsp;&nbsp;&nbsp;</strong> <strong>Plan Price:{{ $currentSubscription->plan_price }}</strong></p>
+                    <p><strong>Plan Type:flat</strong></p>
                     @else
                     <p>No active subscription found.</p>
                     @endif

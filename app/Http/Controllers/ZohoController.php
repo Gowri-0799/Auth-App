@@ -386,7 +386,7 @@ class ZohoController extends Controller
     
     public function filteradInvoices(Request $request)
     {
-       
+     
         $search = $request->input('search');
         $startDate = $request->input('startDate');
         $endDate = $request->input('endDate');
@@ -412,6 +412,7 @@ class ZohoController extends Controller
         if ($search) {
             $query->where(function($q) use ($search) {
                 $q->where('invoices.invoice_number', 'LIKE', "%{$search}%")
+                  ->orWhere('partners.company_name', 'LIKE', "%{$search}%") // Added company_name search
                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(invoice_items, '$[0].code')) LIKE ?", ["%{$search}%"]); // Searching plan_name from JSON
             });
         }
@@ -976,17 +977,42 @@ public function showCustomerSubscriptions()
         return back()->withErrors('Customer not found.');
     }
 
+    $partnerUser = Partner::where('zohocust_id', $customer->zoho_cust_id)->first();
+    
+    if (!$partnerUser) {
+        return back()->withErrors('Customer record not found in the customers table.');
+    }
+
+    // Ensure plan_code is a valid array
+    $planCodes = is_array($partnerUser->plan_code) ? $partnerUser->plan_code : json_decode($partnerUser->plan_code, true);
+
+    // Ensure it's an array before querying
+    $partnerPlans = !empty($planCodes) && is_array($planCodes) ? Plan::whereIn('plan_code', $planCodes)->get() : [];
+
     $subscriptions = Subscription::where('zoho_cust_id', $customer->zoho_cust_id)->first();
- 
+
     $plans = null;
     if ($subscriptions) {
         $plans = Plan::where('plan_id', $subscriptions->plan_id)->first();
     }
 
-    $downgradePlans = $plans ? Plan::where('plan_price', '<', $plans->plan_price)->get() : [];
-    $upgradePlans = $plans ? Plan::where('plan_price', '>', $plans->plan_price)->get() : [];
-    return view('customerSubscriptions', compact('subscriptions', 'plans', 'downgradePlans','upgradePlans'));
+    // Filter downgrade and upgrade plans from $partnerPlans
+    $downgradePlans = [];
+    $upgradePlans = [];
+
+    if ($plans) {
+        $downgradePlans = $partnerPlans->filter(function ($plan) use ($plans) {
+            return $plan->plan_price < $plans->plan_price;
+        });
+
+        $upgradePlans = $partnerPlans->filter(function ($plan) use ($plans) {
+            return $plan->plan_price > $plans->plan_price;
+        });
+    }
+
+    return view('customerSubscriptions', compact('subscriptions', 'plans', 'downgradePlans', 'upgradePlans', 'partnerPlans'));
 }
+
 
 
 public function showCustomerInvoices()
@@ -1159,6 +1185,7 @@ private function updateAddCustomerInZoho($customer)
     ]);
 
         $accessToken = $this->zohoService->getAccessToken();
+      
         $partneruser = PartnerUser::where('email', Session::get('user_email'))->first();
     
         if (!$partneruser) {
@@ -1406,8 +1433,7 @@ if (!$existingInvoice) {
         $startDate = $request->input('startDate');
         $endDate = $request->input('endDate');
         $perPage = $request->input('show', 10); 
-    
-     
+
         $query = DB::table('subscriptions')
             ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
             ->join('partners', 'subscriptions.zoho_cust_id', '=', 'partners.zohocust_id')
@@ -1432,9 +1458,11 @@ if (!$existingInvoice) {
     
        
         if ($search) {
-            $query->where('plans.plan_name', 'LIKE', "%{$search}%");
+            $query->where(function ($q) use ($search) {
+                $q->where('plans.plan_name', 'LIKE', "%{$search}%")
+                  ->orWhere('partners.company_name', 'LIKE', "%{$search}%");
+            });
         }
-  
         $subscriptions = $query->paginate($perPage);
     
         return view('subscription', compact('subscriptions', 'search', 'startDate', 'endDate'));
@@ -1560,8 +1588,7 @@ public function filtercredits(Request $request)
 }
 public function showCustomerSupport(Request $request)
 {
-   
-    $partneruser= PartnerUser::where('email', Session::get('user_email'))->first();
+    $partneruser = PartnerUser::where('email', Session::get('user_email'))->first();
 
     if (!$partneruser) {
         return back()->withErrors('Customer not found.');
@@ -1569,18 +1596,23 @@ public function showCustomerSupport(Request $request)
 
     $customer = Partner::where('zohocust_id', $partneruser->zoho_cust_id)->first();
 
-    $supportsQuery = Support::where('zoho_cust_id', $customer->zohocust_id);
+    $supportsQuery = Support::join('partners', 'supports.zoho_cust_id', '=', 'partners.zohocust_id')
+        ->select('supports.*', 'partners.company_name')
+        ->where('supports.zoho_cust_id', $customer->zohocust_id);
 
     if ($request->filled('startDate')) {
-        $supportsQuery->whereDate('date', '>=', $request->startDate);
+        $supportsQuery->whereDate('supports.date', '>=', $request->startDate);
     }
 
     if ($request->filled('endDate')) {
-        $supportsQuery->whereDate('date', '<=', $request->endDate);
+        $supportsQuery->whereDate('supports.date', '<=', $request->endDate);
     }
 
     if ($request->filled('search')) {
-        $supportsQuery->where('request_type', 'like', '%' . $request->search . '%');
+        $supportsQuery->where(function ($q) use ($request) {
+            $q->where('supports.request_type', 'like', '%' . $request->search . '%')
+              ->orWhere('partners.company_name', 'like', '%' . $request->search . '%'); 
+        });
     }
 
     $supports = $supportsQuery->paginate($request->input('show', 10));
@@ -2582,7 +2614,6 @@ $totalClicks = $clicksData->pluck('total_clicks');
         'providerData','dates', 'organicClicks','pmaxClicks','paidSearchClicks','directClicks','totalClicks','startDate','endDate',
     'filter','filterLabel','refunds','isPartnerValid','partnerPlanCodes', 'currentSubscription'));
 }
-
 
 public function customfilter(Request $request)
 {

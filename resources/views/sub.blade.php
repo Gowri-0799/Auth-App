@@ -82,11 +82,18 @@
                     return $subscription->addon == 1 && $subscription->plan_id == $plan->plan_id;
                     });
                     @endphp
-                    <h5 class="text-dark mb-2">
-                      <strong>
-                        <span class="text-primary">{{ $plan->plan_name }}</span>&nbsp;<span>{{ $plan->plan_code }}</span>
-                      </strong>
-                    </h5>
+                    @php
+    $words = explode(' ', $plan->plan_name, 2);
+@endphp
+
+<h5 class="text-dark mb-2">
+    <strong>
+        <span class="text-primary">{{ $words[0] }}</span>
+        @if(isset($words[1]))
+            <span class="text-dark">{{ $words[1] }}</span>
+        @endif
+    </strong>
+</h5>
                     <h5 class="text-dark mb-2">
                       <strong>
                         ${{ $plan->plan_price }}

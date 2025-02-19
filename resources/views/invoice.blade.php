@@ -81,7 +81,7 @@
                                 <td>${{ number_format($invoice->payment_made, 2) }}</td>
                                 <td>
                                     @if(strtolower($invoice->status) == 'paid')
-                                    <span class="badge bg-success">Paid</span>
+                                    <span class="badge-success">Paid</span>
                                     @else
                                     <span class="badge bg-warning text-dark">Pending</span>
                                     @endif

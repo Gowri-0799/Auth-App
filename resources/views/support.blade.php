@@ -97,9 +97,9 @@
                                             <td>{{ $ticket->message }}</td>
                                             <td>
                                                 @if(strtolower($ticket->status) == 'open')
-                                                    <span class="badge bg-success">Open</span>
+                                                <span class="badge-success">Open</span>
                                                 @else
-                                                    <span class="badge bg-danger">Closed</span>
+                                                    <span class="badge-fail">Closed</span>
                                                 @endif
                                             </td>
                                         </tr>
@@ -191,18 +191,18 @@
         font-size: 1.5rem;
     }
 
-    .badge-success {
+    /* .badge-success {
         color: white;
         background-color: #28a745;
         padding: 5px 10px;
         border-radius: 5px;
-    }
+    } */
 
-    .badge-fail {
+    /* .badge-fail {
         color: white;
         background-color: #dc3545;
         padding: 5px 10px;
         border-radius: 5px;
-    }
+    } */
 </style>
 @endsection
