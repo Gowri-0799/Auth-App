@@ -214,3 +214,9 @@ Route::post('/customers/{id}/mark-active', [ZohoController::class, 'markAsActive
      Route::put('/users/update', [ZohoController::class, 'updateinviteuser'])->name('users.update');
 
      Route::get('/admin/dashboard', [ZohoController::class, 'plandb'])->name('admin.dashboard');
+
+     Route::post('admin/zoho/charge', [ZohoController::class, 'chargeZoho'])->name('zoho.charge');
+     Route::post('admin/zoho/create-credit-note', [ZohoController::class, 'createCreditNote'])->name('zoho.createCreditNote');
+
+     Route::post('admin/mark-primary/{zoho_cpid}', [ZohoController::class, 'markAsPrimary'])->name('mark.primary');
+     Route::post('/send-details', [ZohoController::class, 'sendDetails'])->name('send.details');

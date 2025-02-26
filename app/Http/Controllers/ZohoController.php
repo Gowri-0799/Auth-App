@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Plan;
 use App\Models\Addon;
+use App\Models\Admin;
+
 use App\Models\Click;
 use App\Models\Term;
 use App\Models\CompanyInfo;
@@ -28,6 +30,7 @@ use App\Models\Support;
 use App\Models\Refund;
 use Illuminate\Support\Facades\Storage;
 use App\Mail\SubscriptionDowngrade;
+use App\Mail\SendAdminDetails;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\CustomerInvitation;
 use App\Mail\SubscriptionEmail;
@@ -59,6 +62,7 @@ class ZohoController extends Controller
     protected $partneruser;
     protected $click;
     protected $refund;
+    protected $admin;
 
     public function __construct(ZohoService $zohoService)
     {
@@ -78,25 +82,22 @@ class ZohoController extends Controller
         $this->partneruser= new PartnerUser();
         $this->click=new Click();
         $this->refund=new Refund();
+        $this->admin=new Admin();
     }
 
     public function getAllPlans()
     {
         $plans = $this->zohoService->getZohoPlans();
         $addons = $this->zohoService->getZohoAddons(); 
-
+    
         if (isset($addons['addons'])) {
             Plan::truncate();
             $addonMap = [];
+    
             foreach ($addons['addons'] as $addon) { 
                 $addonCode = $addon['addon_code'] ?? null;
                 if ($addonCode) {
-                    
-                    $addonPrice = null;
-                    if (isset($addon['price_brackets']) && count($addon['price_brackets']) > 0) {
-                        $addonPrice = $addon['price_brackets'][0]['price'] ?? null; 
-                    }
-    
+                    $addonPrice = $addon['price_brackets'][0]['price'] ?? null;
                     $addonMap[$addonCode] = [
                         'addon_name' => $addon['name'] ?? null,
                         'addon_price' => $addonPrice
@@ -111,9 +112,10 @@ class ZohoController extends Controller
                 $this->plan->plan_price = $plan['recurring_price'] ?? null; 
                 $this->plan->plan_code = $plan['plan_code'] ?? null;
                 $this->plan->plan_id = $plan['plan_id'] ?? null;
-
-                $addonCode = $plan['addons'][0]['addon_code'] ?? null; 
-
+    
+                // Check if 'addons' key exists and is not empty
+                $addonCode = isset($plan['addons']) && !empty($plan['addons']) ? $plan['addons'][0]['addon_code'] ?? null : null;
+    
                 if ($addonCode && isset($addonMap[$addonCode])) {
                     $this->plan->addon_code = $addonCode;
                     $this->plan->addon_name = $addonMap[$addonCode]['addon_name']; 
@@ -123,15 +125,12 @@ class ZohoController extends Controller
                     $this->plan->addon_name = null; 
                     $this->plan->addon_price = null; 
                 }
-                
                 $this->plan->save(); 
             }
         }
-    
         return redirect(route("plantest"));
     }
-
-
+    
     function plantest()
     {
         $response['plans'] = $this->plan->all();
@@ -2435,7 +2434,9 @@ public function show($zohocust_id, Request $request)
         $companyInfo = DB::table('company_info')
         ->where('zoho_cust_id', $customer->zohocust_id)
         ->first();
-
+    
+        $admin = DB::table('admins')->get();
+   
     //$providerData = ProviderData::where('zoho_cust_id', $customer->zohocust_id)->first();
     $providerData = ProviderData::where('zoho_cust_id', $customer->zohocust_id)->paginate(10);
 
@@ -2471,7 +2472,7 @@ public function show($zohocust_id, Request $request)
     $currentSubscription = DB::table('subscriptions')
         ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
         ->where('subscriptions.zoho_cust_id', $customer->zohocust_id)
-        ->select('plans.plan_price', 'plans.plan_id','plans.plan_name')
+        ->select('plans.plan_price', 'plans.plan_id','plans.plan_name','plans.plan_code')
         ->first();
 
     $upgradePlans = $currentSubscription 
@@ -2612,7 +2613,7 @@ $totalClicks = $clicksData->pluck('total_clicks');
         'customer','subscriptions','invoices','creditnotes','affiliates','selectedSection','partnerUser','plans','upgradePlans','partnerUsers',
         'companyInfo',
         'providerData','dates', 'organicClicks','pmaxClicks','paidSearchClicks','directClicks','totalClicks','startDate','endDate',
-    'filter','filterLabel','refunds','isPartnerValid','partnerPlanCodes', 'currentSubscription'));
+    'filter','filterLabel','refunds','isPartnerValid','partnerPlanCodes', 'currentSubscription','admin'));
 }
 
 public function customfilter(Request $request)
@@ -2744,7 +2745,7 @@ public function filterSubscriptionsnav(Request $request)
     $currentSubscription = DB::table('subscriptions')
         ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
         ->where('subscriptions.zoho_cust_id', $customer->zohocust_id)
-        ->select('plans.plan_price', 'plans.plan_id','plans.plan_name')
+        ->select('plans.plan_price', 'plans.plan_id','plans.plan_name','plans.plan_code')
         ->first();
 
    $upgradePlans = $currentSubscription 
@@ -2753,7 +2754,7 @@ public function filterSubscriptionsnav(Request $request)
 
 
     $creditnotes = Creditnote::where('zoho_cust_id', $customer->zohocust_id)->get();
-
+    $admin = DB::table('admins')->get();
     $affiliates = DB::table('partner_affiliates')
     ->join('affiliates', 'partner_affiliates.affiliate_id', '=', 'affiliates.id')  
     ->where('partner_affiliates.partner_id', $customer->zohocust_id)  
@@ -2836,7 +2837,7 @@ $refunds = DB::table('refunds')
     'subscriptions','selectedSection', 'affiliates', 'search', 'startDate',
      'endDate', 'invoices','creditnotes', 'partnerUser','plans','upgradePlans' ,'companyInfo',
      'providerData','dates', 'organicClicks','pmaxClicks','paidSearchClicks','directClicks','totalClicks','startDate','endDate',
-    'refunds','isPartnerValid','partnerPlanCodes','currentSubscription'));
+    'refunds','isPartnerValid','partnerPlanCodes','currentSubscription','admin'));
 }   
 
     
@@ -2896,11 +2897,11 @@ public function filterInvoicesnav(Request $request)
         'affiliates.domain_name'
     )
     ->get();
-  
+    $admin = DB::table('admins')->get();
     $currentSubscription = DB::table('subscriptions')
         ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
         ->where('subscriptions.zoho_cust_id', $customer->zohocust_id)
-        ->select('plans.plan_price', 'plans.plan_id','plans.plan_name')
+        ->select('plans.plan_price', 'plans.plan_id','plans.plan_name','plans.plan_code')
         ->first();
 
 $upgradePlans = $currentSubscription 
@@ -2976,7 +2977,7 @@ $refunds = DB::table('refunds')
      'subscriptions','selectedSection', 'affiliates', 'search', 'startDate', 'endDate',
       'invoices','creditnotes', 'partnerUser','plans','upgradePlans', 'companyInfo',
       'providerData','dates', 'organicClicks','pmaxClicks','paidSearchClicks','directClicks','totalClicks','startDate','endDate',
-     'refunds','isPartnerValid','partnerPlanCodes','currentSubscription'));
+     'refunds','isPartnerValid','partnerPlanCodes','currentSubscription','admin'));
 }
 
 public function filtercreditnav(Request $request)
@@ -3019,7 +3020,7 @@ public function filtercreditnav(Request $request)
 
     $subscriptions = Subscription::where('zoho_cust_id', $zohocust_id)->get();
     $invoices = Invoice::where('zoho_cust_id', $customer->zohocust_id)->get();
-   
+    $admin = DB::table('admins')->get();
     $affiliates = DB::table('partner_affiliates')
     ->join('affiliates', 'partner_affiliates.affiliate_id', '=', 'affiliates.id')  
     ->where('partner_affiliates.partner_id', $customer->zohocust_id)  
@@ -3033,7 +3034,7 @@ public function filtercreditnav(Request $request)
     $currentSubscription = DB::table('subscriptions')
         ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
         ->where('subscriptions.zoho_cust_id', $customer->zohocust_id)
-        ->select('plans.plan_price', 'plans.plan_id','plans.plan_name')
+        ->select('plans.plan_price', 'plans.plan_id','plans.plan_name','plans.plan_code')
         ->first();
 
 $upgradePlans = $currentSubscription 
@@ -3109,7 +3110,7 @@ $refunds = DB::table('refunds')
     'selectedSection', 'affiliates','invoices', 'search', 'startDate', 'endDate', 
     'creditnotes','partnerUser','plans','upgradePlans', 'companyInfo',
     'providerData','dates', 'organicClicks','pmaxClicks','paidSearchClicks','directClicks','totalClicks','startDate','endDate',
-    'refunds','isPartnerValid','partnerPlanCodes','currentSubscription'));
+    'refunds','isPartnerValid','partnerPlanCodes','currentSubscription','admin'));
 }
 
 public function filterProviderDatanav(Request $request)
@@ -3154,7 +3155,7 @@ public function filterProviderDatanav(Request $request)
     $subscriptions = Subscription::where('zoho_cust_id', $zohocust_id)->get();
     $creditnotes = Creditnote::where('zoho_cust_id', $customer->zohocust_id)->get();
     $invoices = Invoice::where('zoho_cust_id', $customer->zohocust_id)->get();
-   
+    $admin = DB::table('admins')->get();
     $affiliates = DB::table('partner_affiliates')
         ->join('affiliates', 'partner_affiliates.affiliate_id', '=', 'affiliates.id')  
         ->where('partner_affiliates.partner_id', $customer->zohocust_id)  
@@ -3170,7 +3171,7 @@ public function filterProviderDatanav(Request $request)
     $currentSubscription = DB::table('subscriptions')
         ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
         ->where('subscriptions.zoho_cust_id', $customer->zohocust_id)
-        ->select('plans.plan_price', 'plans.plan_id','plans.plan_name')
+        ->select('plans.plan_price', 'plans.plan_id','plans.plan_name','plans.plan_code')
         ->first();
 
     $upgradePlans = $currentSubscription 
@@ -3245,7 +3246,7 @@ $refunds = DB::table('refunds')
     'subscriptions','selectedSection', 'affiliates', 'search', 'startDate','creditnotes',
      'endDate', 'invoices', 'partnerUser','plans','upgradePlans' ,'companyInfo',
      'providerData','dates', 'organicClicks','pmaxClicks','paidSearchClicks','directClicks','totalClicks','startDate','endDate',
-    'refunds','isPartnerValid','partnerPlanCodes'));
+    'refunds','isPartnerValid','partnerPlanCodes','admin'));
 }   
 
 public function filterrefundnav(Request $request)
@@ -3298,7 +3299,7 @@ public function filterrefundnav(Request $request)
     $subscriptions = Subscription::where('zoho_cust_id', $zohocust_id)->get();
     $creditnotes = Creditnote::where('zoho_cust_id', $customer->zohocust_id)->get();
     $invoices = Invoice::where('zoho_cust_id', $customer->zohocust_id)->get();
-   
+    $admin = DB::table('admins')->get();
     $affiliates = DB::table('partner_affiliates')
         ->join('affiliates', 'partner_affiliates.affiliate_id', '=', 'affiliates.id')  
         ->where('partner_affiliates.partner_id', $customer->zohocust_id)  
@@ -3314,7 +3315,7 @@ public function filterrefundnav(Request $request)
     $currentSubscription = DB::table('subscriptions')
         ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
         ->where('subscriptions.zoho_cust_id', $customer->zohocust_id)
-        ->select('plans.plan_price', 'plans.plan_id','plans.plan_name')
+        ->select('plans.plan_price', 'plans.plan_id','plans.plan_name','plans.plan_code')
         ->first();
 
     $upgradePlans = $currentSubscription 
@@ -3377,7 +3378,7 @@ public function filterrefundnav(Request $request)
         'startDate', 'creditnotes', 'endDate', 'invoices', 
         'partnerUser', 'plans', 'upgradePlans', 'companyInfo', 
         'dates', 'organicClicks', 'pmaxClicks', 'paidSearchClicks', 
-        'directClicks', 'totalClicks', 'refunds', 'isPartnerValid','partnerPlanCodes','currentSubscription'
+        'directClicks', 'totalClicks', 'refunds', 'isPartnerValid','partnerPlanCodes','currentSubscription','admin'
     ));
 }
 
@@ -3491,19 +3492,17 @@ public function filterclicksnav(Request $request)
     
     $invoices = Invoice::where('zoho_cust_id', $customer->zohocust_id)->get();
 
-
-   
     $currentSubscription = DB::table('subscriptions')
         ->join('plans', 'subscriptions.plan_id', '=', 'plans.plan_id')
         ->where('subscriptions.zoho_cust_id', $customer->zohocust_id)
-        ->select('plans.plan_price', 'plans.plan_id','plans.plan_name')
+        ->select('plans.plan_price', 'plans.plan_id','plans.plan_name','plans.plan_code')
         ->first();
     $upgradePlans = $currentSubscription
         ? Plan::where('plan_price', '>', $currentSubscription->plan_price)->get()
         : [];
 
     $creditnotes = Creditnote::where('zoho_cust_id', $customer->zohocust_id)->get();
-
+    $admin = DB::table('admins')->get();
     $affiliates = DB::table('partner_affiliates')
         ->join('affiliates', 'partner_affiliates.affiliate_id', '=', 'affiliates.id')
         ->where('partner_affiliates.partner_id', $customer->zohocust_id)
@@ -3579,7 +3578,7 @@ public function filterclicksnav(Request $request)
     return view('customer-show', compact(
         'customer','partnerUsers','subscriptions','selectedSection','affiliates','search','startDate','endDate',
         'invoices','creditnotes','partnerUser','plans','upgradePlans','companyInfo','providerData','dates','organicClicks','pmaxClicks','paidSearchClicks','directClicks','totalClicks','startDate','endDate',
-    'refunds','isPartnerValid','partnerPlanCodes','currentSubscription'));
+    'refunds','isPartnerValid','partnerPlanCodes','currentSubscription','admin'));
 }
 
 public function customenterprise(Request $request)
@@ -4613,7 +4612,160 @@ public function updatePlans(Request $request, $zohocust_id)
 
     return redirect()->back()->with('success', 'Plans updated successfully.');
 }
+public function chargeZoho(Request $request)
+{
+    $data = $request->validate([
+        'amount'      => 'required',
+        'description' => 'required',
+        'subscription_id' => 'required'
+    ]);
 
+    $accessToken = $this->zohoService->getAccessToken();
+    $subscriptionId = $request->subscription_id;
+
+    $response = Http::withHeaders([
+        'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
+        'content-type'  => 'application/json',
+        'X-com-zoho-subscriptions-organizationid' => config('services.zoho.zoho_org_id')
+    ])->post("https://www.zohoapis.com/billing/v1/subscriptions/{$subscriptionId}/charge", $data);
+
+    $responseData = $response->json();
+
+    if ($response->successful() && isset($responseData['invoice'])) {
+
+        $invoiceData = $responseData['invoice'];
+
+        
+        \App\Models\Invoice::create([
+            'invoice_id'     => $invoiceData['invoice_id'],
+            'invoice_date'   => now(), // You might want to use $invoiceData['invoice_date'] if it is in the right format
+            'invoice_number' => $invoiceData['invoice_number'] ?? null,
+            'subscription_id'=> $subscriptionId,
+            'credits_applied'=> $invoiceData['credits_applied'] ?? 0,
+            'discount'       => $invoiceData['discount_total'] ?? null,
+            'payment_made'   => $invoiceData['payment_made'],
+            'payment_method' => null, // set if available
+            'invoice_link'   => $invoiceData['invoice_url'] ?? null,
+            'zoho_cust_id'   => $invoiceData['customer_id'],  // Assuming customer_id is what you want
+            'invoice_items'  => null,
+            'balance'        => $invoiceData['balance'] ?? 0,
+            'payment_details'=> json_encode($invoiceData['payments'] ?? []),
+            'status'         => $invoiceData['status'] ?? null,
+        ]);
+
+        return redirect()->back()->with('success', 'Invoice processed successfully!');
+    } else {
+        return redirect()->back()->with('error', 'Failed to process invoice.');
+    }
+}
+public function createCreditNote(Request $request)
+{
+    $validated = $request->validate([
+        'amount'         => 'required',
+        'description'    => 'required',
+        'zohocust_id'    => 'required',
+        'creditnote_date'=> 'required|date',
+        'plan_code'=>'required',
+    ]);
+
+    $payload = [
+        "customer_id"      => $validated['zohocust_id'],
+        "date"             => $validated['creditnote_date'],
+        "creditnote_items" => [
+            [
+                "description" => $validated['description'],
+                "code"       => $validated['plan_code'],
+                "item_total"  => $validated['amount'], 
+                "quantity"    => 1,
+                "rate"        => $validated['amount'],
+            ]
+        ]
+    ];
+
+    $accessToken = $this->zohoService->getAccessToken();
+
+    $response = Http::withHeaders([
+        'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
+        'Content-Type'  => 'application/json',
+        'X-com-zoho-subscriptions-organizationid' => config('services.zoho.zoho_org_id')
+    ])->post('https://www.zohoapis.com/billing/v1/creditnotes', $payload);
+
+    $responseData = $response->json();
+
+    if ($response->successful() && isset($responseData['creditnote'])) {
+
+        $creditnoteData = $responseData['creditnote'];
+
+        \App\Models\Creditnote::create([
+            'creditnote_id'      => $creditnoteData['creditnote_id'],
+            'creditnote_number'  => $creditnoteData['creditnote_number'] ?? null,
+            'credited_date'      => $creditnoteData['date'] ?? $validated['creditnote_date'],
+            'invoice_number'     => $creditnoteData['invoice_id'] ?? null,
+            'zoho_cust_id'       => $creditnoteData['customer_id'],
+            'status'             => $creditnoteData['status'] ?? null,
+            'credited_amount'    => $creditnoteData['total'] ?? 0,
+            'balance'            => $creditnoteData['balance'] ?? 0,
+        ]);
+
+        return redirect()->back()->with('success', 'Credit note created successfully!');
+    } else {
+        return redirect()->back()->with('error', 'Failed to create credit note.');
+    }
+}
+
+public function markAsPrimary($contactperson_id)
+{
+    $accessToken = $this->zohoService->getAccessToken();
+
+    $response = Http::withHeaders([
+        'Authorization' => 'Zoho-oauthtoken ' . $accessToken,
+        'X-com-zoho-subscriptions-organizationid' => config('services.zoho.zoho_org_id'),
+        'Content-Type' => 'application/json'
+    ])->post("https://www.zohoapis.com/billing/v3/contacts/contactpersons/{$contactperson_id}/primary");
+
+
+    if ($response->successful()) {
+        return back()->with('success', 'Contact marked as primary successfully.');
+    } else {
+        return back()->with('error', 'Failed to mark as primary.');
+    }
+}
+
+public function sendDetails(Request $request)
+{
+    $admin = Admin::find($request->admin_id);
+    $customer = Partner::where('zohocust_id', $request->customer_id)->first();
+
+    if (!$admin || !$customer) {
+        return response()->json(['message' => 'Invalid admin or customer.'], 400);
+    }
+
+    $companyInfo = DB::table('company_info')
+        ->where('zoho_cust_id', $request->customer_id)
+        ->select('logo_image', 'landing_page_uri')
+        ->first();
+
+    $providerData = DB::table('provider_data')
+        ->where('zoho_cust_id', $request->customer_id)
+        ->select('url')
+        ->first();
+
+    $baseUrl = config('app.url');
+    $csvPath = $providerData->url ?? 'N/A';
+
+    $data = [
+        'admin_name' => $admin->admin_name,
+        'customer_name' => $customer->customer_name,
+        'csv_link' => $csvPath ? $baseUrl . Storage::url($csvPath) : 'N/A',
+        'logo_link' => $baseUrl . Storage::url($companyInfo->logo_image) ?? 'N/A',
+        'company_name' => $customer->company_name,
+        'landing_url' => $companyInfo->landing_page_uri ?? 'N/A',
+    ];
+
+    Mail::to($admin->email)->send(new SendAdminDetails($data));
+
+    return redirect()->back()->with('success','Details sent successfully.');
+}
 
 
 

@@ -36,7 +36,30 @@
     
     <div class="col-lg border-0 bg-clearlink p-3">
         <div class="d-flex flex-wrap justify-content-between align-items-stretch">
-            
+        <div style="display: flex; flex-wrap: wrap; width: 100%;">
+        {{-- Left Card with Subscription Details --}}
+@if($subscriptions->status == 'Cancelled')
+    <div style="flex: 1; padding: 20px; background-color: #eaf1fc; 
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); min-width: 320px; position: relative; display: flex; flex-direction: column; justify-content: space-between; height: 100%; min-height: 100%;">
+        
+        {{-- Plan Name (Override for Canceled Subscriptions) --}}
+        <h3 class="text-primary fw-bold mb-3 m-0 text-uppercase p-0">
+                                        <strong>Free Monthly</strong>
+                                    </h3>
+
+           <h4 class="">{{ $subscriptions->subscription_number }}</h4>
+
+        {{-- Plan Price (Override for Canceled Subscriptions) --}}
+        <span style="font-size: 30px; font-weight: bold; color: #000;">
+            US $0.00
+        </span><br>
+
+        {{-- Status Badge --}}
+        <span class="sub-status p-1 px-1 w-25 mt-3 badge-fail fs-5">
+            <strong>Cancelled</strong>
+        </span>
+    </div>
+@else
             {{-- Left: Subscription Details Card --}}
             <div style="flex: 1; padding: 20px; background-color: #eaf1fc; 
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); min-width: 320px; position: relative; display: flex; flex-direction: column; justify-content: space-between; height: 100%; min-height: 100%;">
@@ -93,7 +116,7 @@
                     {{ \Carbon\Carbon::parse($subscriptions->next_billing_at)->format('d-M-Y') }}
                 </p>
             </div>
-            
+            @endif  
             {{-- Right: Payment Method Card --}}
             <div class="col-lg d-flex justify-content-center flex-column shadow align-items-center" 
                  style="background-color: transparent; border: none;">
@@ -115,14 +138,14 @@
                 <a href="/payments/{{$subscriptions->zoho_cust_id}}" class="text-decoration-underline text-primary mt-2">
                     Update Card Details
                 </a>
-                <a href="#" data-bs-toggle="modal" data-bs-target="#switchPaymentModal" 
+                <!-- <a href="#" data-bs-toggle="modal" data-bs-target="#addnewPaymentModal" 
                    class="text-decoration-underline text-primary mt-2 cursor-pointer">
                    Add New Payment Method
-                </a>
-                <a href="#" data-bs-toggle="modal" data-bs-target="#switchPaymentModal" 
+                </a> -->
+                <!-- <a href="#" data-bs-toggle="modal" data-bs-target="#switchPaymentModal" 
                    class="text-decoration-underline text-primary mt-2 cursor-pointer">
                    Switch Payment Method
-                </a>
+                </a> -->
             </div>
         </div>
     </div>

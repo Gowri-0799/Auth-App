@@ -213,6 +213,16 @@
                            Resend invite
                            </button>
                         </form>
+                        <!-- <span class="text-primary" data-bs-toggle="tooltip" title="Primary User">
+    <i class="fa-solid fa-check"></i>
+</span> -->
+<form action="{{ route('mark.primary', $user->zoho_cpid) }}" method="POST">
+        @csrf
+        <button type="submit" class="btn btn-light p-1 border-0 custom-tooltip text-primary"
+                data-bs-toggle="tooltip" data-bs-placement="top" title="Mark as Primary">
+            <i class="fa-solid fa-check"></i>
+        </button>
+    </form>
                         <a href="#"  class="text-primary ms-auto" data-bs-toggle="modal" title="Edit" data-bs-target="#editUserModal" >
                         <i class="fa-solid fa-pen-to-square" title="Edit"></i>
                         </a>
@@ -319,12 +329,16 @@
 </div>
 <!-- Invoices Section --> 
 <div id="invoices" class="section mt-4" style="{{ $selectedSection !== 'invoices' ? 'display: none;' : '' }}">
-   <div class="d-flex align-items-center">
-      <span style="font-family: Arial, sans-serif; font-size: 21px; font-weight: bold;">Invoice</span>
-      <a href="#" class="btn btn-primary ms-auto" style="margin-right: 100px;"  data-bs-toggle="modal" data-bs-target="#refundModal">
-         Refund a Payment
-      </a>
-   </div>
+<div class="d-flex align-items-center">
+    <span style="font-family: Arial, sans-serif; font-size: 21px; font-weight: bold; margin-right: 35px;">Invoice</span>
+    <a href="#" class="btn btn-primary" style="margin-right: 35px;" data-bs-toggle="modal" data-bs-target="#addInvoiceModal">
+        Add Custom Invoice
+    </a>
+    <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#refundModal">
+        Refund a Payment
+    </a>
+</div>
+
    <br>
 
    <!-- Filter Form for Invoices -->
@@ -404,9 +418,29 @@
 </div>
 <!-- Credit Notes Section -->
 <div id="creditnote" class="section mt-4" style="{{ $selectedSection !== 'creditnote' ? 'display: none;' : '' }}">
-   <div>
-      <span style="font-family: Arial, sans-serif; font-size: 21px; font-weight: bold;">Credit notes</span>
-   </div>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <!-- Title -->
+  <div>
+    <span style="font-family: Arial, sans-serif; font-size: 21px; font-weight: bold;">
+      Credit notes
+    </span>
+  </div>
+  <!-- "+" Icon and Text -->
+  <<div class="d-flex align-items-center">
+  <a href="#" 
+     class="btn btn-primary rounded-circle d-flex align-items-center justify-content-center create-subscription-btn"
+     style="width: 40px; height: 40px; margin-right: 10px;"
+     data-bs-toggle="modal" 
+     data-bs-target="#creditNoteModal">
+    <i class="fas fa-plus"></i>
+  </a>
+  <span style="font-family: Arial, sans-serif; font-size: 16px; margin-right: 170px;">
+    Create a credit note
+  </span>
+</div>
+</div>
+
+
    <br>
    <!-- Filter Form for Credit Notes -->
    <form method="GET" action="{{ route('nav.creditnote.filter') }}" class="row mb-4 align-items-end">
@@ -443,12 +477,14 @@
                <td>{{ number_format($creditnote->credited_amount, 2) }}</td>
                <td>{{ number_format($creditnote->balance, 2) }}</td>
                <td class="p-2 status">
-                  @if(strtolower($creditnote->status) == 'credited')
-                  <span class="badge-success">Open</span>
-                  @else
-                  <span class="badge-fail">Closed</span>
-                  @endif
-               </td>
+    @if(strtolower($creditnote->status) == 'open')
+        <span class="badge-success">Open</span>
+    @elseif(strtolower($creditnote->status) == 'credited')
+        <span class="badge-success">Open</span>
+    @else
+        <span class="badge-fail">Closed</span>
+    @endif
+</td>
                <td>
                   <a href="{{ route('pdf.download', $creditnote->creditnote_id) }}"  class="btn btn-sm btn-primary">
                   Download PDF
@@ -475,9 +511,9 @@
          Upload Company Info
          </a>
          @else
-         <a href="#" class="btn btn-primary" style="margin-right: 60px;">
-         Send Details to Admin
-         </a>
+         <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#sendDetailsModal" style="margin-right: 60px;">
+    Send Details to Admin
+</a>
          @endif
       </div>
    </div>
@@ -822,6 +858,62 @@
       </div>
    </div>
 </div>
+
+<!-- Credit note Modal Structure -->
+<div class="modal fade" id="creditNoteModal" tabindex="-1" aria-labelledby="creditNoteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="creditNoteModalLabel">Create a credit note</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <!-- Form with POST method and your route -->
+      <form method="POST" action="{{ route('zoho.createCreditNote') }}">
+        @csrf
+
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="subscriptionPlanCode" class="form-label fw-bold">
+              Current Subscription Plan Code*
+            </label>
+            <input type="text" class="form-control" 
+                   id="subscriptionPlanCode" 
+                   name="plan_name"
+                   value="{{ $currentSubscription->plan_name }}" 
+                   readonly>
+          </div>
+          <div class="mb-3">
+            <label for="creditAmount" class="form-label fw-bold">Amount*</label>
+            <input type="text" class="form-control" 
+                   id="creditAmount" 
+                   name="amount" 
+                   required>
+          </div>
+          <div class="mb-3">
+            <label for="creditDescription" class="form-label fw-bold">Description*</label>
+            <input type="text" class="form-control" 
+                   id="creditDescription" 
+                   name="description" 
+                   required>
+          </div>
+          <!-- Potential hidden fields for date, customer_id, etc. -->
+          <input type="hidden" name="zohocust_id" value="{{ $customer->zohocust_id }}">
+           <input type="hidden" name="plan_code" value="{{ $currentSubscription->plan_code }}">
+          <input type="hidden" name="creditnote_date" value="{{ now()->format('Y-m-d') }}">
+          <input type="hidden" name="creditnote_number" value="CN-{{ time() }}"> 
+        </div>
+
+        <div class="modal-footer">
+          <!-- Type submit to submit the form -->
+          <button type="submit" class="btn btn-primary btn-sm">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <!-- Modal for upload company info -->
 <div class="modal fade" id="uploadCompanyInfoModal" tabindex="-1" aria-labelledby="uploadCompanyInfoLabel" aria-hidden="true">
    <div class="modal-dialog">
@@ -903,6 +995,39 @@
         </div>
     </div>
 </div>
+<!--Custom invoice-->
+<div class="modal fade" id="addInvoiceModal" tabindex="-1" aria-labelledby="addInvoiceModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="addInvoiceModalLabel">Add Custom Invoice</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p style="color: red; font-size: 14px; font-weight: 500; margin-bottom: 10px;">
+          Note: If you add a Custom Invoice, the respective amount will be charged from your partner automatically.
+        </p>
+        <form method="POST" action="{{ route('zoho.charge') }}">
+          @csrf
+          <div class="mb-3">
+            <label for="invoiceAmount" class="form-label fw-bold">Amount*</label>
+            <input type="text" class="form-control" name="amount" id="invoiceAmount" placeholder="Enter amount" required>
+          </div>
+          <div class="mb-3">
+            <label for="invoiceDescription" class="form-label fw-bold">Description*</label>
+            <textarea class="form-control" name="description" id="invoiceDescription" placeholder="Enter description" required></textarea>
+          </div>
+          <input type="hidden" name="subscription_id" value="{{$subscription->subscription_id }}">
+          <div class="justify-content-start">
+            <button type="submit" class="btn btn-primary btn-sm">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <!-- Address Update Modal -->
 <div class="modal fade" id="updateAddressModal" tabindex="-1" aria-labelledby="updateAddressModalLabel" aria-hidden="true">
    <div class="modal-dialog">
@@ -977,6 +1102,42 @@
       </div>
    </div>
 </div>
+<!--Sent details to admin-->
+<div class="modal fade" id="sendDetailsModal" tabindex="-1" aria-labelledby="sendDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="sendDetailsModalLabel">Send Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form action="{{ route('send.details') }}" method="POST">
+                @csrf
+                <div class="modal-body">
+                    <label for="adminSelect" class="form-label fw-bold">Select Admins*</label>
+                    <select id="adminSelect" class="form-select" name="admin_id" required>
+                        <option selected disabled>Select an Admin</option>
+                        @foreach ($admin as $admin)
+                            <option value="{{ $admin->id }}">{{ $admin->admin_name }}</option>
+                        @endforeach
+                    </select>
+
+                    <!-- Hidden input fields for customer details -->
+                    <input type="hidden" name="customer_id" value="{{ $customer->zohocust_id ?? '' }}">
+                
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Send Details</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
 <!-- Edit User Modal -->
 <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
    <div class="modal-dialog modal-dialog-centered" style="max-width: 500px;">

@@ -40,9 +40,9 @@
 
                 <!-- Display the table or message if no tickets are found -->
                 @if($supports->count() == 0)
-                 
                     <div class="d-flex justify-content-center align-items-center mt-5">
-                <h3>No support tickets found.</h3>
+                        <h3>No support tickets found.</h3>
+                    </div>
                 @else
                     <div class="table-responsive">
                         <table class="table table-hover text-center table-bordered" style="background-color:#fff; width: 100%; max-width: 100%;">
@@ -55,9 +55,8 @@
                                     <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Company Name</th>
                                     <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Message</th>
                                     <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Status</th>
-                                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Comments</th> <!-- New Comments Column -->
-                                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Action</th> <!-- New Comments Column -->
-
+                                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Comments</th>
+                                    <th style="font-family: Arial, sans-serif; font-size: 16px;background-color: #EEF1F4;">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -71,59 +70,63 @@
                                         <td>{{ $ticket->message }}</td>
                                         
                                         <td class="p-2 status">
-                                           @if(strtolower($ticket->status) == 'open')
-                                               <span class="badge-success">Open</span>
-                                           @else
+                                            @if(strtolower($ticket->status) == 'open')
+                                                <span class="badge-success">Open</span>
+                                            @else
                                                 <span class="badge-fail">Closed</span>
-                                           @endif
+                                            @endif
                                         </td>
                                         <td>
-    @if(strtolower($ticket->status) == 'completed')
-        <span class="text-muted">Unable to Revoke</span>
-    @else
-        <button 
-            type="button" 
-            class="btn btn-sm btn-primary add-comment" >
-            Revoke
-        </button>
-    @endif
-</td>
-<td>   
-    @if(strtolower($ticket->status) == 'completed')
-        <span class="text-muted">Closed</span>  
-    @elseif(strtolower($ticket->request_type) == 'custom support' || strtolower($ticket->request_type) == 'custom enterprise')
-        <button 
-            type="button" 
-            class="btn btn-sm btn-primary add-comment" 
-            data-id="{{ $ticket->zoho_cust_id }}" 
-            data-bs-toggle="modal" 
-            data-bs-target="#commentModal">
-           Close
-        </button>
-    @else
-        @php
-            // Set the route dynamically based on request_type
-            $route = strtolower($ticket->request_type) == 'downgrade' 
-                ? route('downgrade.subscription') 
-                : (strtolower($ticket->request_type) == 'cancellation' 
-                    ? route('support.Subscription') 
-                    : '#');
-        @endphp
-        
-        <form action="{{ $route }}" method="POST" style="display: inline;">
-            @csrf
-            <input type="hidden" name="plan_code" value="{{ $ticket->plan_code ?? '' }}">
-            <input type="hidden" name="subscription_number" value="{{ $ticket->subscription_number }}">
-            <input type="hidden" name="subscription_id" value="{{ $ticket->subscription_id ?? '' }}">
-            <input type="hidden" name="zoho_cust_id" value="{{ $ticket->zoho_cust_id ?? '' }}">
-            <input type="hidden" name="customer_name" value="{{ $ticket->customer_name ?? '' }}">
-            <input type="hidden" name="customer_email" value="{{ $ticket->customer_email ?? '' }}">
-            
-            <button type="submit" class="btn btn-primary">Close</button>
-        </form>
-    @endif
-</td>
-
+                                            {{-- Revoke Button Column --}}
+                                            @if(strtolower($ticket->status) == 'completed')
+                                                <span class="text-muted">Unable to Revoke</span>
+                                            @else
+                                                <button 
+                                                    type="button" 
+                                                    class="btn btn-sm btn-primary add-comment" 
+                                                    data-request-type="{{ strtolower($ticket->request_type) }}"
+                                                    data-id="{{ $ticket->zoho_cust_id }}"
+                                                    >
+                                                    Revoke
+                                                </button>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            {{-- Action / Close Button Column --}}
+                                            @if(strtolower($ticket->status) == 'completed')
+                                                <span class="text-muted">Closed</span>  
+                                            @elseif(strtolower($ticket->request_type) == 'custom support' || strtolower($ticket->request_type) == 'custom enterprise')
+                                                <button 
+                                                    type="button" 
+                                                    class="btn btn-sm btn-primary add-comment" 
+                                                    data-id="{{ $ticket->zoho_cust_id }}" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#commentModal">
+                                                    Close
+                                                </button>
+                                            @else
+                                                @php
+                                                    // Set the route dynamically based on request_type
+                                                    $route = strtolower($ticket->request_type) == 'downgrade' 
+                                                        ? route('downgrade.subscription') 
+                                                        : (strtolower($ticket->request_type) == 'cancellation' 
+                                                            ? route('support.Subscription') 
+                                                            : '#');
+                                                @endphp
+                                                
+                                                <form action="{{ $route }}" method="POST" style="display: inline;">
+                                                    @csrf
+                                                    <input type="hidden" name="plan_code" value="{{ $ticket->plan_code ?? '' }}">
+                                                    <input type="hidden" name="subscription_number" value="{{ $ticket->subscription_number }}">
+                                                    <input type="hidden" name="subscription_id" value="{{ $ticket->subscription_id ?? '' }}">
+                                                    <input type="hidden" name="zoho_cust_id" value="{{ $ticket->zoho_cust_id ?? '' }}">
+                                                    <input type="hidden" name="customer_name" value="{{ $ticket->customer_name ?? '' }}">
+                                                    <input type="hidden" name="customer_email" value="{{ $ticket->customer_email ?? '' }}">
+                                                    
+                                                    <button type="submit" class="btn btn-primary">Close</button>
+                                                </form>
+                                            @endif
+                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -134,7 +137,8 @@
         </div>
     </div>
 </div>
-<!--Add Comment-->
+
+<!-- Add Comment Modal -->
 <div class="modal fade" id="commentModal" tabindex="-1" aria-labelledby="commentModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content text-dark bg-popup">
@@ -147,8 +151,8 @@
             <div class="modal-body p-0">
                 <form action="{{ route('revoke_ticket') }}" method="POST">
                     @csrf
-                    <!-- Ensure name matches the controller validation field 'zoho_cust_id' -->
-                    <input type="hidden" name="zoho_cust_id" value="{{ $ticket->zoho_cust_id ?? ''}}">
+                    <!-- The hidden field below will be set dynamically based on which button was clicked -->
+                    <input type="hidden" id="zoho_cust_id" name="zoho_cust_id" value="">
                     <label class="fw-bold">Comment*</label>
                     <textarea class="w-100 p-3 pe-4 border-0 rounded" name="comment" rows="4" required></textarea>
                     <input type="submit" class="btn btn-primary popup-element mt-3" value="Submit">
@@ -157,7 +161,6 @@
         </div>
     </div>
 </div>
-
 
 <style>
     .overlay {
@@ -182,22 +185,42 @@
         box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
     }
 </style>
+
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-   
-    document.querySelectorAll('.add-comment').forEach(button => {
-        button.addEventListener('click', function () {
-            const zohoCustId = this.getAttribute('data-id');
-            document.getElementById('zoho_cust_id').value = zohoCustId;
+    document.addEventListener('DOMContentLoaded', function () {
+        // Listen for clicks on all buttons with class "add-comment"
+        document.querySelectorAll('.add-comment').forEach(button => {
+            button.addEventListener('click', function () {
+                // Check if the button has a data-request-type attribute
+                const requestType = this.getAttribute('data-request-type');
+                const zohoCustId = this.getAttribute('data-id');
+
+                // For buttons with a request type (i.e. the "Revoke" button)
+                if (requestType) {
+                    if (requestType === 'custom support') {
+                        // Set the hidden input's value and show the modal (if not already triggered by data-bs attributes)
+                        document.getElementById('zoho_cust_id').value = zohoCustId;
+                        var modalElement = document.getElementById('commentModal');
+                        var myModal = new bootstrap.Modal(modalElement);
+                        myModal.show();
+                    } else {
+                        // Optionally, you can alert or handle other request types here
+                        alert('Revoke action is only available for custom support tickets.');
+                    }
+                } else {
+                    // For buttons that already use data-bs-toggle/data-bs-target attributes (the Close button in the Action column),
+                    // simply set the hidden input's value.
+                    document.getElementById('zoho_cust_id').value = zohoCustId;
+                }
+            });
         });
     });
-});
 </script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const startDateInput = document.getElementById('start_date');
-        const endDateInput = document.getElementById('end_date');
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
 
         startDateInput.addEventListener('change', function () {
             const startDate = this.value; 
@@ -212,6 +235,4 @@
         }
     });
 </script>
-
-
 @endsection
