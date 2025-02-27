@@ -9,10 +9,10 @@
          body {
    font-family: 'Arial', sans-serif;
    font-size: 16px;
-   color: #000 !important; /* Ensures text color is black */
+   color: #000 !important; 
 }
 p, li {
-   color: #000 !important; /* Forces black color for all elements */
+   color: #000 !important; 
 }
 a {
     color: #007bff;
@@ -32,8 +32,8 @@ a:hover {
                   <td>
                      <p>Dear {{ $data['customer_name'] }},</p>
                      <p><strong>Company Info Details</strong></p>
-                     <p>Test User have sent the Company Info details</p>
-                     <p>Here are your company details:</p>
+                     <p>Test User have sent the Company Info details<br>Here are your company details:</p>
+
                      <ul>
                         <li>Provider Data CSV Link:
                            @if($data['csv_link'] !== 'N/A')
@@ -44,14 +44,12 @@ a:hover {
                         </li>
                         <li>Company Info Logo link:
                            @if($data['logo_link'] !== 'N/A')
-                              <a href="{{ $data['logo_link'] }}" target="_blank">
-                                 <img src="{{ $data['logo_link'] }}" alt="Company Logo" style="max-width:150px;display:block;margin-top:5px;">
-                              </a>
+                              <a href="{{ $data['logo_link'] }}" target="_blank">logo_link</a>
                            @else
-                              Not Available
+                               Not Available
                            @endif
                         </li>
-                        <li>Company Info Company Name: {{ $data['company_name'] }}</li>
+                        <li>Company Info Company Name: <strong>{{ $data['company_name'] }}</strong></li>
                         <li>Company Info Landing Page URL: 
                            @if($data['landing_url'] !== 'N/A')
                            <a href="{{ $data['landing_url'] }}" target="_blank">Visit Website</a>
@@ -60,7 +58,7 @@ a:hover {
                            @endif
                         </li>
                      </ul>
-                     <p>Yours,<br>Clearlink Technologies LLC</p>
+                     <p>Yours,<br>Linklink Technologies LLC</p>
                   </td>
                </tr>
             </table>
